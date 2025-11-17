@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
-import { Crown, ExternalLink, MapPinned } from "lucide-react";
+import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
@@ -18,6 +18,7 @@ interface SidebarProps {
   onCategoryToggle: (categoryId: string) => void;
   onPlaceSelect: (placeId: string | null) => void;
   onDistanceChange: (distance: number) => void;
+  onPlacePageOpen: (place: Place) => void;
 }
 
 export const Sidebar = ({
@@ -30,6 +31,7 @@ export const Sidebar = ({
   onCategoryToggle,
   onPlaceSelect,
   onDistanceChange,
+  onPlacePageOpen,
 }: SidebarProps) => {
   return (
     <aside className="w-96 border-r bg-card/30 backdrop-blur-sm flex flex-col">

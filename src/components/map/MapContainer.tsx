@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Crown, ExternalLink, MapPinned } from "lucide-react";
+import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -15,6 +15,7 @@ interface MapContainerProps {
   selectedPlace: string | null;
   onPlaceSelect: (placeId: string | null) => void;
   userLocation: [number, number] | null;
+  onPlacePageOpen: (place: Place) => void;
 }
 
 const MapUpdater = ({ selectedPlace, places }: { selectedPlace: string | null; places: Place[] }) => {
@@ -83,6 +84,7 @@ export const MapView = ({
   selectedPlace,
   onPlaceSelect,
   userLocation,
+  onPlacePageOpen,
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
 
@@ -161,6 +163,17 @@ export const MapView = ({
                   )}
 
                   <div className="flex flex-col gap-2">
+                    {place.has_custom_page && (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="w-full justify-start"
+                        onClick={() => onPlacePageOpen(place)}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Подробнее о месте
+                      </Button>
+                    )}
                     {place.google_maps_url && (
                       <Button
                         size="sm"

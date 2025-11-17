@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, Crown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Pencil, Trash2, Crown, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 import type { Database } from "@/integrations/supabase/types";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
@@ -18,6 +20,7 @@ export const PlacesTab = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingPagePlace, setEditingPagePlace] = useState<Place | null>(null);
   const [formData, setFormData] = useState({
     category_id: "",
     name: "",
@@ -335,6 +338,14 @@ export const PlacesTab = () => {
                     )}
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingPagePlace(place)}
+                      title="Редактировать страницу"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => handleEdit(place)}>
                       <Pencil className="w-4 h-4" />
                     </Button>
@@ -348,6 +359,24 @@ export const PlacesTab = () => {
           );
         })}
       </div>
+
+      {/* Page Editor Dialog */}
+      <Dialog open={!!editingPagePlace} onOpenChange={() => setEditingPagePlace(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Редактировать страницу: {editingPagePlace?.name}</DialogTitle>
+          </DialogHeader>
+          {editingPagePlace && (
+            <PlacePageEditor
+              place={editingPagePlace}
+              onSave={() => {
+                setEditingPagePlace(null);
+                fetchPlaces();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
