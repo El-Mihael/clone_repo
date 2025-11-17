@@ -48,7 +48,7 @@ export const Header = ({ user, isAdmin, onSignOut, tours, activeTour, onTourSele
                 {activeTour ? activeTour.name : "Туры"}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 z-[999]">
               {activeTour && (
                 <>
                   <DropdownMenuItem onClick={() => onTourSelect(null)}>
@@ -81,7 +81,7 @@ export const Header = ({ user, isAdmin, onSignOut, tours, activeTour, onTourSele
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 z-[999]">
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{user.email}</p>
               {isAdmin && (
