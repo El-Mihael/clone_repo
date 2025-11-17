@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MapView } from "@/components/map/MapContainer";
 import { Sidebar } from "@/components/map/Sidebar";
 import { Header } from "@/components/map/Header";
+import { PlacePage } from "@/components/place-page/PlacePage";
 import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -30,6 +31,7 @@ const Map = () => {
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
   const [maxDistance, setMaxDistance] = useState<number>(10000);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [viewingPlacePage, setViewingPlacePage] = useState<Place | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -210,6 +212,18 @@ const Map = () => {
     return null;
   }
 
+  // If viewing a place page, show it instead of the map
+  if (viewingPlacePage) {
+    return (
+      <div className="h-screen flex flex-col bg-background">
+        <PlacePage
+          place={viewingPlacePage}
+          onBack={() => setViewingPlacePage(null)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-background">
       <Header
@@ -247,6 +261,7 @@ const Map = () => {
           }}
           onPlaceSelect={setSelectedPlace}
           onDistanceChange={setMaxDistance}
+          onPlacePageOpen={(place) => setViewingPlacePage(place)}
         />
         
         <MapView
@@ -255,6 +270,7 @@ const Map = () => {
           selectedPlace={selectedPlace}
           onPlaceSelect={setSelectedPlace}
           userLocation={userLocation}
+          onPlacePageOpen={(place) => setViewingPlacePage(place)}
         />
       </div>
     </div>
