@@ -77,7 +77,7 @@ const createCustomIcon = (color: string, isPremium: boolean) => {
   });
 };
 
-export const MapContainer = ({
+export const MapView = ({
   places,
   categories,
   selectedPlace,
