@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MapContainer } from "@/components/map/MapContainer";
+import { MapView } from "@/components/map/MapContainer";
 import { Sidebar } from "@/components/map/Sidebar";
 import { Header } from "@/components/map/Header";
 import { toast } from "sonner";
@@ -249,7 +249,7 @@ const Map = () => {
           onDistanceChange={setMaxDistance}
         />
         
-        <MapContainer
+        <MapView
           places={filteredPlaces}
           categories={categories}
           selectedPlace={selectedPlace}
