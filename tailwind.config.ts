@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'advent': ['Advent Pro', 'sans-serif'],
+        'vt323': ['VT323', 'monospace'],
+        'sans': ['Advent Pro', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

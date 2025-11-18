@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -40,10 +41,12 @@ export const Sidebar = ({
   onDistanceChange,
   onPlacePageOpen,
 }: SidebarProps) => {
+  const { t } = useLanguage();
+  
   const sidebarContent = (
     <>
       <div className="p-4 border-b">
-        <h2 className="font-semibold mb-3 text-lg text-foreground">Категории</h2>
+        <h2 className="font-semibold mb-3 text-lg text-foreground">{t("categories")}</h2>
         <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
             <Badge
@@ -71,7 +74,7 @@ export const Sidebar = ({
       {userLocation && (
         <div className="p-4 border-b">
           <h3 className="font-semibold mb-2 text-base text-foreground">
-            Расстояние от вас
+            {t("distance")}
           </h3>
           <div className="space-y-2">
             <Slider
@@ -82,7 +85,7 @@ export const Sidebar = ({
               className="w-full"
             />
             <p className="text-sm text-muted-foreground text-center">
-              {maxDistance >= 10000 ? "Все места" : `до ${(maxDistance / 1000).toFixed(1)} км`}
+              {maxDistance >= 10000 ? t("allPlaces") : `${t("distance")} ${(maxDistance / 1000).toFixed(1)} км`}
             </p>
           </div>
         </div>
@@ -91,7 +94,7 @@ export const Sidebar = ({
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
           <h2 className="font-semibold mb-3 text-lg text-foreground">
-            Места ({places.length})
+            {t("placesCount").replace("{count}", places.length.toString())}
           </h2>
           {places.map((place) => {
             const category = categories.find(c => c.id === place.category_id);

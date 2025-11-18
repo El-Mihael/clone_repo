@@ -10,8 +10,11 @@ import { ToursTab } from "@/components/admin/ToursTab";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+
 const Admin = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ const Admin = () => {
       .maybeSingle();
 
     if (!data) {
-      toast.error("У вас нет прав администратора");
+      toast.error(t("noAdminRights"));
       navigate("/");
       return;
     }
@@ -50,7 +53,7 @@ const Admin = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Загрузка...</p>
+        <p className="text-muted-foreground">{t("loading")}</p>
       </div>
     );
   }
@@ -71,9 +74,9 @@ const Admin = () => {
                 onClick={() => navigate("/")}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Вернуться к карте
+                {t("backToMap")}
               </Button>
-              <h1 className="text-2xl font-bold">Админ панель</h1>
+              <h1 className="text-2xl font-bold">{t("adminPanel")}</h1>
             </div>
             <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
@@ -83,9 +86,9 @@ const Admin = () => {
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="categories" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="categories">Категории</TabsTrigger>
-            <TabsTrigger value="places">Места</TabsTrigger>
-            <TabsTrigger value="tours">Туры</TabsTrigger>
+            <TabsTrigger value="categories">{t("categories")}</TabsTrigger>
+            <TabsTrigger value="places">{t("places")}</TabsTrigger>
+            <TabsTrigger value="tours">{t("tours")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
