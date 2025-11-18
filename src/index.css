@@ -8,108 +8,98 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Belgrade Map Theme - Modern & Vibrant */
-    --background: 0 0% 100%;
-    --foreground: 217 33% 17%;
+    /* Retro Gaming Theme - 16-bit Console Colors */
+    --background: 220 13% 13%;
+    --foreground: 60 30% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 217 33% 17%;
+    --card: 220 13% 18%;
+    --card-foreground: 60 30% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 217 33% 17%;
+    --popover: 220 13% 18%;
+    --popover-foreground: 60 30% 96%;
 
-    /* Deep blue for maps */
-    --primary: 217 91% 60%;
+    /* Vibrant primary - SNES Blue */
+    --primary: 220 100% 66%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft gray for UI elements */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 217 33% 17%;
+    /* Secondary - Game Boy Green */
+    --secondary: 142 76% 36%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 13% 25%;
+    --muted-foreground: 60 9% 58%;
 
-    /* Amber accent */
-    --accent: 38 92% 50%;
+    /* Accent - NES Red */
+    --accent: 0 100% 66%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
+    --border: 220 13% 30%;
+    --input: 220 13% 30%;
+    --ring: 220 100% 66%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
 
-    /* Premium gold */
-    --premium: 45 93% 47%;
-    --premium-foreground: 0 0% 100%;
+    /* Premium - Gold Coin */
+    --premium: 45 100% 50%;
+    --premium-foreground: 0 0% 0%;
 
-    /* Map marker colors */
-    --marker-museum: 271 81% 56%;
-    --marker-cafe: 38 92% 50%;
-    --marker-public: 142 71% 45%;
-    --marker-park: 142 76% 36%;
-    --marker-landmark: 0 84% 60%;
-    --marker-entertainment: 336 78% 64%;
+    /* Retro Category Colors */
+    --marker-museum: 280 100% 66%;
+    --marker-cafe: 35 100% 50%;
+    --marker-public: 142 76% 36%;
+    --marker-park: 120 100% 40%;
+    --marker-landmark: 0 100% 66%;
+    --marker-entertainment: 300 100% 50%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 75%) 100%);
-    --gradient-primary-vibrant: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 81% 56%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(45 93% 47%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 50%) 100%);
-    --gradient-premium-vibrant: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 50%) 50%, hsl(45 93% 47%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 81% 56%) 50%, hsl(336 78% 64%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
+    /* Retro Patterns & Effects */
+    --pixel-border: 4px;
+    --scanline: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    
+    /* Retro Shadows - chunky pixel style */
+    --shadow-retro-sm: 2px 2px 0px hsl(220 13% 10%);
+    --shadow-retro-md: 4px 4px 0px hsl(220 13% 10%);
+    --shadow-retro-lg: 6px 6px 0px hsl(220 13% 10%);
+    --shadow-retro-glow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
 
-    /* Shadows */
-    --shadow-card: 0 4px 16px hsla(217 91% 60% / 0.08);
-    --shadow-card-hover: 0 8px 24px hsla(217 91% 60% / 0.15);
-    --shadow-premium: 0 8px 24px hsla(45 93% 47% / 0.3);
-    --shadow-premium-hover: 0 12px 32px hsla(45 93% 47% / 0.4);
-    --shadow-marker: 0 4px 12px hsla(217 91% 60% / 0.3);
-    --shadow-glow: 0 0 40px hsla(217 91% 60% / 0.2);
-    --shadow-glow-premium: 0 0 40px hsla(45 93% 47% / 0.3);
+    /* Gradients - Retro style */
+    --gradient-primary: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 100%);
+    --gradient-primary-vibrant: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 50%, hsl(300 100% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(0 100% 66%) 0%, hsl(35 100% 50%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 50%) 100%);
+    --gradient-premium-vibrant: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 50%) 50%, hsl(45 100% 50%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 50%, hsl(300 100% 50%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 13% 18%) 0%, hsl(220 13% 20%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(120 100% 40%) 100%);
 
-    /* Transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Shadows - Pixel/Retro style */
+    --shadow-card: var(--shadow-retro-md);
+    --shadow-card-hover: var(--shadow-retro-lg);
+    --shadow-premium: var(--shadow-retro-lg);
+    --shadow-premium-hover: 8px 8px 0px hsl(220 13% 10%), var(--shadow-retro-glow);
+    --shadow-marker: var(--shadow-retro-sm);
+    --shadow-glow: var(--shadow-retro-glow);
+    --shadow-glow-premium: 0 0 15px hsl(45 100% 50%), 0 0 30px hsl(45 100% 50%);
+
+    /* Transitions - Snappier for retro feel */
+    --transition-smooth: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    --background: 217 33% 10%;
-    --foreground: 210 40% 98%;
-
-    --card: 217 33% 15%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 217 33% 15%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 217 91% 65%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 217 33% 20%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 20%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 38 92% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 25%;
-    --input: 217 33% 25%;
-    --ring: 217 91% 65%;
-
-    --premium: 45 93% 52%;
-    --premium-foreground: 0 0% 100%;
+    /* Dark mode uses same colors for retro theme */
+    --background: 220 13% 13%;
+    --foreground: 60 30% 96%;
   }
-}
 
 @layer base {
   * {
@@ -118,12 +108,63 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    font-size: 12px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    @apply font-bold;
+    line-height: 1.4;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 16px;
+  }
+
+  button, input, select, textarea {
+    font-family: 'Press Start 2P', 'Courier New', monospace;
   }
 }
+  .pixel-border {
+    border-width: var(--pixel-border);
+    border-style: solid;
+  }
+
+  .pixel-corners {
+    clip-path: polygon(
+      0 4px, 4px 4px, 4px 0,
+      calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
+      100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
+      4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
+    );
+  }
+
+  .scanlines {
+    position: relative;
+  }
+
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--scanline);
+    pointer-events: none;
+    opacity: 0.5;
+  }
 
 @layer utilities {
   .gradient-primary {
@@ -183,14 +224,32 @@ All colors MUST be HSL.
   }
 
   .hover-lift {
-    @apply transition-smooth hover:-translate-y-1;
+    @apply transition-smooth hover:-translate-y-1 hover:brightness-110;
   }
 
   .hover-scale {
-    @apply transition-smooth hover:scale-105;
+    @apply transition-smooth hover:scale-105 hover:brightness-110;
   }
 
   .hover-glow {
-    @apply transition-smooth hover:shadow-glow;
+    @apply transition-smooth;
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .retro-text-shadow {
+    text-shadow: 2px 2px 0px hsl(220 13% 10%);
+  }
+
+  .retro-glow {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+
+  .pixel-perfect {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
 }
