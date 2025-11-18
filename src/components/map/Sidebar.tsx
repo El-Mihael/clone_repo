@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -15,6 +16,9 @@ interface SidebarProps {
   selectedPlace: string | null;
   maxDistance: number;
   userLocation: [number, number] | null;
+  isMobile: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onCategoryToggle: (categoryId: string) => void;
   onPlaceSelect: (placeId: string | null) => void;
   onDistanceChange: (distance: number) => void;
@@ -28,13 +32,16 @@ export const Sidebar = ({
   selectedPlace,
   maxDistance,
   userLocation,
+  isMobile,
+  open,
+  onOpenChange,
   onCategoryToggle,
   onPlaceSelect,
   onDistanceChange,
   onPlacePageOpen,
 }: SidebarProps) => {
-  return (
-    <aside className="w-96 border-r bg-card/30 backdrop-blur-sm flex flex-col">
+  const sidebarContent = (
+    <>
       <div className="p-4 border-b">
         <h2 className="font-semibold mb-3 text-foreground">Категории</h2>
         <div className="flex flex-wrap gap-2">
@@ -112,10 +119,10 @@ export const Sidebar = ({
                     )}
                     {category && (
                       <Badge
-                        variant="secondary"
+                        variant="outline"
                         className="text-xs"
                         style={{
-                          backgroundColor: `${category.color}20`,
+                          borderColor: category.color,
                           color: category.color,
                         }}
                       >
@@ -124,13 +131,12 @@ export const Sidebar = ({
                     )}
                   </div>
                 </div>
-
                 <div className="flex gap-2 mt-3">
                   {place.google_maps_url && (
                     <Button
-                      size="sm"
                       variant="outline"
-                      className="text-xs h-7 flex-1"
+                      size="sm"
+                      className="flex-1 text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.google_maps_url!, "_blank");
@@ -140,11 +146,25 @@ export const Sidebar = ({
                       Google Maps
                     </Button>
                   )}
+                  {place.has_custom_page && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPlacePageOpen(place);
+                      }}
+                    >
+                      <FileText className="w-3 h-3 mr-1" />
+                      Страница
+                    </Button>
+                  )}
                   {place.custom_button_url && place.custom_button_text && (
                     <Button
-                      size="sm"
                       variant="outline"
-                      className="text-xs h-7 flex-1"
+                      size="sm"
+                      className="flex-1 text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.custom_button_url!, "_blank");
@@ -160,6 +180,24 @@ export const Sidebar = ({
           })}
         </div>
       </ScrollArea>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="h-[85vh]">
+          <div className="flex flex-col h-full">
+            {sidebarContent}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <aside className="w-80 lg:w-96 border-r bg-card/30 backdrop-blur-sm flex flex-col">
+      {sidebarContent}
     </aside>
   );
 };

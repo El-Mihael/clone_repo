@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/map/Sidebar";
 import { Header } from "@/components/map/Header";
 import { PlacePage } from "@/components/place-page/PlacePage";
 import { InitialSetup } from "@/components/InitialSetup";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -19,12 +20,14 @@ const Map = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tourId = searchParams.get("tour");
+  const isMobile = useIsMobile();
   
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showInitialSetup, setShowInitialSetup] = useState(false);
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [categories, setCategories] = useState<Category[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
@@ -302,6 +305,8 @@ const Map = () => {
             fetchCategories();
           }
         }}
+        onMenuClick={() => setSidebarOpen(true)}
+        showMenuButton={isMobile}
       />
       
       <div className="flex-1 flex overflow-hidden">
@@ -312,6 +317,9 @@ const Map = () => {
           selectedPlace={selectedPlace}
           maxDistance={maxDistance}
           userLocation={userLocation}
+          isMobile={isMobile}
+          open={sidebarOpen}
+          onOpenChange={setSidebarOpen}
           onCategoryToggle={(categoryId) => {
             setSelectedCategories(prev =>
               prev.includes(categoryId)
