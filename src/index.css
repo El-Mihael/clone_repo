@@ -56,16 +56,25 @@ All colors MUST be HSL.
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 75%) 100%);
+    --gradient-primary-vibrant: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 81% 56%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(45 93% 47%) 100%);
     --gradient-premium: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 50%) 100%);
+    --gradient-premium-vibrant: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 92% 50%) 50%, hsl(45 93% 47%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 81% 56%) 50%, hsl(336 78% 64%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
 
     /* Shadows */
-    --shadow-card: 0 2px 8px hsla(217 91% 60% / 0.08);
-    --shadow-premium: 0 8px 24px hsla(45 93% 47% / 0.2);
+    --shadow-card: 0 4px 16px hsla(217 91% 60% / 0.08);
+    --shadow-card-hover: 0 8px 24px hsla(217 91% 60% / 0.15);
+    --shadow-premium: 0 8px 24px hsla(45 93% 47% / 0.3);
+    --shadow-premium-hover: 0 12px 32px hsla(45 93% 47% / 0.4);
     --shadow-marker: 0 4px 12px hsla(217 91% 60% / 0.3);
+    --shadow-glow: 0 0 40px hsla(217 91% 60% / 0.2);
+    --shadow-glow-premium: 0 0 40px hsla(45 93% 47% / 0.3);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
@@ -109,5 +118,79 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-primary-vibrant {
+    background: var(--gradient-primary-vibrant);
+  }
+
+  .gradient-premium {
+    background: var(--gradient-premium);
+  }
+
+  .gradient-premium-vibrant {
+    background: var(--gradient-premium-vibrant);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .shadow-premium {
+    box-shadow: var(--shadow-premium);
+  }
+
+  .shadow-premium-hover {
+    box-shadow: var(--shadow-premium-hover);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-premium {
+    box-shadow: var(--shadow-glow-premium);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  .hover-lift {
+    @apply transition-smooth hover:-translate-y-1;
+  }
+
+  .hover-scale {
+    @apply transition-smooth hover:scale-105;
+  }
+
+  .hover-glow {
+    @apply transition-smooth hover:shadow-glow;
   }
 }
