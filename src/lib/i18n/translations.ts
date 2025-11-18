@@ -68,6 +68,19 @@ export const translations = {
     subscribeNotifications: "Укључи обавештења",
     unsubscribeNotifications: "Искључи обавештења",
     
+    // Push Notifications Admin
+    pushNotifications: "Пуш обавештења",
+    sendNotification: "Пошаљи обавештење",
+    notificationTitle: "Наслов обавештења",
+    notificationBody: "Текст обавештења",
+    sendToAllUsers: "Пошаљи свим корисницима",
+    notificationSent: "Обавештење послато!",
+    notificationFailed: "Слање обавештења није успело",
+    enterTitleAndBody: "Унесите наслов и текст",
+    users: "корисника",
+    failed: "неуспешно",
+    notifications: "Обавештења",
+    
     // Account
     personalAccount: "Лични налог",
     balance: "Баланс",
@@ -207,6 +220,19 @@ export const translations = {
     subscribeNotifications: "Включить уведомления",
     unsubscribeNotifications: "Отключить уведомления",
     
+    // Push Notifications Admin
+    pushNotifications: "Пуш уведомления",
+    sendNotification: "Отправить уведомление",
+    notificationTitle: "Заголовок уведомления",
+    notificationBody: "Текст уведомления",
+    sendToAllUsers: "Отправить всем пользователям",
+    notificationSent: "Уведомление отправлено!",
+    notificationFailed: "Не удалось отправить уведомление",
+    enterTitleAndBody: "Введите заголовок и текст",
+    users: "пользователей",
+    failed: "неудачно",
+    notifications: "Уведомления",
+    
     // Account
     personalAccount: "Личный кабинет",
     balance: "Баланс",
@@ -345,6 +371,19 @@ export const translations = {
     installInstructions: "To install the app:",
     subscribeNotifications: "Enable notifications",
     unsubscribeNotifications: "Disable notifications",
+    
+    // Push Notifications Admin
+    pushNotifications: "Push Notifications",
+    sendNotification: "Send Notification",
+    notificationTitle: "Notification Title",
+    notificationBody: "Notification Body",
+    sendToAllUsers: "Send to All Users",
+    notificationSent: "Notification sent!",
+    notificationFailed: "Failed to send notification",
+    enterTitleAndBody: "Enter title and body",
+    users: "users",
+    failed: "failed",
+    notifications: "Notifications",
     
     // Account
     personalAccount: "Personal Account",

@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { CategoriesTab } from "@/components/admin/CategoriesTab";
 import { PlacesTab } from "@/components/admin/PlacesTab";
 import { ToursTab } from "@/components/admin/ToursTab";
+import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -85,10 +86,11 @@ const Admin = () => {
 
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="categories">{t("categories")}</TabsTrigger>
             <TabsTrigger value="places">{t("places")}</TabsTrigger>
             <TabsTrigger value="tours">{t("tours")}</TabsTrigger>
+            <TabsTrigger value="notifications">{t("notifications")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -101,6 +103,10 @@ const Admin = () => {
 
           <TabsContent value="tours" className="space-y-4">
             <ToursTab />
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-4">
+            <NotificationsTab />
           </TabsContent>
         </Tabs>
       </div>
