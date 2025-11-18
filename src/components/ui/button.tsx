@@ -19,9 +19,9 @@ const buttonVariants = cva(
         gradient: "bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground hover:brightness-110 transition-all font-bold uppercase tracking-wider border-4 border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px]",
       },
       size: {
-        default: "h-10 px-4 py-2 text-[8px]",
-        sm: "h-8 px-3 text-[7px]",
-        lg: "h-12 px-6 text-[9px]",
+        default: "h-10 px-4 py-2 text-base",
+        sm: "h-9 px-3 text-sm",
+        lg: "h-12 px-6 text-lg",
         icon: "h-10 w-10",
       },
     },
