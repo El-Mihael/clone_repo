@@ -22,20 +22,20 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center animate-fade-in-up">
             {/* Pixel Badge */}
-            <div className="mb-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 border-4 border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pixel-float">
-              <Sparkles className="h-4 w-4 animate-blink" />
-              <span className="font-bold text-xs uppercase">NEW GAME+</span>
+            <div className="mb-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 border-2 border-primary shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] animate-pixel-float">
+              <Sparkles className="h-3 w-3 animate-blink" />
+              <span className="font-bold text-[7px] uppercase">NEW GAME+</span>
             </div>
             
             {/* Main Title */}
-            <h1 className="mb-6 text-2xl md:text-4xl lg:text-5xl font-bold retro-text-shadow leading-tight">
+            <h1 className="mb-6 text-base md:text-xl lg:text-2xl font-bold retro-text-shadow leading-tight">
               ИНТЕРАКТИВНАЯ <br />
               <span className="text-primary retro-glow animate-blink">
                 КАРТА ГОРОДА
               </span>
             </h1>
             
-            <p className="mb-8 text-sm md:text-base text-foreground/80 leading-relaxed max-w-2xl mx-auto">
+            <p className="mb-8 text-[8px] md:text-[10px] text-foreground/80 leading-relaxed max-w-2xl mx-auto">
               НАХОДИ ЛУЧШИЕ МЕСТА • СОЗДАВАЙ МАРШРУТЫ • ДЕЛИСЬ ВПЕЧАТЛЕНИЯМИ
             </p>
             
@@ -68,11 +68,11 @@ const Index = () => {
               ].map((stat, i) => (
                 <div 
                   key={i} 
-                  className="bg-card border-4 border-border p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                  className="bg-card border-2 border-border p-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <div className="text-lg md:text-xl font-bold text-primary retro-glow">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground uppercase">{stat.label}</div>
+                  <div className="text-sm md:text-base font-bold text-primary retro-glow">{stat.value}</div>
+                  <div className="text-[7px] text-muted-foreground uppercase">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -85,10 +85,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           {/* Section Title */}
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-xl md:text-3xl font-bold retro-text-shadow uppercase">
+            <h2 className="mb-4 text-sm md:text-lg font-bold retro-text-shadow uppercase">
               GAME <span className="text-premium retro-glow">FEATURES</span>
             </h2>
-            <div className="h-1 w-32 mx-auto bg-primary" />
+            <div className="h-1 w-24 mx-auto bg-primary" />
           </div>
 
           {/* Feature Cards */}
@@ -139,21 +139,21 @@ const Index = () => {
             ].map((feature, i) => (
               <Card 
                 key={i} 
-                className="group relative p-6 bg-card border-4 border-border hover:border-primary transition-all hover:-translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] animate-fade-in overflow-hidden"
+                className="group relative p-4 bg-card border-2 border-border hover:border-primary transition-all hover:-translate-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-fade-in overflow-hidden"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
                 {/* Icon */}
-                <div className={`mb-4 inline-flex ${feature.bgColor} p-3 border-4 border-current`}>
-                  <feature.icon className={`h-6 w-6 text-${feature.color}`} />
+                <div className={`mb-3 inline-flex ${feature.bgColor} p-2 border-2 border-current`}>
+                  <feature.icon className={`h-4 w-4 text-${feature.color}`} />
                 </div>
                 
                 {/* Content */}
-                <h3 className="mb-2 text-sm font-bold uppercase retro-text-shadow">{feature.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
+                <h3 className="mb-2 text-[9px] font-bold uppercase retro-text-shadow">{feature.title}</h3>
+                <p className="text-[7px] text-muted-foreground leading-relaxed">{feature.description}</p>
                 
                 {/* Decorative Corner */}
-                <div className="absolute top-0 right-0 w-3 h-3 bg-primary" />
-                <div className="absolute bottom-0 left-0 w-3 h-3 bg-accent" />
+                <div className="absolute top-0 right-0 w-2 h-2 bg-primary" />
+                <div className="absolute bottom-0 left-0 w-2 h-2 bg-accent" />
               </Card>
             ))}
           </div>
@@ -163,24 +163,24 @@ const Index = () => {
       {/* CTA Section */}
       <section className="py-12 md:py-20 relative">
         <div className="container mx-auto px-4">
-          <Card className="relative overflow-hidden border-4 border-premium bg-premium/10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-4xl mx-auto">
+          <Card className="relative overflow-hidden border-2 border-premium bg-premium/10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] max-w-4xl mx-auto">
             {/* Animated Border Effect */}
-            <div className="absolute inset-0 border-4 border-premium animate-blink" />
+            <div className="absolute inset-0 border-2 border-premium animate-blink" />
             
-            <div className="relative p-8 md:p-12 text-center">
+            <div className="relative p-6 md:p-10 text-center">
               {/* Badge */}
-              <div className="mb-6 inline-flex items-center gap-2 bg-premium text-premium-foreground px-4 py-2 border-4 border-premium shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pixel-float">
-                <Crown className="h-4 w-4 animate-blink" />
-                <span className="font-bold text-xs uppercase">PREMIUM ACCESS</span>
+              <div className="mb-6 inline-flex items-center gap-2 bg-premium text-premium-foreground px-3 py-1.5 border-2 border-premium shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] animate-pixel-float">
+                <Crown className="h-3 w-3 animate-blink" />
+                <span className="font-bold text-[7px] uppercase">PREMIUM ACCESS</span>
               </div>
               
               {/* Title */}
-              <h2 className="mb-4 text-xl md:text-3xl font-bold retro-text-shadow uppercase">
+              <h2 className="mb-4 text-sm md:text-lg font-bold retro-text-shadow uppercase">
                 ГОТОВ К ПРИКЛЮЧЕНИЯМ?
               </h2>
               
               {/* Description */}
-              <p className="mb-8 text-xs md:text-sm text-foreground/80 max-w-xl mx-auto leading-relaxed">
+              <p className="mb-8 text-[8px] md:text-[10px] text-foreground/80 max-w-xl mx-auto leading-relaxed">
                 ПРИСОЕДИНЯЙСЯ К ТЫСЯЧАМ ИГРОКОВ УЖЕ СЕГОДНЯ
               </p>
               
@@ -223,15 +223,15 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t-4 border-border py-6 relative bg-card">
+      <footer className="border-t-2 border-border py-4 relative bg-card">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-xs text-muted-foreground uppercase">
+          <p className="text-[7px] text-muted-foreground uppercase">
             © 2024 • RETRO CITY MAP • ALL RIGHTS RESERVED
           </p>
           <div className="mt-2 flex justify-center gap-2">
-            <div className="w-2 h-2 bg-primary animate-blink" />
-            <div className="w-2 h-2 bg-accent animate-blink" style={{ animationDelay: '0.3s' }} />
-            <div className="w-2 h-2 bg-premium animate-blink" style={{ animationDelay: '0.6s' }} />
+            <div className="w-1.5 h-1.5 bg-primary animate-blink" />
+            <div className="w-1.5 h-1.5 bg-accent animate-blink" style={{ animationDelay: '0.3s' }} />
+            <div className="w-1.5 h-1.5 bg-premium animate-blink" style={{ animationDelay: '0.6s' }} />
           </div>
         </div>
       </footer>
