@@ -49,11 +49,22 @@ export const translations = {
     // Common
     save: "Сачувај",
     cancel: "Откажи",
-    delete: "Обриши",
-    edit: "Измени",
     add: "Додај",
+    edit: "Измени",
+    delete: "Обриши",
     back: "Назад",
     close: "Затвори",
+    confirm: "Потврди",
+    success: "Успех",
+    error: "Грешка",
+    
+    // PWA Install
+    installApp: "Инсталирај апликацију",
+    installDescription: "Инсталирајте апликацију на свој телефон за брз приступ",
+    alreadyInstalled: "Апликација је већ инсталирана!",
+    openApp: "Отвори апликацију",
+    install: "Инсталирај",
+    installInstructions: "Да бисте инсталирали апликацију:",
     
     // Account
     personalAccount: "Лични налог",
@@ -84,8 +95,6 @@ export const translations = {
     latitude: "Географска ширина",
     longitude: "Географска дужина",
     address: "Адреса",
-    success: "Успех",
-    error: "Грешка",
     placeAddedSuccess: "Место успешно додато! Одузето је 15 кредита.",
     failedToAddPlace: "Није успело додавање места",
     fillAllFields: "Молимо попуните сва поља",
@@ -182,6 +191,17 @@ export const translations = {
     add: "Добавить",
     back: "Назад",
     close: "Закрыть",
+    confirm: "Подтвердить",
+    success: "Успех",
+    error: "Ошибка",
+    
+    // PWA Install
+    installApp: "Установить приложение",
+    installDescription: "Установите приложение на свой телефон для быстрого доступа",
+    alreadyInstalled: "Приложение уже установлено!",
+    openApp: "Открыть приложение",
+    install: "Установить",
+    installInstructions: "Чтобы установить приложение:",
     
     // Account
     personalAccount: "Личный кабинет",
@@ -212,8 +232,6 @@ export const translations = {
     latitude: "Широта",
     longitude: "Долгота",
     address: "Адрес",
-    success: "Успех",
-    error: "Ошибка",
     placeAddedSuccess: "Место успешно добавлено! Списано 15 кредитов.",
     failedToAddPlace: "Не удалось добавить место",
     fillAllFields: "Пожалуйста, заполните все поля",
@@ -310,6 +328,17 @@ export const translations = {
     add: "Add",
     back: "Back",
     close: "Close",
+    confirm: "Confirm",
+    success: "Success",
+    error: "Error",
+    
+    // PWA Install
+    installApp: "Install App",
+    installDescription: "Install the app on your phone for quick access",
+    alreadyInstalled: "App already installed!",
+    openApp: "Open App",
+    install: "Install",
+    installInstructions: "To install the app:",
     
     // Account
     personalAccount: "Personal Account",
@@ -340,8 +369,6 @@ export const translations = {
     latitude: "Latitude",
     longitude: "Longitude",
     address: "Address",
-    success: "Success",
-    error: "Error",
     placeAddedSuccess: "Place added successfully! 15 credits have been deducted.",
     failedToAddPlace: "Failed to add place",
     fillAllFields: "Please fill all fields",
