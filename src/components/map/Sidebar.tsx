@@ -49,13 +49,16 @@ export const Sidebar = ({
             <Badge
               key={category.id}
               variant={selectedCategories.includes(category.id) ? "default" : "outline"}
-              className="cursor-pointer transition-all hover:scale-105"
+              className="cursor-pointer transition-all hover:scale-110 hover:shadow-md"
               style={{
                 backgroundColor: selectedCategories.includes(category.id)
                   ? category.color
                   : "transparent",
                 borderColor: category.color,
                 color: selectedCategories.includes(category.id) ? "white" : category.color,
+                boxShadow: selectedCategories.includes(category.id) 
+                  ? `0 4px 12px ${category.color}33` 
+                  : "none",
               }}
               onClick={() => onCategoryToggle(category.id)}
             >
@@ -95,11 +98,11 @@ export const Sidebar = ({
             return (
               <div
                 key={place.id}
-                className={`p-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
+                className={`group p-3 rounded-lg border transition-all cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5 ${
                   selectedPlace === place.id
-                    ? "border-primary bg-primary/5 shadow-sm"
+                    ? "border-primary bg-primary/10 shadow-card"
                     : "border-border bg-card hover:border-primary/50"
-                }`}
+                } ${place.is_premium ? "shadow-premium/20" : ""}`}
                 onClick={() => onPlaceSelect(place.id)}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -196,7 +199,7 @@ export const Sidebar = ({
   }
 
   return (
-    <aside className="w-80 lg:w-96 border-r bg-card/30 backdrop-blur-sm flex flex-col">
+    <aside className="w-80 lg:w-96 border-r border-border/50 bg-card/50 backdrop-blur-md flex flex-col shadow-card">
       {sidebarContent}
     </aside>
   );
