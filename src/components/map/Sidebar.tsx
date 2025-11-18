@@ -43,13 +43,13 @@ export const Sidebar = ({
   const sidebarContent = (
     <>
       <div className="p-4 border-b">
-        <h2 className="font-semibold mb-3 text-foreground">Категории</h2>
+        <h2 className="font-semibold mb-3 text-lg text-foreground">Категории</h2>
         <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
             <Badge
               key={category.id}
               variant={selectedCategories.includes(category.id) ? "default" : "outline"}
-              className="cursor-pointer transition-all hover:scale-110 hover:shadow-md"
+              className="cursor-pointer transition-all hover:scale-110 hover:shadow-md text-sm px-3 py-1"
               style={{
                 backgroundColor: selectedCategories.includes(category.id)
                   ? category.color
@@ -70,7 +70,7 @@ export const Sidebar = ({
 
       {userLocation && (
         <div className="p-4 border-b">
-          <h3 className="font-semibold mb-2 text-sm text-foreground">
+          <h3 className="font-semibold mb-2 text-base text-foreground">
             Расстояние от вас
           </h3>
           <div className="space-y-2">
@@ -81,7 +81,7 @@ export const Sidebar = ({
               step={100}
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-sm text-muted-foreground text-center">
               {maxDistance >= 10000 ? "Все места" : `до ${(maxDistance / 1000).toFixed(1)} км`}
             </p>
           </div>
@@ -90,7 +90,7 @@ export const Sidebar = ({
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
-          <h2 className="font-semibold mb-3 text-foreground">
+          <h2 className="font-semibold mb-3 text-lg text-foreground">
             Места ({places.length})
           </h2>
           {places.map((place) => {
@@ -108,22 +108,22 @@ export const Sidebar = ({
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-sm text-foreground truncate">
+                      <h3 className="font-medium text-lg text-foreground truncate">
                         {place.name}
                       </h3>
                       {place.is_premium && (
-                        <Crown className="w-4 h-4 text-premium flex-shrink-0" />
+                        <Crown className="w-5 h-5 text-premium flex-shrink-0" />
                       )}
                     </div>
                     {place.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      <p className="text-base text-muted-foreground line-clamp-2 mb-2">
                         {place.description}
                       </p>
                     )}
                     {category && (
                       <Badge
                         variant="outline"
-                        className="text-xs"
+                        className="text-sm"
                         style={{
                           borderColor: category.color,
                           color: category.color,
@@ -139,13 +139,13 @@ export const Sidebar = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs"
+                      className="flex-1 text-sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.google_maps_url!, "_blank");
                       }}
                     >
-                      <MapPinned className="w-3 h-3 mr-1" />
+                      <MapPinned className="w-4 h-4 mr-1" />
                       Google Maps
                     </Button>
                   )}
@@ -153,13 +153,13 @@ export const Sidebar = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs"
+                      className="flex-1 text-sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         onPlacePageOpen(place);
                       }}
                     >
-                      <FileText className="w-3 h-3 mr-1" />
+                      <FileText className="w-4 h-4 mr-1" />
                       Страница
                     </Button>
                   )}
@@ -167,13 +167,13 @@ export const Sidebar = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs"
+                      className="flex-1 text-sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.custom_button_url!, "_blank");
                       }}
                     >
-                      <ExternalLink className="w-3 h-3 mr-1" />
+                      <ExternalLink className="w-4 h-4 mr-1" />
                       {place.custom_button_text}
                     </Button>
                   )}
