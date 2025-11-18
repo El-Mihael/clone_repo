@@ -133,12 +133,34 @@ const Map = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation([position.coords.latitude, position.coords.longitude]);
+          toast.success("Геолокация включена");
         },
         (error) => {
           console.error("Error getting location:", error);
-          toast.error("Не удалось получить ваше местоположение");
+          let errorMessage = "Не удалось получить ваше местоположение";
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Разрешите доступ к геолокации в настройках браузера";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Информация о местоположении недоступна";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Время ожидания геолокации истекло";
+              break;
+          }
+          
+          toast.error(errorMessage);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
+    } else {
+      toast.error("Геолокация не поддерживается вашим браузером");
     }
   };
 

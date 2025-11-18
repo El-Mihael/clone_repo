@@ -51,10 +51,10 @@ export const InstallPWAButton = () => {
       variant="outline"
       size="sm"
       onClick={handleInstallClick}
-      className="gap-2 hidden sm:flex"
+      className="gap-1 sm:gap-2 px-2 sm:px-3"
     >
-      <Download className="w-4 h-4" />
-      {t("install")}
+      <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+      <span className="hidden sm:inline">{t("install")}</span>
     </Button>
   );
 };
