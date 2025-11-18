@@ -65,6 +65,8 @@ export const translations = {
     openApp: "Отвори апликацију",
     install: "Инсталирај",
     installInstructions: "Да бисте инсталирали апликацију:",
+    subscribeNotifications: "Укључи обавештења",
+    unsubscribeNotifications: "Искључи обавештења",
     
     // Account
     personalAccount: "Лични налог",
@@ -202,6 +204,8 @@ export const translations = {
     openApp: "Открыть приложение",
     install: "Установить",
     installInstructions: "Чтобы установить приложение:",
+    subscribeNotifications: "Включить уведомления",
+    unsubscribeNotifications: "Отключить уведомления",
     
     // Account
     personalAccount: "Личный кабинет",
@@ -339,6 +343,8 @@ export const translations = {
     openApp: "Open App",
     install: "Install",
     installInstructions: "To install the app:",
+    subscribeNotifications: "Enable notifications",
+    unsubscribeNotifications: "Disable notifications",
     
     // Account
     personalAccount: "Personal Account",

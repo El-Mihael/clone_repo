@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { PushNotificationButton } from "@/components/PushNotificationButton";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
@@ -87,6 +88,9 @@ export const Header = ({
       </div>
 
       <div className="ml-auto flex items-center gap-2 md:gap-3">
+        {/* Push Notifications */}
+        <PushNotificationButton />
+        
         {/* Language selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
