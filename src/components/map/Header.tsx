@@ -1,4 +1,4 @@
-import { MapPin, LogOut, Settings, Route, Globe, MapPinned } from "lucide-react";
+import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -171,6 +171,10 @@ export const Header = ({
                 {t("adminPanel")}
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem onClick={() => navigate("/account")}>
+              <UserIcon className="w-4 h-4 mr-2" />
+              {t("personalAccount")}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={onSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               {t("signOut")}

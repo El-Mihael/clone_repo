@@ -54,6 +54,21 @@ export const translations = {
     add: "Додај",
     back: "Назад",
     close: "Затвори",
+    
+    // Account
+    personalAccount: "Лични налог",
+    balance: "Баланс",
+    credits: "кредита",
+    topUpComingSoon: "Допуна правим новцем ускоро",
+    transactionHistory: "Историја трансакција",
+    recentTransactions: "Ваше недавне трансакције",
+    noTransactions: "Још нема трансакција",
+    myPlaces: "Моја места",
+    managePlaces: "Управљајте местима на мапи",
+    noPlacesYet: "Још нема додатих места",
+    date: "Датум",
+    description: "Опис",
+    amount: "Износ",
   },
   ru: {
     // Auth
@@ -110,6 +125,21 @@ export const translations = {
     add: "Добавить",
     back: "Назад",
     close: "Закрыть",
+    
+    // Account
+    personalAccount: "Личный кабинет",
+    balance: "Баланс",
+    credits: "кредитов",
+    topUpComingSoon: "Пополнение за реальные деньги скоро будет доступно",
+    transactionHistory: "История операций",
+    recentTransactions: "Ваши последние операции с кредитами",
+    noTransactions: "Пока нет операций",
+    myPlaces: "Мои точки",
+    managePlaces: "Управляйте вашими точками на карте",
+    noPlacesYet: "Пока нет добавленных точек",
+    date: "Дата",
+    description: "Описание",
+    amount: "Сумма",
   },
   en: {
     // Auth
@@ -166,6 +196,21 @@ export const translations = {
     add: "Add",
     back: "Back",
     close: "Close",
+    
+    // Account
+    personalAccount: "Personal Account",
+    balance: "Balance",
+    credits: "credits",
+    topUpComingSoon: "Top-up with real money coming soon",
+    transactionHistory: "Transaction History",
+    recentTransactions: "Your recent credit transactions",
+    noTransactions: "No transactions yet",
+    myPlaces: "My Places",
+    managePlaces: "Manage your places on the map",
+    noPlacesYet: "No places added yet",
+    date: "Date",
+    description: "Description",
+    amount: "Amount",
   },
 };
 
