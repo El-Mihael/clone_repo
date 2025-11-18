@@ -77,7 +77,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !selectedCountry || !selectedCity) {
-      toast.error("Пожалуйста, заполните все поля");
+      toast.error(t("fillAllFields"));
       return;
     }
 

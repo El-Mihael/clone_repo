@@ -68,8 +68,8 @@ const Account = () => {
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to load profile",
+        title: t("error"),
+        description: t("failedToLoadProfile"),
         variant: "destructive",
       });
       return;
@@ -108,7 +108,7 @@ const Account = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg">{t("loading")}</div>
       </div>
     );
   }

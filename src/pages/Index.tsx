@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Crown, Smartphone, Globe, Sparkles, TrendingUp, Zap, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -29,14 +31,14 @@ const Index = () => {
             
             {/* Main Title */}
             <h1 className="mb-6 text-3xl md:text-5xl lg:text-6xl font-bold retro-text-shadow leading-tight">
-              ИНТЕРАКТИВНАЯ <br />
+              {t("heroTitle").split(" ").slice(0, 1).join(" ")} <br />
               <span className="text-primary retro-glow animate-blink">
-                КАРТА ГОРОДА
+                {t("heroTitle").split(" ").slice(1).join(" ")}
               </span>
             </h1>
             
             <p className="mb-8 text-lg md:text-xl text-foreground/80 leading-relaxed max-w-2xl mx-auto">
-              НАХОДИ ЛУЧШИЕ МЕСТА • СОЗДАВАЙ МАРШРУТЫ • ДЕЛИСЬ ВПЕЧАТЛЕНИЯМИ
+              {t("heroSubtitle")}
             </p>
             
             {/* CTA Buttons */}
@@ -47,7 +49,7 @@ const Index = () => {
                 onClick={() => navigate("/map")}
               >
                 <MapPin className="mr-2 h-4 w-4" />
-                START GAME
+                {t("startGame")}
               </Button>
               <Button 
                 size="lg" 
@@ -55,16 +57,16 @@ const Index = () => {
                 onClick={() => navigate("/auth")}
               >
                 <Star className="mr-2 h-4 w-4" />
-                JOIN NOW
+                {t("joinNow")}
               </Button>
             </div>
 
             {/* Pixel Stats */}
             <div className="mt-12 grid grid-cols-3 gap-4 max-w-xl mx-auto">
               {[
-                { value: "500+", label: "МЕСТА" },
-                { value: "50+", label: "ТУРЫ" },
-                { value: "1000+", label: "ИГРОКИ" },
+                { value: "500+", label: t("placesCount2") },
+                { value: "50+", label: t("toursCount") },
+                { value: "1000+", label: t("playersCount") },
               ].map((stat, i) => (
                 <div 
                   key={i} 
@@ -86,7 +88,7 @@ const Index = () => {
           {/* Section Title */}
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-2xl md:text-4xl font-bold retro-text-shadow uppercase">
-              GAME <span className="text-premium retro-glow">FEATURES</span>
+              GAME <span className="text-premium retro-glow">{t("gameFeatures")}</span>
             </h2>
             <div className="h-1 w-24 mx-auto bg-primary" />
           </div>

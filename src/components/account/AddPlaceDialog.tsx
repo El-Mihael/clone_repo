@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
@@ -21,6 +22,7 @@ interface AddPlaceDialogProps {
 
 export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialogProps) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -88,8 +90,8 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
       }
 
       toast({
-        title: "Success",
-        description: "Place added successfully! 15 credits have been deducted.",
+        title: t("success"),
+        description: t("placeAddedSuccess"),
       });
 
       onSuccess();
@@ -97,8 +99,8 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
       resetForm();
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add place",
+        title: t("error"),
+        description: error instanceof Error ? error.message : t("failedToAddPlace"),
         variant: "destructive",
       });
     } finally {
@@ -124,7 +126,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Place (15 credits)</DialogTitle>
+          <DialogTitle>{t("addNewPlace")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -155,7 +157,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
                 onValueChange={(value) => setFormData({ ...formData, category_id: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t("selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -168,13 +170,13 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city">{t("city")}</Label>
               <Select
                 value={formData.city_id}
                 onValueChange={(value) => setFormData({ ...formData, city_id: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select city" />
+                  <SelectValue placeholder={t("selectCity")} />
                 </SelectTrigger>
                 <SelectContent>
                   {cities.map((city) => (
@@ -207,7 +209,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{t("address")}</Label>
             <Input
               id="address"
               value={formData.address}
