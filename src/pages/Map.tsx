@@ -5,6 +5,7 @@ import { MapView } from "@/components/map/MapContainer";
 import { Sidebar } from "@/components/map/Sidebar";
 import { Header } from "@/components/map/Header";
 import { PlacePage } from "@/components/place-page/PlacePage";
+import { InitialSetup } from "@/components/InitialSetup";
 import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -12,6 +13,7 @@ import type { Database } from "@/integrations/supabase/types";
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
+type City = Database["public"]["Tables"]["cities"]["Row"];
 
 const Map = () => {
   const navigate = useNavigate();
@@ -21,6 +23,8 @@ const Map = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showInitialSetup, setShowInitialSetup] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
   
   const [categories, setCategories] = useState<Category[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
@@ -71,17 +75,55 @@ const Map = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
-    fetchPlaces();
-    fetchTours();
+    checkInitialSetup();
     getUserLocation();
   }, []);
+
+  useEffect(() => {
+    if (selectedCity) {
+      fetchCategories();
+      fetchPlaces();
+      fetchTours();
+    }
+  }, [selectedCity]);
 
   useEffect(() => {
     if (tourId) {
       loadTour(tourId);
     }
   }, [tourId]);
+
+  const checkInitialSetup = async () => {
+    const savedCityId = localStorage.getItem("selectedCity");
+    if (savedCityId) {
+      await loadCity(savedCityId);
+      setShowInitialSetup(false);
+    } else {
+      setShowInitialSetup(true);
+    }
+  };
+
+  const loadCity = async (cityId: string) => {
+    const { data: city } = await supabase
+      .from("cities")
+      .select("*")
+      .eq("id", cityId)
+      .single();
+
+    if (city) {
+      setSelectedCity(city);
+    }
+  };
+
+  const handleCityChange = async (cityId: string) => {
+    await loadCity(cityId);
+    localStorage.setItem("selectedCity", cityId);
+  };
+
+  const handleInitialSetupComplete = async (cityId: string) => {
+    await loadCity(cityId);
+    setShowInitialSetup(false);
+  };
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -113,9 +155,12 @@ const Map = () => {
   };
 
   const fetchPlaces = async () => {
+    if (!selectedCity) return;
+    
     const { data, error } = await supabase
       .from("places")
-      .select("*");
+      .select("*")
+      .eq("city_id", selectedCity.id);
 
     if (error) {
       toast.error("Ошибка загрузки мест");
@@ -126,10 +171,13 @@ const Map = () => {
   };
 
   const fetchTours = async () => {
+    if (!selectedCity) return;
+    
     const { data, error } = await supabase
       .from("tours")
       .select("*")
       .eq("is_active", true)
+      .eq("city_id", selectedCity.id)
       .order("display_order");
 
     if (error) {
@@ -212,6 +260,16 @@ const Map = () => {
     return null;
   }
 
+  // Show initial setup if needed
+  if (showInitialSetup) {
+    return <InitialSetup onComplete={handleInitialSetupComplete} />;
+  }
+
+  // If no city is selected yet, show loading
+  if (!selectedCity) {
+    return null;
+  }
+
   // If viewing a place page, show it instead of the map
   if (viewingPlacePage) {
     return (
@@ -232,6 +290,8 @@ const Map = () => {
         onSignOut={handleSignOut}
         tours={tours}
         activeTour={activeTour}
+        selectedCity={selectedCity}
+        onCityChange={handleCityChange}
         onTourSelect={(tour) => {
           if (tour) {
             navigate(`/?tour=${tour.id}`);

@@ -23,6 +23,8 @@ export type Database = {
           id: string
           name: string
           name_en: string | null
+          name_ru: string | null
+          name_sr: string | null
           updated_at: string
         }
         Insert: {
@@ -33,6 +35,8 @@ export type Database = {
           id?: string
           name: string
           name_en?: string | null
+          name_ru?: string | null
+          name_sr?: string | null
           updated_at?: string
         }
         Update: {
@@ -43,7 +47,80 @@ export type Database = {
           id?: string
           name?: string
           name_en?: string | null
+          name_ru?: string | null
+          name_sr?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      cities: {
+        Row: {
+          country_id: string
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          name_en: string
+          name_ru: string
+          name_sr: string
+          zoom_level: number
+        }
+        Insert: {
+          country_id: string
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          name_en: string
+          name_ru: string
+          name_sr: string
+          zoom_level?: number
+        }
+        Update: {
+          country_id?: string
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name_en?: string
+          name_ru?: string
+          name_sr?: string
+          zoom_level?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cities_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name_en: string
+          name_ru: string
+          name_sr: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name_en: string
+          name_ru: string
+          name_sr: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name_en?: string
+          name_ru?: string
+          name_sr?: string
         }
         Relationships: []
       }
@@ -51,6 +128,7 @@ export type Database = {
         Row: {
           address: string | null
           category_id: string | null
+          city_id: string | null
           created_at: string
           custom_button_text: string | null
           custom_button_url: string | null
@@ -66,11 +144,13 @@ export type Database = {
           longitude: number
           name: string
           name_en: string | null
+          owner_id: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
           category_id?: string | null
+          city_id?: string | null
           created_at?: string
           custom_button_text?: string | null
           custom_button_url?: string | null
@@ -86,11 +166,13 @@ export type Database = {
           longitude: number
           name: string
           name_en?: string | null
+          owner_id?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
           category_id?: string | null
+          city_id?: string | null
           created_at?: string
           custom_button_text?: string | null
           custom_button_url?: string | null
@@ -106,6 +188,7 @@ export type Database = {
           longitude?: number
           name?: string
           name_en?: string | null
+          owner_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -116,31 +199,94 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "places_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
         Row: {
+          city_id: string | null
+          country_id: string | null
           created_at: string
           email: string
           full_name: string | null
           id: string
+          language: string | null
           updated_at: string
+          user_type: Database["public"]["Enums"]["user_type"] | null
         }
         Insert: {
+          city_id?: string | null
+          country_id?: string | null
           created_at?: string
           email: string
           full_name?: string | null
           id: string
+          language?: string | null
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"] | null
         }
         Update: {
+          city_id?: string | null
+          country_id?: string | null
           created_at?: string
           email?: string
           full_name?: string | null
           id?: string
+          language?: string | null
           updated_at?: string
+          user_type?: Database["public"]["Enums"]["user_type"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchased_tours: {
+        Row: {
+          id: string
+          purchased_at: string
+          tour_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          purchased_at?: string
+          tour_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          purchased_at?: string
+          tour_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchased_tours_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "tours"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tour_places: {
         Row: {
@@ -183,6 +329,7 @@ export type Database = {
       }
       tours: {
         Row: {
+          city_id: string | null
           created_at: string
           description: string | null
           description_en: string | null
@@ -191,9 +338,11 @@ export type Database = {
           is_active: boolean | null
           name: string
           name_en: string | null
+          price: number | null
           updated_at: string
         }
         Insert: {
+          city_id?: string | null
           created_at?: string
           description?: string | null
           description_en?: string | null
@@ -202,9 +351,11 @@ export type Database = {
           is_active?: boolean | null
           name: string
           name_en?: string | null
+          price?: number | null
           updated_at?: string
         }
         Update: {
+          city_id?: string | null
           created_at?: string
           description?: string | null
           description_en?: string | null
@@ -213,9 +364,18 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           name_en?: string | null
+          price?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tours_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -253,6 +413,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      user_type: "individual" | "business"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -381,6 +542,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      user_type: ["individual", "business"],
     },
   },
 } as const
