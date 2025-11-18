@@ -1,4 +1,4 @@
-import { MapPin, LogOut, Settings, Route } from "lucide-react";
+import { MapPin, LogOut, Settings, Route, Globe, MapPinned } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,10 +8,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { useLanguage, Language } from "@/lib/i18n/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
+type City = Database["public"]["Tables"]["cities"]["Row"];
 
 interface HeaderProps {
   user: User;
@@ -20,10 +24,38 @@ interface HeaderProps {
   tours: Tour[];
   activeTour: Tour | null;
   onTourSelect: (tour: Tour | null) => void;
+  selectedCity: City | null;
+  onCityChange: (cityId: string) => void;
 }
 
-export const Header = ({ user, isAdmin, onSignOut, tours, activeTour, onTourSelect }: HeaderProps) => {
+export const Header = ({ 
+  user, 
+  isAdmin, 
+  onSignOut, 
+  tours, 
+  activeTour, 
+  onTourSelect,
+  selectedCity,
+  onCityChange 
+}: HeaderProps) => {
   const navigate = useNavigate();
+  const { language, setLanguage, t } = useLanguage();
+  const [cities, setCities] = useState<City[]>([]);
+
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
+  const fetchCities = async () => {
+    const { data } = await supabase.from("cities").select("*");
+    if (data) setCities(data);
+  };
+
+  const getCityName = (city: City) => {
+    if (language === "sr") return city.name_sr;
+    if (language === "ru") return city.name_ru;
+    return city.name_en;
+  };
 
   return (
     <header className="h-16 border-b bg-card/50 backdrop-blur-sm flex items-center px-6 shadow-sm">
@@ -32,27 +64,70 @@ export const Header = ({ user, isAdmin, onSignOut, tours, activeTour, onTourSele
           <MapPin className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-foreground">Карта Белграда</h1>
+          <h1 className="text-lg font-bold text-foreground">{t("map")}</h1>
           {activeTour && (
-            <p className="text-xs text-muted-foreground">Тур: {activeTour.name}</p>
+            <p className="text-xs text-muted-foreground">{t("tours")}: {activeTour.name}</p>
           )}
         </div>
       </div>
 
       <div className="ml-auto flex items-center gap-3">
+        {/* Language selector */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <Globe className="w-4 h-4 mr-2" />
+              {language.toUpperCase()}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40 z-[999]">
+            <DropdownMenuItem onClick={() => setLanguage("sr")}>
+              Српски
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage("ru")}>
+              Русский
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage("en")}>
+              English
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* City selector */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MapPinned className="w-4 h-4 mr-2" />
+              {selectedCity ? getCityName(selectedCity) : t("city")}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 z-[999]">
+            {cities.map((city) => (
+              <DropdownMenuItem
+                key={city.id}
+                onClick={() => onCityChange(city.id)}
+                className={selectedCity?.id === city.id ? "bg-accent" : ""}
+              >
+                {getCityName(city)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Tours selector */}
         {tours.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant={activeTour ? "default" : "outline"} size="sm">
                 <Route className="w-4 h-4 mr-2" />
-                {activeTour ? activeTour.name : "Туры"}
+                {activeTour ? activeTour.name : t("tours")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 z-[999]">
               {activeTour && (
                 <>
                   <DropdownMenuItem onClick={() => onTourSelect(null)}>
-                    Показать все места
+                    {t("allLocations")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
@@ -71,6 +146,7 @@ export const Header = ({ user, isAdmin, onSignOut, tours, activeTour, onTourSele
           </DropdownMenu>
         )}
 
+        {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">
@@ -85,19 +161,19 @@ export const Header = ({ user, isAdmin, onSignOut, tours, activeTour, onTourSele
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{user.email}</p>
               {isAdmin && (
-                <p className="text-xs text-muted-foreground">Администратор</p>
+                <p className="text-xs text-muted-foreground">{t("adminPanel")}</p>
               )}
             </div>
             <DropdownMenuSeparator />
             {isAdmin && (
               <DropdownMenuItem onClick={() => navigate("/admin")}>
                 <Settings className="w-4 h-4 mr-2" />
-                Админ панель
+                {t("adminPanel")}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={onSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
-              Выйти
+              {t("signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
