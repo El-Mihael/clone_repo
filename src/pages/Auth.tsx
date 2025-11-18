@@ -91,23 +91,29 @@ const Auth = () => {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
+          user_type: userType,
+          country_id: selectedCountry,
+          city_id: selectedCity,
         },
       },
     });
 
     if (!error && data.user) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          user_type: userType,
-          country_id: selectedCountry,
-          city_id: selectedCity,
-        })
-        .eq("id", data.user.id);
+      // Wait for trigger to create profile, then update it
+      setTimeout(async () => {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            user_type: userType,
+            country_id: selectedCountry,
+            city_id: selectedCity,
+          })
+          .eq("id", data.user.id);
 
-      if (profileError) {
-        console.error("Profile update error:", profileError);
-      }
+        if (profileError) {
+          console.error("Profile update error:", profileError);
+        }
+      }, 1000);
     }
 
     setLoading(false);
