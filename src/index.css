@@ -2,75 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* Retro Gaming Theme - 16-bit Console Colors */
     --background: 220 13% 13%;
     --foreground: 60 30% 96%;
-
     --card: 220 13% 18%;
     --card-foreground: 60 30% 96%;
-
     --popover: 220 13% 18%;
     --popover-foreground: 60 30% 96%;
-
-    /* Vibrant primary - SNES Blue */
     --primary: 220 100% 66%;
     --primary-foreground: 0 0% 100%;
-
-    /* Secondary - Game Boy Green */
     --secondary: 142 76% 36%;
     --secondary-foreground: 0 0% 100%;
-
     --muted: 220 13% 25%;
     --muted-foreground: 60 9% 58%;
-
-    /* Accent - NES Red */
     --accent: 0 100% 66%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 220 13% 30%;
     --input: 220 13% 30%;
     --ring: 220 100% 66%;
-
     --radius: 0rem;
-
-    /* Premium - Gold Coin */
     --premium: 45 100% 50%;
     --premium-foreground: 0 0% 0%;
-
-    /* Retro Category Colors */
     --marker-museum: 280 100% 66%;
     --marker-cafe: 35 100% 50%;
     --marker-public: 142 76% 36%;
     --marker-park: 120 100% 40%;
     --marker-landmark: 0 100% 66%;
     --marker-entertainment: 300 100% 50%;
-
-    /* Retro Patterns & Effects */
     --pixel-border: 4px;
-    --scanline: repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.15),
-      rgba(0, 0, 0, 0.15) 1px,
-      transparent 1px,
-      transparent 2px
-    );
-    
-    /* Retro Shadows - chunky pixel style */
+    --scanline: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
     --shadow-retro-sm: 2px 2px 0px hsl(220 13% 10%);
     --shadow-retro-md: 4px 4px 0px hsl(220 13% 10%);
     --shadow-retro-lg: 6px 6px 0px hsl(220 13% 10%);
     --shadow-retro-glow: 0 0 10px currentColor, 0 0 20px currentColor;
-
-    /* Gradients - Retro style */
     --gradient-primary: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 100%);
     --gradient-primary-vibrant: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 50%, hsl(300 100% 50%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(0 100% 66%) 0%, hsl(35 100% 50%) 100%);
@@ -79,8 +46,6 @@ All colors MUST be HSL.
     --gradient-hero: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 50%, hsl(300 100% 50%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(220 13% 18%) 0%, hsl(220 13% 20%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(120 100% 40%) 100%);
-
-    /* Shadows - Pixel/Retro style */
     --shadow-card: var(--shadow-retro-md);
     --shadow-card-hover: var(--shadow-retro-lg);
     --shadow-premium: var(--shadow-retro-lg);
@@ -88,23 +53,19 @@ All colors MUST be HSL.
     --shadow-marker: var(--shadow-retro-sm);
     --shadow-glow: var(--shadow-retro-glow);
     --shadow-glow-premium: 0 0 15px hsl(45 100% 50%), 0 0 30px hsl(45 100% 50%);
-
-    /* Transitions - Snappier for retro feel */
     --transition-smooth: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    /* Dark mode uses same colors for retro theme */
     --background: 220 13% 13%;
     --foreground: 60 30% 96%;
   }
-}
+
   * {
     @apply border-border;
   }
 
-  /* Responsive base font size */
   html {
     font-size: clamp(14px, 0.875rem + 0.25vw, 16px);
   }
@@ -119,7 +80,6 @@ All colors MUST be HSL.
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Responsive headings */
   h1 {
     font-size: clamp(1.875rem, 1.5rem + 2vw, 3rem);
     line-height: 1.2;
@@ -149,36 +109,21 @@ All colors MUST be HSL.
     font-size: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
   }
   
-  /* Retro text effects */
   .retro-text-shadow {
-    text-shadow: 
-      3px 3px 0px hsl(220 13% 10%),
-      -1px -1px 0px hsl(220 100% 66% / 0.5);
+    text-shadow: 3px 3px 0px hsl(220 13% 10%), -1px -1px 0px hsl(220 100% 66% / 0.5);
   }
   
   .retro-glow {
-    text-shadow: 
-      0 0 10px currentColor,
-      0 0 20px currentColor,
-      0 0 30px currentColor,
-      3px 3px 0px hsl(220 13% 10%);
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 3px 3px 0px hsl(220 13% 10%);
     animation: glow 2s ease-in-out infinite alternate;
   }
   
   @keyframes glow {
     from {
-      text-shadow: 
-        0 0 10px currentColor,
-        0 0 20px currentColor,
-        0 0 30px currentColor,
-        3px 3px 0px hsl(220 13% 10%);
+      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 3px 3px 0px hsl(220 13% 10%);
     }
     to {
-      text-shadow: 
-        0 0 20px currentColor,
-        0 0 30px currentColor,
-        0 0 40px currentColor,
-        3px 3px 0px hsl(220 13% 10%);
+      text-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor, 3px 3px 0px hsl(220 13% 10%);
     }
   }
 }
@@ -190,12 +135,7 @@ All colors MUST be HSL.
   }
 
   .pixel-corners {
-    clip-path: polygon(
-      0 4px, 4px 4px, 4px 0,
-      calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
-      100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
-      4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
-    );
+    clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
   }
 
   .scanlines {
@@ -214,90 +154,59 @@ All colors MUST be HSL.
     opacity: 0.5;
   }
 
-@layer utilities {
-  .gradient-primary {
-    background: var(--gradient-primary);
-  }
-
-  .gradient-primary-vibrant {
-    background: var(--gradient-primary-vibrant);
-  }
-
-  .gradient-premium {
-    background: var(--gradient-premium);
-  }
-
-  .gradient-premium-vibrant {
-    background: var(--gradient-premium-vibrant);
-  }
-
-  .gradient-hero {
-    background: var(--gradient-hero);
-  }
-
-  .gradient-card {
-    background: var(--gradient-card);
-  }
-
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-
-  .shadow-card-hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  .shadow-premium {
-    box-shadow: var(--shadow-premium);
-  }
-
-  .shadow-premium-hover {
-    box-shadow: var(--shadow-premium-hover);
-  }
-
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .shadow-glow-premium {
-    box-shadow: var(--shadow-glow-premium);
-  }
-
-  .transition-smooth {
-    transition: var(--transition-smooth);
-  }
-
-  .transition-bounce {
+  .retro-button {
+    @apply relative overflow-hidden;
+    box-shadow: var(--shadow-retro-md);
     transition: var(--transition-bounce);
   }
 
-  .hover-lift {
-    @apply transition-smooth hover:-translate-y-1 hover:brightness-110;
+  .retro-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-retro-lg);
   }
 
-  .hover-scale {
-    @apply transition-smooth hover:scale-105 hover:brightness-110;
+  .retro-button:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-retro-sm);
   }
 
-  .hover-glow {
-    @apply transition-smooth;
+  .premium-glow {
+    box-shadow: var(--shadow-glow-premium);
+    animation: premium-pulse 2s ease-in-out infinite;
   }
 
-  .hover-glow:hover {
-    box-shadow: var(--shadow-glow);
+  @keyframes premium-pulse {
+    0%, 100% {
+      box-shadow: var(--shadow-glow-premium);
+    }
+    50% {
+      box-shadow: 0 0 25px hsl(45 100% 50%), 0 0 50px hsl(45 100% 50%);
+    }
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
   }
 
-  .retro-text-shadow {
-    text-shadow: 2px 2px 0px hsl(220 13% 10%);
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out;
   }
 
-  .retro-glow {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  .animate-scale-in {
+    animation: scale-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
-  .pixel-perfect {
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
+  .animate-blink {
+    animation: blink 1.5s step-end infinite;
+  }
+
+  .animate-pixel-float {
+    animation: pixel-float 2s ease-in-out infinite;
+  }
+
+  .animate-glitch {
+    animation: glitch 0.5s infinite;
   }
 }
