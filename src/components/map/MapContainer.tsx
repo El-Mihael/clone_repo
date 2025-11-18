@@ -16,6 +16,7 @@ interface MapContainerProps {
   onPlaceSelect: (placeId: string | null) => void;
   userLocation: [number, number] | null;
   onPlacePageOpen: (place: Place) => void;
+  cityCenter: [number, number];
 }
 
 const MapUpdater = ({ selectedPlace, places }: { selectedPlace: string | null; places: Place[] }) => {
@@ -85,6 +86,7 @@ export const MapView = ({
   onPlaceSelect,
   userLocation,
   onPlacePageOpen,
+  cityCenter,
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
 
@@ -94,12 +96,10 @@ export const MapView = ({
     }
   }, [selectedPlace]);
 
-  const belgradeCenter: [number, number] = [44.8176, 20.4570];
-
   return (
     <div className="flex-1 relative">
       <LeafletMap
-        center={belgradeCenter}
+        center={cityCenter}
         zoom={13}
         className="h-full w-full"
         scrollWheelZoom={true}

@@ -331,6 +331,7 @@ const Map = () => {
           onPlaceSelect={setSelectedPlace}
           userLocation={userLocation}
           onPlacePageOpen={(place) => setViewingPlacePage(place)}
+          cityCenter={[selectedCity.latitude, selectedCity.longitude]}
         />
       </div>
     </div>
