@@ -109,24 +109,24 @@ export const Sidebar = ({
                 onClick={() => onPlaceSelect(place.id)}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-lg text-foreground truncate">
+                      <h3 className="font-medium text-base text-foreground truncate">
                         {place.name}
                       </h3>
                       {place.is_premium && (
-                        <Crown className="w-5 h-5 text-premium flex-shrink-0" />
+                        <Crown className="w-4 h-4 text-premium flex-shrink-0" />
                       )}
                     </div>
                     {place.description && (
-                      <p className="text-base text-muted-foreground line-clamp-2 mb-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2 break-words">
                         {place.description}
                       </p>
                     )}
                     {category && (
                       <Badge
                         variant="outline"
-                        className="text-sm"
+                        className="text-xs truncate max-w-full"
                         style={{
                           borderColor: category.color,
                           color: category.color,
@@ -137,47 +137,47 @@ export const Sidebar = ({
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2 mt-3">
+                <div className="flex flex-wrap gap-2 mt-3">
                   {place.google_maps_url && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-sm"
+                      className="flex-1 min-w-[120px] text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.google_maps_url!, "_blank");
                       }}
                     >
-                      <MapPinned className="w-4 h-4 mr-1" />
-                      Google Maps
+                      <MapPinned className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">Google Maps</span>
                     </Button>
                   )}
                   {place.has_custom_page && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-sm"
+                      className="flex-1 min-w-[120px] text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         onPlacePageOpen(place);
                       }}
                     >
-                      <FileText className="w-4 h-4 mr-1" />
-                      Страница
+                      <FileText className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">Страница</span>
                     </Button>
                   )}
                   {place.custom_button_url && place.custom_button_text && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-sm"
+                      className="flex-1 min-w-[120px] text-xs"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.custom_button_url!, "_blank");
                       }}
                     >
-                      <ExternalLink className="w-4 h-4 mr-1" />
-                      {place.custom_button_text}
+                      <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{place.custom_button_text}</span>
                     </Button>
                   )}
                 </div>
