@@ -124,6 +124,33 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       places: {
         Row: {
           address: string | null
@@ -213,6 +240,7 @@ export type Database = {
           city_id: string | null
           country_id: string | null
           created_at: string
+          credits: number
           email: string
           full_name: string | null
           id: string
@@ -224,6 +252,7 @@ export type Database = {
           city_id?: string | null
           country_id?: string | null
           created_at?: string
+          credits?: number
           email: string
           full_name?: string | null
           id: string
@@ -235,6 +264,7 @@ export type Database = {
           city_id?: string | null
           country_id?: string | null
           created_at?: string
+          credits?: number
           email?: string
           full_name?: string | null
           id?: string
