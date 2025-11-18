@@ -64,31 +64,31 @@ export const Header = ({
   };
 
   return (
-    <header className="h-16 border-b border-border/50 bg-card/50 backdrop-blur-md shadow-card flex items-center px-4 md:px-6 sticky top-0 z-50">
+    <header className="h-14 sm:h-16 border-b border-border/50 bg-card/50 backdrop-blur-md shadow-card flex items-center px-2 sm:px-4 md:px-6 sticky top-0 z-50">
       {showMenuButton && (
         <Button
           variant="ghost"
           size="sm"
           onClick={onMenuClick}
-          className="mr-2"
+          className="mr-1 sm:mr-2 p-1 sm:p-2"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
       )}
       
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <MapPin className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary" />
         </div>
-        <div>
-          <h1 className="text-base md:text-lg font-bold text-foreground">{t("map")}</h1>
+        <div className="min-w-0">
+          <h1 className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate">{t("map")}</h1>
           {activeTour && (
-            <p className="text-xs text-muted-foreground hidden md:block">{t("tours")}: {activeTour.name}</p>
+            <p className="text-xs text-muted-foreground hidden md:block truncate">{t("tours")}: {activeTour.name}</p>
           )}
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-2 md:gap-3">
+      <div className="ml-auto flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
         {/* Install PWA Button */}
         <InstallPWAButton />
         
@@ -98,12 +98,12 @@ export const Header = ({
         {/* Language selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <Globe className="w-4 h-4 mr-2" />
-              <span className="hidden lg:inline">{language.toUpperCase()}</span>
+            <Button variant="ghost" size="sm" className="hidden sm:flex px-2">
+              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden lg:inline text-xs sm:text-sm">{language.toUpperCase()}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 z-[999] bg-popover">
+          <DropdownMenuContent align="end" className="w-32 sm:w-40 z-[999] bg-popover">
             <DropdownMenuItem onClick={() => setLanguage("sr")}>
               Српски
             </DropdownMenuItem>
@@ -119,12 +119,12 @@ export const Header = ({
         {/* City selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <MapPinned className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">{selectedCity ? getCityName(selectedCity) : t("city")}</span>
+            <Button variant="ghost" size="sm" className="px-2">
+              <MapPinned className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden md:inline text-xs sm:text-sm truncate max-w-[80px]">{selectedCity ? getCityName(selectedCity) : t("city")}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 z-[999] bg-popover">
+          <DropdownMenuContent align="end" className="w-40 sm:w-48 z-[999] bg-popover">
             {cities.map((city) => (
               <DropdownMenuItem
                 key={city.id}
@@ -141,12 +141,12 @@ export const Header = ({
         {tours.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant={activeTour ? "default" : "outline"} size="sm" className="hidden sm:flex">
-                <Route className="w-4 h-4 mr-2" />
-                <span className="hidden lg:inline">{activeTour ? activeTour.name : t("tours")}</span>
+              <Button variant={activeTour ? "default" : "outline"} size="sm" className="hidden sm:flex px-2">
+                <Route className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden lg:inline text-xs sm:text-sm truncate max-w-[100px]">{activeTour ? activeTour.name : t("tours")}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 z-[999] bg-popover">
+            <DropdownMenuContent align="end" className="w-48 sm:w-56 z-[999] bg-popover">
               {activeTour && (
                 <>
                   <DropdownMenuItem onClick={() => onTourSelect(null)}>
@@ -172,17 +172,17 @@ export const Header = ({
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <span className="text-xs font-medium text-primary">
+            <Button variant="ghost" size="sm" className="px-2">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="text-[10px] sm:text-xs font-medium text-primary">
                   {user.email?.[0].toUpperCase()}
                 </span>
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 z-[999] bg-popover">
+          <DropdownMenuContent align="end" className="w-48 sm:w-56 z-[999] bg-popover">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium truncate">{user.email}</p>
+              <p className="text-xs sm:text-sm font-medium truncate">{user.email}</p>
               {isAdmin && (
                 <p className="text-xs text-muted-foreground">{t("adminPanel")}</p>
               )}

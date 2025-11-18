@@ -45,14 +45,14 @@ export const Sidebar = ({
   
   const sidebarContent = (
     <>
-      <div className="p-4 border-b">
-        <h2 className="font-semibold mb-3 text-lg text-foreground">{t("categories")}</h2>
-        <div className="flex flex-wrap gap-2">
+      <div className="p-3 sm:p-4 border-b">
+        <h2 className="font-semibold mb-2 sm:mb-3 text-base sm:text-lg text-foreground">{t("categories")}</h2>
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {categories.map((category) => (
             <Badge
               key={category.id}
               variant={selectedCategories.includes(category.id) ? "default" : "outline"}
-              className="cursor-pointer transition-all hover:scale-110 hover:shadow-md text-sm px-3 py-1"
+              className="cursor-pointer transition-all hover:scale-110 hover:shadow-md text-xs sm:text-sm px-2 py-0.5 sm:px-3 sm:py-1"
               style={{
                 backgroundColor: selectedCategories.includes(category.id)
                   ? category.color
@@ -72,8 +72,8 @@ export const Sidebar = ({
       </div>
 
       {userLocation && (
-        <div className="p-4 border-b">
-          <h3 className="font-semibold mb-2 text-base text-foreground">
+        <div className="p-3 sm:p-4 border-b">
+          <h3 className="font-semibold mb-2 text-sm sm:text-base text-foreground">
             {t("distance")}
           </h3>
           <div className="space-y-2">
@@ -84,7 +84,7 @@ export const Sidebar = ({
               step={100}
               className="w-full"
             />
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">
               {maxDistance >= 10000 ? t("allPlaces") : `${t("distance")} ${(maxDistance / 1000).toFixed(1)} км`}
             </p>
           </div>
