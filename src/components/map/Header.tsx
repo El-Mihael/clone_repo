@@ -1,4 +1,4 @@
-import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon } from "lucide-react";
+import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,6 +26,8 @@ interface HeaderProps {
   onTourSelect: (tour: Tour | null) => void;
   selectedCity: City | null;
   onCityChange: (cityId: string) => void;
+  onMenuClick?: () => void;
+  showMenuButton?: boolean;
 }
 
 export const Header = ({ 
@@ -36,7 +38,9 @@ export const Header = ({
   activeTour, 
   onTourSelect,
   selectedCity,
-  onCityChange 
+  onCityChange,
+  onMenuClick,
+  showMenuButton = false
 }: HeaderProps) => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
@@ -58,29 +62,40 @@ export const Header = ({
   };
 
   return (
-    <header className="h-16 border-b bg-card/50 backdrop-blur-sm flex items-center px-6 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <MapPin className="w-5 h-5 text-primary" />
+    <header className="h-16 border-b bg-card/50 backdrop-blur-sm flex items-center px-4 md:px-6 shadow-sm">
+      {showMenuButton && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onMenuClick}
+          className="mr-2"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+      )}
+      
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <MapPin className="w-4 h-4 md:w-5 md:h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-foreground">{t("map")}</h1>
+          <h1 className="text-base md:text-lg font-bold text-foreground">{t("map")}</h1>
           {activeTour && (
-            <p className="text-xs text-muted-foreground">{t("tours")}: {activeTour.name}</p>
+            <p className="text-xs text-muted-foreground hidden md:block">{t("tours")}: {activeTour.name}</p>
           )}
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2 md:gap-3">
         {/* Language selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="hidden sm:flex">
               <Globe className="w-4 h-4 mr-2" />
-              {language.toUpperCase()}
+              <span className="hidden lg:inline">{language.toUpperCase()}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 z-[999]">
+          <DropdownMenuContent align="end" className="w-40 z-[999] bg-popover">
             <DropdownMenuItem onClick={() => setLanguage("sr")}>
               Српски
             </DropdownMenuItem>
@@ -97,11 +112,11 @@ export const Header = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">
-              <MapPinned className="w-4 h-4 mr-2" />
-              {selectedCity ? getCityName(selectedCity) : t("city")}
+              <MapPinned className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">{selectedCity ? getCityName(selectedCity) : t("city")}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 z-[999]">
+          <DropdownMenuContent align="end" className="w-48 z-[999] bg-popover">
             {cities.map((city) => (
               <DropdownMenuItem
                 key={city.id}
@@ -118,12 +133,12 @@ export const Header = ({
         {tours.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant={activeTour ? "default" : "outline"} size="sm">
+              <Button variant={activeTour ? "default" : "outline"} size="sm" className="hidden sm:flex">
                 <Route className="w-4 h-4 mr-2" />
-                {activeTour ? activeTour.name : t("tours")}
+                <span className="hidden lg:inline">{activeTour ? activeTour.name : t("tours")}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 z-[999]">
+            <DropdownMenuContent align="end" className="w-56 z-[999] bg-popover">
               {activeTour && (
                 <>
                   <DropdownMenuItem onClick={() => onTourSelect(null)}>
@@ -157,9 +172,9 @@ export const Header = ({
               </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 z-[999]">
+          <DropdownMenuContent align="end" className="w-56 z-[999] bg-popover">
             <div className="px-2 py-1.5">
-              <p className="text-sm font-medium">{user.email}</p>
+              <p className="text-sm font-medium truncate">{user.email}</p>
               {isAdmin && (
                 <p className="text-xs text-muted-foreground">{t("adminPanel")}</p>
               )}
