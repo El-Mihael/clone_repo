@@ -19,7 +19,15 @@ interface MapContainerProps {
   cityCenter: [number, number];
 }
 
-const MapUpdater = ({ selectedPlace, places }: { selectedPlace: string | null; places: Place[] }) => {
+const MapUpdater = ({ 
+  selectedPlace, 
+  places, 
+  cityCenter 
+}: { 
+  selectedPlace: string | null; 
+  places: Place[]; 
+  cityCenter: [number, number];
+}) => {
   const map = useMap();
 
   useEffect(() => {
@@ -32,6 +40,12 @@ const MapUpdater = ({ selectedPlace, places }: { selectedPlace: string | null; p
       }
     }
   }, [selectedPlace, places, map]);
+
+  useEffect(() => {
+    map.flyTo(cityCenter, 13, {
+      duration: 1.5,
+    });
+  }, [cityCenter, map]);
 
   return null;
 };
@@ -203,7 +217,7 @@ export const MapView = ({
           );
         })}
         
-        <MapUpdater selectedPlace={selectedPlace} places={places} />
+        <MapUpdater selectedPlace={selectedPlace} places={places} cityCenter={cityCenter} />
       </LeafletMap>
     </div>
   );
