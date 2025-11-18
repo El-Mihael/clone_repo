@@ -15,14 +15,21 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
+type City = Database["public"]["Tables"]["cities"]["Row"];
+
+type PlaceWithCity = Place & {
+  cities?: { name_sr: string; name_en: string; name_ru: string } | null;
+};
 
 export const PlacesTab = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [places, setPlaces] = useState<Place[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [places, setPlaces] = useState<PlaceWithCity[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingPagePlace, setEditingPagePlace] = useState<Place | null>(null);
   const [formData, setFormData] = useState({
     category_id: "",
+    city_id: "",
     name: "",
     name_en: "",
     description: "",
@@ -38,6 +45,7 @@ export const PlacesTab = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchCities();
     fetchPlaces();
   }, []);
 
@@ -49,10 +57,17 @@ export const PlacesTab = () => {
     setCategories(data || []);
   };
 
+  const fetchCities = async () => {
+    const { data } = await supabase
+      .from("cities")
+      .select("*");
+    setCities(data || []);
+  };
+
   const fetchPlaces = async () => {
     const { data } = await supabase
       .from("places")
-      .select("*")
+      .select("*, cities(name_sr, name_en, name_ru)")
       .order("created_at", { ascending: false });
     setPlaces(data || []);
   };
@@ -99,6 +114,7 @@ export const PlacesTab = () => {
   const resetForm = () => {
     setFormData({
       category_id: "",
+      city_id: "",
       name: "",
       name_en: "",
       description: "",
@@ -118,6 +134,7 @@ export const PlacesTab = () => {
     setEditingId(place.id);
     setFormData({
       category_id: place.category_id || "",
+      city_id: place.city_id || "",
       name: place.name,
       name_en: place.name_en || "",
       description: place.description || "",
@@ -159,6 +176,27 @@ export const PlacesTab = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="city_id">Город *</Label>
+              <Select
+                value={formData.city_id}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, city_id: value })
+                }
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите город" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((city) => (
+                    <SelectItem key={city.id} value={city.id}>
+                      {city.name_sr}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Название (RU) *</Label>
@@ -325,17 +363,24 @@ export const PlacesTab = () => {
                       <h3 className="font-medium">{place.name}</h3>
                       {place.is_premium && <Crown className="w-4 h-4 text-premium" />}
                     </div>
-                    {place.description && (
+                     {place.description && (
                       <p className="text-sm text-muted-foreground mb-2">{place.description}</p>
                     )}
-                    {category && (
-                      <div
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs"
-                        style={{ backgroundColor: `${category.color}20`, color: category.color }}
-                      >
-                        {category.name}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      {place.cities && (
+                        <div className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted">
+                          {place.cities.name_sr}
+                        </div>
+                      )}
+                      {category && (
+                        <div
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs"
+                          style={{ backgroundColor: `${category.color}20`, color: category.color }}
+                        >
+                          {category.name}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, MapPin } from "lucide-react";
 import { toast } from "sonner";
@@ -12,13 +13,20 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
+type City = Database["public"]["Tables"]["cities"]["Row"];
+
+type TourWithCity = Tour & {
+  cities?: { name_sr: string; name_en: string; name_ru: string } | null;
+};
 
 export const ToursTab = () => {
-  const [tours, setTours] = useState<Tour[]>([]);
+  const [tours, setTours] = useState<TourWithCity[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
   const [formData, setFormData] = useState({
+    city_id: "",
     name: "",
     name_en: "",
     description: "",
@@ -29,12 +37,13 @@ export const ToursTab = () => {
   useEffect(() => {
     fetchTours();
     fetchPlaces();
+    fetchCities();
   }, []);
 
   const fetchTours = async () => {
     const { data } = await supabase
       .from("tours")
-      .select("*")
+      .select("*, cities(name_sr, name_en, name_ru)")
       .order("display_order");
     setTours(data || []);
   };
@@ -45,6 +54,13 @@ export const ToursTab = () => {
       .select("*")
       .order("name");
     setPlaces(data || []);
+  };
+
+  const fetchCities = async () => {
+    const { data } = await supabase
+      .from("cities")
+      .select("*");
+    setCities(data || []);
   };
 
   const fetchTourPlaces = async (tourId: string) => {
@@ -118,6 +134,7 @@ export const ToursTab = () => {
 
   const resetForm = () => {
     setFormData({
+      city_id: "",
       name: "",
       name_en: "",
       description: "",
@@ -131,6 +148,7 @@ export const ToursTab = () => {
   const handleEdit = async (tour: Tour) => {
     setEditingId(tour.id);
     setFormData({
+      city_id: tour.city_id || "",
       name: tour.name,
       name_en: tour.name_en || "",
       description: tour.description || "",
@@ -169,6 +187,10 @@ export const ToursTab = () => {
     );
   };
 
+  const filteredPlaces = formData.city_id
+    ? places.filter(place => place.city_id === formData.city_id)
+    : places;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -177,6 +199,27 @@ export const ToursTab = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="city_id">Город *</Label>
+              <Select
+                value={formData.city_id}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, city_id: value })
+                }
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите город" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cities.map((city) => (
+                    <SelectItem key={city.id} value={city.id}>
+                      {city.name_sr}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Название (RU) *</Label>
@@ -220,23 +263,31 @@ export const ToursTab = () => {
 
             <div className="space-y-2">
               <Label>Места в туре</Label>
-              <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
-                {places.map((place) => (
-                  <div key={place.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`place-${place.id}`}
-                      checked={selectedPlaces.includes(place.id)}
-                      onCheckedChange={() => togglePlace(place.id)}
-                    />
-                    <Label
-                      htmlFor={`place-${place.id}`}
-                      className="cursor-pointer flex-1"
-                    >
-                      {place.name}
-                    </Label>
-                  </div>
-                ))}
-              </div>
+              {!formData.city_id ? (
+                <p className="text-sm text-muted-foreground">Сначала выберите город</p>
+              ) : (
+                <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
+                  {filteredPlaces.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Нет мест в выбранном городе</p>
+                  ) : (
+                    filteredPlaces.map((place) => (
+                      <div key={place.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`place-${place.id}`}
+                          checked={selectedPlaces.includes(place.id)}
+                          onCheckedChange={() => togglePlace(place.id)}
+                        />
+                        <Label
+                          htmlFor={`place-${place.id}`}
+                          className="cursor-pointer flex-1"
+                        >
+                          {place.name}
+                        </Label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 Выбрано мест: {selectedPlaces.length}
               </p>
@@ -283,7 +334,12 @@ export const ToursTab = () => {
                     )}
                   </div>
                   {tour.description && (
-                    <p className="text-sm text-muted-foreground">{tour.description}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{tour.description}</p>
+                  )}
+                  {tour.cities && (
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted">
+                      {tour.cities.name_sr}
+                    </div>
                   )}
                 </div>
                 <div className="flex gap-2">
