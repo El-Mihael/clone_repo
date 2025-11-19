@@ -5,23 +5,48 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Check } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ArrowLeft, MapPin, Check, Globe } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 
-interface TourWithCity extends Tour {
-  cities?: { name_sr: string; name_en: string; name_ru: string } | null;
+interface TourWithCityAndCountry extends Tour {
+  cities?: { 
+    name_sr: string; 
+    name_en: string; 
+    name_ru: string;
+    id: string;
+    countries?: {
+      name_sr: string;
+      name_en: string;
+      name_ru: string;
+      id: string;
+    } | null;
+  } | null;
+}
+
+interface GroupedTours {
+  [countryId: string]: {
+    countryName: { sr: string; en: string; ru: string };
+    cities: {
+      [cityId: string]: {
+        cityName: { sr: string; en: string; ru: string };
+        tours: TourWithCityAndCountry[];
+      };
+    };
+  };
 }
 
 export default function Tours() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const [tours, setTours] = useState<TourWithCity[]>([]);
+  const [tours, setTours] = useState<TourWithCityAndCountry[]>([]);
+  const [groupedTours, setGroupedTours] = useState<GroupedTours>({});
   const [purchasedTours, setPurchasedTours] = useState<string[]>([]);
-  const [selectedTour, setSelectedTour] = useState<TourWithCity | null>(null);
+  const [selectedTour, setSelectedTour] = useState<TourWithCityAndCountry | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,25 +62,73 @@ export default function Tours() {
       await fetchPurchasedTours(session.user.id);
     }
 
-    const savedCityId = localStorage.getItem("selectedCity");
-    await fetchTours(savedCityId);
+    await fetchTours();
     setLoading(false);
   };
 
-  const fetchTours = async (cityId: string | null) => {
-    let query = supabase
+  const fetchTours = async () => {
+    const { data } = await supabase
       .from("tours")
-      .select("*, cities(name_sr, name_en, name_ru)")
+      .select(`
+        *,
+        cities (
+          id,
+          name_sr,
+          name_en,
+          name_ru,
+          countries (
+            id,
+            name_sr,
+            name_en,
+            name_ru
+          )
+        )
+      `)
       .eq("is_active", true)
-      .gt("price", 0);
+      .gt("price", 0)
+      .order("display_order");
     
-    if (cityId) {
-      query = query.eq("city_id", cityId);
+    if (data) {
+      setTours(data);
+      groupToursByCountryAndCity(data);
     }
-    
-    const { data } = await query.order("display_order");
-    
-    setTours(data || []);
+  };
+
+  const groupToursByCountryAndCity = (tours: TourWithCityAndCountry[]) => {
+    const grouped: GroupedTours = {};
+
+    tours.forEach(tour => {
+      if (!tour.cities || !tour.cities.countries) return;
+
+      const countryId = tour.cities.countries.id;
+      const cityId = tour.cities.id;
+
+      if (!grouped[countryId]) {
+        grouped[countryId] = {
+          countryName: {
+            sr: tour.cities.countries.name_sr,
+            en: tour.cities.countries.name_en,
+            ru: tour.cities.countries.name_ru
+          },
+          cities: {}
+        };
+      }
+
+      if (!grouped[countryId].cities[cityId]) {
+        grouped[countryId].cities[cityId] = {
+          cityName: {
+            sr: tour.cities.name_sr,
+            en: tour.cities.name_en,
+            ru: tour.cities.name_ru
+          },
+          tours: []
+        };
+      }
+
+      grouped[countryId].cities[cityId].tours.push(tour);
+    });
+
+    setGroupedTours(grouped);
   };
 
   const fetchPurchasedTours = async (userId: string) => {
@@ -87,21 +160,33 @@ export default function Tours() {
     }
   };
 
-  const getTourName = (tour: TourWithCity) => {
+  const getTourName = (tour: TourWithCityAndCountry) => {
     if (language === "en" && tour.name_en) return tour.name_en;
     return tour.name;
   };
 
-  const getTourDescription = (tour: TourWithCity) => {
+  const getTourDescription = (tour: TourWithCityAndCountry) => {
     if (language === "en" && tour.description_en) return tour.description_en;
     return tour.description || "";
   };
 
-  const getCityName = (tour: TourWithCity) => {
+  const getCityName = (tour: TourWithCityAndCountry) => {
     if (!tour.cities) return "";
     if (language === "en") return tour.cities.name_en;
     if (language === "ru") return tour.cities.name_ru;
     return tour.cities.name_sr;
+  };
+
+  const getCountryName = (countryNames: { sr: string; en: string; ru: string }) => {
+    if (language === "en") return countryNames.en;
+    if (language === "ru") return countryNames.ru;
+    return countryNames.sr;
+  };
+
+  const getCityNameFromGroup = (cityNames: { sr: string; en: string; ru: string }) => {
+    if (language === "en") return cityNames.en;
+    if (language === "ru") return cityNames.ru;
+    return cityNames.sr;
   };
 
   if (loading) {
@@ -130,79 +215,108 @@ export default function Tours() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tours.map((tour) => {
-            const isPurchased = purchasedTours.includes(tour.id);
-            const isFree = !tour.price || tour.price === 0;
+        <Accordion type="multiple" className="space-y-4" defaultValue={Object.keys(groupedTours)}>
+          {Object.entries(groupedTours).map(([countryId, countryData]) => (
+            <AccordionItem 
+              key={countryId} 
+              value={countryId}
+              className="border border-border rounded-lg overflow-hidden bg-card"
+            >
+              <AccordionTrigger className="px-6 py-4 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-primary" />
+                  <span className="text-2xl font-bold text-foreground">
+                    {getCountryName(countryData.countryName)}
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <div className="space-y-8 mt-4">
+                  {Object.entries(countryData.cities).map(([cityId, cityData]) => (
+                    <div key={cityId}>
+                      <div className="flex items-center gap-2 mb-4">
+                        <MapPin className="w-4 h-4 text-secondary" />
+                        <h3 className="text-xl font-semibold text-foreground">
+                          {getCityNameFromGroup(cityData.cityName)}
+                        </h3>
+                        <span className="text-sm text-muted-foreground">
+                          ({cityData.tours.length} {language === "sr" ? "тура" : language === "ru" ? "туров" : "tours"})
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {cityData.tours.map((tour) => {
+                          const isPurchased = purchasedTours.includes(tour.id);
+                          const isFree = !tour.price || tour.price === 0;
 
-            return (
-              <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                {tour.image_url && (
-                  <div className="aspect-video w-full overflow-hidden bg-muted">
-                    <img 
-                      src={tour.image_url} 
-                      alt={getTourName(tour)}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                
-                <CardHeader>
-                  <div className="flex justify-between items-start gap-2">
-                    <CardTitle className="text-xl">{getTourName(tour)}</CardTitle>
-                    {isPurchased && (
-                      <Badge variant="default" className="bg-green-500">
-                        <Check className="w-3 h-3 mr-1" />
-                        {language === "sr" ? "Купљено" : language === "ru" ? "Куплено" : "Owned"}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {tour.cities && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <MapPin className="w-3 h-3" />
-                      {getCityName(tour)}
+                          return (
+                            <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                              {tour.image_url && (
+                                <div className="aspect-video w-full overflow-hidden bg-muted">
+                                  <img 
+                                    src={tour.image_url} 
+                                    alt={getTourName(tour)}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              
+                              <CardHeader>
+                                <div className="flex justify-between items-start gap-2">
+                                  <CardTitle className="text-xl">{getTourName(tour)}</CardTitle>
+                                  {isPurchased && (
+                                    <Badge variant="default" className="bg-green-500">
+                                      <Check className="w-3 h-3 mr-1" />
+                                      {language === "sr" ? "Купљено" : language === "ru" ? "Куплено" : "Owned"}
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                <CardDescription className="line-clamp-2">
+                                  {getTourDescription(tour)}
+                                </CardDescription>
+                              </CardHeader>
+
+                              <CardContent className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-2xl font-bold">
+                                    {isFree 
+                                      ? (language === "sr" ? "Бесплатно" : language === "ru" ? "Бесплатно" : "Free")
+                                      : `${tour.price} ${language === "sr" ? "кредита" : language === "ru" ? "кредитов" : "credits"}`
+                                    }
+                                  </span>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    className="flex-1"
+                                    onClick={() => setSelectedTour(tour)}
+                                  >
+                                    {language === "sr" ? "Шта је укључено" : language === "ru" ? "Что входит" : "What's included"}
+                                  </Button>
+                                  
+                                  {!isPurchased && (
+                                    <Button 
+                                      className="flex-1"
+                                      onClick={() => handlePurchase(tour.id)}
+                                    >
+                                      {language === "sr" ? "Купити" : language === "ru" ? "Купить" : "Purchase"}
+                                    </Button>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
                     </div>
-                  )}
-                  
-                  <CardDescription className="line-clamp-2">
-                    {getTourDescription(tour)}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">
-                      {isFree 
-                        ? (language === "sr" ? "Бесплатно" : language === "ru" ? "Бесплатно" : "Free")
-                        : `${tour.price} ${language === "sr" ? "кредита" : language === "ru" ? "кредитов" : "credits"}`
-                      }
-                    </span>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => setSelectedTour(tour)}
-                    >
-                      {language === "sr" ? "Шта је укључено" : language === "ru" ? "Что входит" : "What's included"}
-                    </Button>
-                    
-                    {!isPurchased && (
-                      <Button 
-                        className="flex-1"
-                        onClick={() => handlePurchase(tour.id)}
-                      >
-                        {language === "sr" ? "Купити" : language === "ru" ? "Купить" : "Purchase"}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
 
       {/* Tour Details Dialog */}
