@@ -17,19 +17,16 @@ interface MapContainerProps {
   userLocation: [number, number] | null;
   onPlacePageOpen: (place: Place) => void;
   cityCenter: [number, number];
-  cityZoom: number;
 }
 
 const MapUpdater = ({ 
   selectedPlace, 
   places, 
-  cityCenter,
-  cityZoom 
+  cityCenter 
 }: { 
   selectedPlace: string | null; 
   places: Place[]; 
   cityCenter: [number, number];
-  cityZoom: number;
 }) => {
   const map = useMap();
 
@@ -45,10 +42,10 @@ const MapUpdater = ({
   }, [selectedPlace, places, map]);
 
   useEffect(() => {
-    map.flyTo(cityCenter, cityZoom, {
+    map.flyTo(cityCenter, 13, {
       duration: 1.5,
     });
-  }, [cityCenter, cityZoom, map]);
+  }, [cityCenter, map]);
 
   return null;
 };
@@ -104,7 +101,6 @@ export const MapView = ({
   userLocation,
   onPlacePageOpen,
   cityCenter,
-  cityZoom,
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
 
@@ -118,7 +114,7 @@ export const MapView = ({
     <div className="flex-1 relative">
       <LeafletMap
         center={cityCenter}
-        zoom={cityZoom}
+        zoom={13}
         className="h-full w-full"
         scrollWheelZoom={true}
       >
@@ -221,7 +217,7 @@ export const MapView = ({
           );
         })}
         
-        <MapUpdater selectedPlace={selectedPlace} places={places} cityCenter={cityCenter} cityZoom={cityZoom} />
+        <MapUpdater selectedPlace={selectedPlace} places={places} cityCenter={cityCenter} />
       </LeafletMap>
     </div>
   );

@@ -19,8 +19,6 @@ import { InstallPWAButton } from "@/components/InstallPWAButton";
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
 
-type Country = Database["public"]["Tables"]["countries"]["Row"];
-
 interface HeaderProps {
   user: User;
   isAdmin: boolean;
@@ -48,26 +46,13 @@ export const Header = ({
 }: HeaderProps) => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
-  const [countries, setCountries] = useState<Country[]>([]);
   const [cities, setCities] = useState<City[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [freeTours, setFreeTours] = useState<Tour[]>([]);
   const [purchasedTourIds, setPurchasedTourIds] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchCountries();
-    const savedCountryId = localStorage.getItem("selectedCountry");
-    if (savedCountryId) {
-      setSelectedCountry(savedCountryId);
-      fetchCities(savedCountryId);
-    }
+    fetchCities();
   }, []);
-
-  useEffect(() => {
-    if (selectedCountry) {
-      fetchCities(selectedCountry);
-    }
-  }, [selectedCountry]);
 
   useEffect(() => {
     if (selectedCity) {
@@ -76,20 +61,17 @@ export const Header = ({
     }
   }, [selectedCity]);
 
-  const fetchCountries = async () => {
-    const { data } = await supabase
-      .from("countries")
-      .select("*")
-      .order("name_sr");
-    if (data) setCountries(data);
-  };
-
-  const fetchCities = async (countryId: string) => {
-    const { data } = await supabase
-      .from("cities")
-      .select("*")
-      .eq("country_id", countryId)
-      .order("name_sr");
+  const fetchCities = async () => {
+    // Try to filter by user's country
+    const savedCountryId = localStorage.getItem("selectedCountry");
+    
+    let query = supabase.from("cities").select("*");
+    
+    if (savedCountryId) {
+      query = query.eq("country_id", savedCountryId);
+    }
+    
+    const { data } = await query.order("name_sr");
     if (data) setCities(data);
   };
 
@@ -119,29 +101,6 @@ export const Header = ({
     if (language === "sr") return city.name_sr;
     if (language === "ru") return city.name_ru;
     return city.name_en;
-  };
-
-  const getCountryName = (country: Country) => {
-    if (language === "sr") return country.name_sr;
-    if (language === "ru") return country.name_ru;
-    return country.name_en;
-  };
-
-  const handleCountryChange = async (countryId: string) => {
-    setSelectedCountry(countryId);
-    localStorage.setItem("selectedCountry", countryId);
-    
-    // Save to user profile
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from("profiles")
-        .update({ country_id: countryId, city_id: null })
-        .eq("id", user.id);
-    }
-    
-    // Clear selected city when country changes
-    setCities([]);
   };
 
   const availableTours = [
@@ -201,31 +160,6 @@ export const Header = ({
             <DropdownMenuItem onClick={() => setLanguage("en")}>
               English
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Country selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="px-2">
-              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden md:inline text-xs sm:text-sm truncate max-w-[80px]">
-                {selectedCountry && countries.find(c => c.id === selectedCountry) 
-                  ? getCountryName(countries.find(c => c.id === selectedCountry)!) 
-                  : t("country")}
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 sm:w-48 z-[999] bg-popover">
-            {countries.map((country) => (
-              <DropdownMenuItem
-                key={country.id}
-                onClick={() => handleCountryChange(country.id)}
-                className={selectedCountry === country.id ? "bg-accent" : ""}
-              >
-                {getCountryName(country)}
-              </DropdownMenuItem>
-            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
