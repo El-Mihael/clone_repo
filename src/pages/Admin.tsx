@@ -8,6 +8,8 @@ import { CategoriesTab } from "@/components/admin/CategoriesTab";
 import { PlacesTab } from "@/components/admin/PlacesTab";
 import { ToursTab } from "@/components/admin/ToursTab";
 import { NotificationsTab } from "@/components/admin/NotificationsTab";
+import { CountriesTab } from "@/components/admin/CountriesTab";
+import { CitiesTab } from "@/components/admin/CitiesTab";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -86,12 +88,22 @@ const Admin = () => {
 
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full max-w-4xl grid-cols-6">
+            <TabsTrigger value="countries">{t("countries")}</TabsTrigger>
+            <TabsTrigger value="cities">{t("cities")}</TabsTrigger>
             <TabsTrigger value="categories">{t("categories")}</TabsTrigger>
             <TabsTrigger value="places">{t("places")}</TabsTrigger>
             <TabsTrigger value="tours">{t("tours")}</TabsTrigger>
             <TabsTrigger value="notifications">{t("notifications")}</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="countries" className="space-y-4">
+            <CountriesTab />
+          </TabsContent>
+
+          <TabsContent value="cities" className="space-y-4">
+            <CitiesTab />
+          </TabsContent>
 
           <TabsContent value="categories" className="space-y-4">
             <CategoriesTab />
