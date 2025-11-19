@@ -78,17 +78,17 @@ export const ToursTab = () => {
     }
   };
 
-  const handleTranslate = async (field: string, value: string) => {
-    if (!value.trim() || translating) return;
+  const handleTranslate = async (sourceField: string, sourceValue: string) => {
+    if (!sourceValue.trim() || translating) return;
 
     setTranslating(true);
     
     // Определяем тип поля (name или description) и исходный язык
-    const isNameField = field.includes("name");
+    const isNameField = sourceField.includes("name");
     const fieldBase = isNameField ? "name" : "description";
     
     // Извлекаем язык из названия поля (например, name_sr -> sr, description_en -> en)
-    const parts = field.split("_");
+    const parts = sourceField.split("_");
     const currentLang = parts.length > 1 ? parts[1] : "sr";
     
     const languages = ["sr", "ru", "en"].filter(lang => lang !== currentLang);
@@ -97,7 +97,7 @@ export const ToursTab = () => {
       const targetField = `${fieldBase}_${lang}`;
       const currentValue = (formData as any)[targetField];
       if (!currentValue || !currentValue.trim()) {
-        const translated = await translateText(value, lang);
+        const translated = await translateText(sourceValue, lang);
         if (translated) {
           setFormData((prev) => ({ ...prev, [targetField]: translated }));
         }

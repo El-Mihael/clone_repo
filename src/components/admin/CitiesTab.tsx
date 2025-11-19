@@ -47,6 +47,7 @@ export const CitiesTab = () => {
     zoom_level: "13",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     fetchCountries();
@@ -134,6 +135,44 @@ export const CitiesTab = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const translateText = async (text: string, targetLanguage: string) => {
+    if (!text.trim()) return "";
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-text", {
+        body: { text, targetLanguage },
+      });
+
+      if (error) throw error;
+      return data.translatedText || "";
+    } catch (error) {
+      console.error("Translation error:", error);
+      toast.error("Ошибка перевода");
+      return "";
+    }
+  };
+
+  const handleTranslate = async (sourceField: keyof typeof formData, sourceValue: string) => {
+    if (!sourceValue.trim() || translating) return;
+
+    setTranslating(true);
+    
+    // Определяем исходный язык из названия поля (name_sr, name_ru, name_en)
+    const currentLang = sourceField.split("_")[1] as "sr" | "ru" | "en";
+    const languages = ["sr", "ru", "en"].filter(lang => lang !== currentLang);
+
+    for (const lang of languages) {
+      const targetField = `name_${lang}` as keyof typeof formData;
+      if (!formData[targetField]) {
+        const translated = await translateText(sourceValue, lang);
+        if (translated) {
+          setFormData((prev) => ({ ...prev, [targetField]: translated }));
+        }
+      }
+    }
+    setTranslating(false);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm(t("confirmDelete"))) return;
 
@@ -190,6 +229,7 @@ export const CitiesTab = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, name_sr: e.target.value })
                 }
+                onBlur={(e) => handleTranslate("name_sr", e.target.value)}
                 required
               />
             </div>
@@ -201,6 +241,7 @@ export const CitiesTab = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, name_en: e.target.value })
                 }
+                onBlur={(e) => handleTranslate("name_en", e.target.value)}
                 required
               />
             </div>
@@ -212,6 +253,7 @@ export const CitiesTab = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, name_ru: e.target.value })
                 }
+                onBlur={(e) => handleTranslate("name_ru", e.target.value)}
                 required
               />
             </div>
@@ -255,7 +297,9 @@ export const CitiesTab = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button type="submit">{editingId ? t("update") : t("create")}</Button>
+            <Button type="submit" disabled={translating}>
+              {translating ? "Перевод..." : editingId ? t("update") : t("create")}
+            </Button>
             {editingId && (
               <Button type="button" variant="outline" onClick={resetForm}>
                 {t("cancel")}
