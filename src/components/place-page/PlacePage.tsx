@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Crown } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import DOMPurify from "dompurify";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
 
@@ -35,6 +36,15 @@ interface PageContent {
 export const PlacePage = ({ place, onBack }: PlacePageProps) => {
   const content = (place.custom_page_content as PageContent) || {};
   const { header, blocks = [], pageStyle = {} } = content;
+
+  // Sanitize HTML content to prevent XSS attacks
+  const sanitizeHTML = (html: string) => {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    });
+  };
 
   return (
     <div 
@@ -109,7 +119,7 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
               {block.type === "text" && (
                 <div
                   className="prose prose-lg max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: block.content.html || "" }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.html || "") }}
                 />
               )}
 
