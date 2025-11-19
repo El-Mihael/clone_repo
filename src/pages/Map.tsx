@@ -97,6 +97,27 @@ const Map = () => {
   }, [tourId]);
 
   const checkInitialSetup = async () => {
+    // Try to get city from user profile first
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("city_id, country_id")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile?.city_id) {
+        await loadCity(profile.city_id);
+        localStorage.setItem("selectedCity", profile.city_id);
+        if (profile.country_id) {
+          localStorage.setItem("selectedCountry", profile.country_id);
+        }
+        setShowInitialSetup(false);
+        return;
+      }
+    }
+    
+    // Fallback to localStorage
     const savedCityId = localStorage.getItem("selectedCity");
     if (savedCityId) {
       await loadCity(savedCityId);
@@ -121,6 +142,30 @@ const Map = () => {
   const handleCityChange = async (cityId: string) => {
     await loadCity(cityId);
     localStorage.setItem("selectedCity", cityId);
+    
+    // Save to user profile
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      // Get city's country_id
+      const { data: city } = await supabase
+        .from("cities")
+        .select("country_id")
+        .eq("id", cityId)
+        .single();
+      
+      if (city) {
+        localStorage.setItem("selectedCountry", city.country_id);
+        await supabase
+          .from("profiles")
+          .update({
+            city_id: cityId,
+            country_id: city.country_id,
+          })
+          .eq("id", user.id);
+      }
+    }
+    
+    setActiveTour(null);
   };
 
   const handleInitialSetupComplete = async (cityId: string) => {
