@@ -172,6 +172,12 @@ export const translations = {
     learnMore: "САЗНАЈ ВИШЕ",
     footer: "© 2025 Retro City Map. Сва права задржана.",
     failedToLoadProfile: "Није успело учитавање профила",
+    
+    // Geolocation
+    countryNotInList: "Ове државе још нема у нашој листи",
+    cityNotInList: "Овог града још нема у нашој листи",
+    detectingLocation: "Одређујем вашу локацију...",
+    yourLocationInCity: "Налазите се у граду {city}",
   },
   ru: {
     // Auth
@@ -346,6 +352,12 @@ export const translations = {
     learnMore: "УЗНАТЬ БОЛЬШЕ",
     footer: "© 2025 Retro City Map. Все права защищены.",
     failedToLoadProfile: "Не удалось загрузить профиль",
+    
+    // Geolocation
+    countryNotInList: "Этой страны пока нет в нашем списке",
+    cityNotInList: "Этого города пока нет в нашем списке",
+    detectingLocation: "Определяю ваше местоположение...",
+    yourLocationInCity: "Вы находитесь в городе {city}",
   },
   en: {
     // Auth
@@ -520,6 +532,12 @@ export const translations = {
     learnMore: "LEARN MORE",
     footer: "© 2025 Retro City Map. All rights reserved.",
     failedToLoadProfile: "Failed to load profile",
+    
+    // Geolocation
+    countryNotInList: "This country is not in our list yet",
+    cityNotInList: "This city is not in our list yet",
+    detectingLocation: "Detecting your location...",
+    yourLocationInCity: "You are in {city}",
   },
 };
 
