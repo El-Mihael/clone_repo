@@ -162,6 +162,7 @@ export type Database = {
           custom_page_content: Json | null
           description: string | null
           description_en: string | null
+          description_sr: string | null
           google_maps_url: string | null
           has_custom_page: boolean | null
           id: string
@@ -171,6 +172,7 @@ export type Database = {
           longitude: number
           name: string
           name_en: string | null
+          name_sr: string | null
           owner_id: string | null
           updated_at: string
         }
@@ -184,6 +186,7 @@ export type Database = {
           custom_page_content?: Json | null
           description?: string | null
           description_en?: string | null
+          description_sr?: string | null
           google_maps_url?: string | null
           has_custom_page?: boolean | null
           id?: string
@@ -193,6 +196,7 @@ export type Database = {
           longitude: number
           name: string
           name_en?: string | null
+          name_sr?: string | null
           owner_id?: string | null
           updated_at?: string
         }
@@ -206,6 +210,7 @@ export type Database = {
           custom_page_content?: Json | null
           description?: string | null
           description_en?: string | null
+          description_sr?: string | null
           google_maps_url?: string | null
           has_custom_page?: boolean | null
           id?: string
@@ -215,6 +220,7 @@ export type Database = {
           longitude?: number
           name?: string
           name_en?: string | null
+          name_sr?: string | null
           owner_id?: string | null
           updated_at?: string
         }
@@ -393,12 +399,14 @@ export type Database = {
           created_at: string
           description: string | null
           description_en: string | null
+          description_sr: string | null
           display_order: number | null
           id: string
           image_url: string | null
           is_active: boolean | null
           name: string
           name_en: string | null
+          name_sr: string | null
           price: number | null
           tour_content: Json | null
           updated_at: string
@@ -408,12 +416,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           description_en?: string | null
+          description_sr?: string | null
           display_order?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           name: string
           name_en?: string | null
+          name_sr?: string | null
           price?: number | null
           tour_content?: Json | null
           updated_at?: string
@@ -423,12 +433,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           description_en?: string | null
+          description_sr?: string | null
           display_order?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           name?: string
           name_en?: string | null
+          name_sr?: string | null
           price?: number | null
           tour_content?: Json | null
           updated_at?: string

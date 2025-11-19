@@ -14,10 +14,12 @@ export const CategoriesTab = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
+    name_sr: "",
+    name_ru: "",
     name_en: "",
     color: "#3B82F6",
   });
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -56,7 +58,11 @@ export const CategoriesTab = () => {
       const { error } = await supabase
         .from("categories")
         .insert({
-          ...formData,
+          name: formData.name_sr || formData.name_ru || formData.name_en,
+          name_sr: formData.name_sr,
+          name_ru: formData.name_ru,
+          name_en: formData.name_en,
+          color: formData.color,
           display_order: categories.length,
         });
 
@@ -68,15 +74,53 @@ export const CategoriesTab = () => {
       toast.success("Категория создана");
     }
 
-    setFormData({ name: "", name_en: "", color: "#3B82F6" });
+    setFormData({ name_sr: "", name_ru: "", name_en: "", color: "#3B82F6" });
     setEditingId(null);
     fetchCategories();
+  };
+
+  const translateText = async (text: string, targetLanguage: string) => {
+    if (!text.trim()) return "";
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-text", {
+        body: { text, targetLanguage },
+      });
+
+      if (error) throw error;
+      return data.translatedText || "";
+    } catch (error) {
+      console.error("Translation error:", error);
+      toast.error("Ошибка перевода");
+      return "";
+    }
+  };
+
+  const handleTranslate = async (sourceField: keyof typeof formData, sourceValue: string) => {
+    if (!sourceValue.trim() || translating) return;
+
+    setTranslating(true);
+    const languages = ["sr", "ru", "en"].filter(
+      (lang) => `name_${lang}` !== sourceField
+    );
+
+    for (const lang of languages) {
+      const targetField = `name_${lang}` as keyof typeof formData;
+      if (!formData[targetField]) {
+        const translated = await translateText(sourceValue, lang);
+        if (translated) {
+          setFormData((prev) => ({ ...prev, [targetField]: translated }));
+        }
+      }
+    }
+    setTranslating(false);
   };
 
   const handleEdit = (category: Category) => {
     setEditingId(category.id);
     setFormData({
-      name: category.name,
+      name_sr: category.name_sr || "",
+      name_ru: category.name_ru || "",
       name_en: category.name_en || "",
       color: category.color,
     });
@@ -109,14 +153,24 @@ export const CategoriesTab = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Название (RU)</Label>
+                <Label htmlFor="name_sr">Название (SR)</Label>
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  id="name_sr"
+                  value={formData.name_sr}
+                  onChange={(e) => setFormData({ ...formData, name_sr: e.target.value })}
+                  onBlur={(e) => handleTranslate("name_sr", e.target.value)}
                   required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name_ru">Название (RU)</Label>
+                <Input
+                  id="name_ru"
+                  value={formData.name_ru}
+                  onChange={(e) => setFormData({ ...formData, name_ru: e.target.value })}
+                  onBlur={(e) => handleTranslate("name_ru", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -125,6 +179,7 @@ export const CategoriesTab = () => {
                   id="name_en"
                   value={formData.name_en}
                   onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
+                  onBlur={(e) => handleTranslate("name_en", e.target.value)}
                 />
               </div>
             </div>
@@ -146,9 +201,9 @@ export const CategoriesTab = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button type="submit">
+              <Button type="submit" disabled={translating}>
                 {editingId ? <Pencil className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                {editingId ? "Обновить" : "Создать"}
+                {translating ? "Перевод..." : editingId ? "Обновить" : "Создать"}
               </Button>
               {editingId && (
                 <Button
@@ -156,7 +211,7 @@ export const CategoriesTab = () => {
                   variant="outline"
                   onClick={() => {
                     setEditingId(null);
-                    setFormData({ name: "", name_en: "", color: "#3B82F6" });
+                    setFormData({ name_sr: "", name_ru: "", name_en: "", color: "#3B82F6" });
                   }}
                 >
                   Отмена
@@ -178,10 +233,11 @@ export const CategoriesTab = () => {
                     style={{ backgroundColor: category.color }}
                   />
                   <div>
-                    <h3 className="font-medium">{category.name}</h3>
-                    {category.name_en && (
-                      <p className="text-sm text-muted-foreground">{category.name_en}</p>
-                    )}
+                    <h3 className="font-medium">{category.name_sr || category.name_ru || category.name}</h3>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      {category.name_ru && <p>RU: {category.name_ru}</p>}
+                      {category.name_en && <p>EN: {category.name_en}</p>}
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
