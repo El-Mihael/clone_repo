@@ -152,6 +152,7 @@ export const translations = {
     longitude: "Географска дужина",
     address: "Адреса",
     placeAddedSuccess: "Место успешно додато! Одузето је 15 кредита.",
+    placeAddedWithSubscription: "Место успешно додато! Кредити ће бити аутоматски списани према плану претплате.",
     failedToAddPlace: "Није успело додавање места",
     fillAllFields: "Молимо попуните сва поља",
     
@@ -233,6 +234,10 @@ export const translations = {
     price: "Цена",
     status: "Статус",
     type: "Тип",
+    selectSubscriptionPlan: "Изаберите план претплате",
+    subscriptionPlanRequired: "Морате изабрати план претплате",
+    subscriptionInfo: "Кредити ће бити аутоматски списани у одабраном периоду",
+    noPlansAvailable: "Нема доступних планова",
   },
   ru: {
     // Auth
@@ -387,6 +392,7 @@ export const translations = {
     longitude: "Долгота",
     address: "Адрес",
     placeAddedSuccess: "Место успешно добавлено! Списано 15 кредитов.",
+    placeAddedWithSubscription: "Место успешно добавлено! Кредиты будут автоматически списываться согласно плану подписки.",
     failedToAddPlace: "Не удалось добавить место",
     fillAllFields: "Пожалуйста, заполните все поля",
     
@@ -468,6 +474,10 @@ export const translations = {
     price: "Цена",
     status: "Статус",
     type: "Тип",
+    selectSubscriptionPlan: "Выберите план подписки",
+    subscriptionPlanRequired: "Необходимо выбрать план подписки",
+    subscriptionInfo: "Кредиты будут автоматически списываться в выбранном периоде",
+    noPlansAvailable: "Нет доступных планов",
   },
   en: {
     // Auth
@@ -622,6 +632,7 @@ export const translations = {
     longitude: "Longitude",
     address: "Address",
     placeAddedSuccess: "Place added successfully! 15 credits have been deducted.",
+    placeAddedWithSubscription: "Place added successfully! Credits will be automatically charged according to your subscription plan.",
     failedToAddPlace: "Failed to add place",
     fillAllFields: "Please fill all fields",
     
@@ -703,6 +714,10 @@ export const translations = {
     price: "Price",
     status: "Status",
     type: "Type",
+    selectSubscriptionPlan: "Select subscription plan",
+    subscriptionPlanRequired: "You must select a subscription plan",
+    subscriptionInfo: "Credits will be automatically charged in the selected period",
+    noPlansAvailable: "No plans available",
   },
 };
 
