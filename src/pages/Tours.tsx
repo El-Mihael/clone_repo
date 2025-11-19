@@ -49,6 +49,7 @@ export default function Tours() {
   const [selectedTour, setSelectedTour] = useState<TourWithCityAndCountry | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showInsufficientCredits, setShowInsufficientCredits] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -140,23 +141,42 @@ export default function Tours() {
     setPurchasedTours(data?.map(pt => pt.tour_id) || []);
   };
 
-  const handlePurchase = async (tourId: string) => {
+  const handlePurchase = async (tourId: string, tourPrice: number) => {
     if (!userId) {
       navigate("/auth");
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from("purchased_tours")
-        .insert({ tour_id: tourId, user_id: userId });
+      // Check user credits first
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("credits")
+        .eq("id", userId)
+        .single();
+
+      if (!profile || profile.credits < tourPrice) {
+        setShowInsufficientCredits(true);
+        return;
+      }
+
+      // Call edge function to purchase tour
+      const { data: session } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke("purchase-tour", {
+        body: { tourId },
+        headers: {
+          Authorization: `Bearer ${session.session?.access_token}`,
+        },
+      });
 
       if (error) throw error;
 
       setPurchasedTours([...purchasedTours, tourId]);
-      toast.success(language === "sr" ? "Тур успешно куплен!" : language === "ru" ? "Тур успешно куплен!" : "Tour purchased successfully!");
-    } catch (error) {
-      toast.error(language === "sr" ? "Грешка при куповини тура" : language === "ru" ? "Ошибка при покупке тура" : "Error purchasing tour");
+      toast.success(t("tourPurchased"));
+      await fetchData(); // Refresh to update credits
+    } catch (error: any) {
+      console.error("Error purchasing tour:", error);
+      toast.error(error.message || t("errorPurchasingTour"));
     }
   };
 
@@ -299,7 +319,7 @@ export default function Tours() {
                                   {!isPurchased && (
                                     <Button 
                                       className="flex-1"
-                                      onClick={() => handlePurchase(tour.id)}
+                                      onClick={() => handlePurchase(tour.id, tour.price || 10)}
                                     >
                                       {language === "sr" ? "Купити" : language === "ru" ? "Купить" : "Purchase"}
                                     </Button>
@@ -372,6 +392,36 @@ export default function Tours() {
                 )}
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Insufficient Credits Dialog */}
+      <Dialog open={showInsufficientCredits} onOpenChange={setShowInsufficientCredits}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{t("insufficientCreditsTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("insufficientCreditsMessage")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setShowInsufficientCredits(false)}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => {
+                setShowInsufficientCredits(false);
+                toast.info(t("topUpComingSoon"));
+              }}
+            >
+              {t("topUpBalance")}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
