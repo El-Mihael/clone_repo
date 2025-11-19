@@ -10,6 +10,11 @@ import { Plus, Trash2, ArrowUp, ArrowDown, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { RichTextEditor } from "./RichTextEditor";
+import { ImageUploader } from "./ImageUploader";
+import { TableEditor } from "./TableEditor";
+import { GalleryEditor } from "./GalleryEditor";
+import { InfoCardEditor } from "./InfoCardEditor";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 
@@ -69,9 +74,9 @@ export const TourGuideEditor = ({ tour, onSave, tourPlaces }: TourGuideEditorPro
       case "text":
         return { html: "<p>Введите текст здесь...</p>" };
       case "image":
-        return { url: "", alt: "", caption: "" };
+        return { url: "", alt: "" };
       case "info-card":
-        return { title: "", text: "", backgroundColor: "", accentColor: "" };
+        return { title: "", text: "", backgroundColor: "#f3f4f6", textColor: "#1f2937", borderColor: "#e5e7eb", borderStyle: "solid" };
       case "gallery":
         return { images: [] };
       case "two-column":
@@ -79,7 +84,7 @@ export const TourGuideEditor = ({ tour, onSave, tourPlaces }: TourGuideEditorPro
       case "three-column":
         return { leftColumn: "<p>Левая</p>", middleColumn: "<p>Центр</p>", rightColumn: "<p>Правая</p>" };
       case "table":
-        return { html: "<table><thead><tr><th>Колонка 1</th><th>Колонка 2</th></tr></thead><tbody><tr><td>Данные</td><td>Данные</td></tr></tbody></table>" };
+        return { tableData: [["Колонка 1", "Колонка 2"], ["Данные", "Данные"]] };
       case "anchor":
         return { anchorId: "", anchorLabel: "" };
       case "place-link":
@@ -312,30 +317,26 @@ export const TourGuideEditor = ({ tour, onSave, tourPlaces }: TourGuideEditorPro
               </CardHeader>
               <CardContent className="space-y-4">
                 {block.type === "text" && (
-                  <Textarea
+                  <RichTextEditor
                     value={block.content.html || ""}
-                    onChange={(e) =>
+                    onChange={(html) =>
                       updateBlock(block.id, {
-                        content: { ...block.content, html: e.target.value },
+                        content: { ...block.content, html },
                       })
                     }
-                    rows={6}
                   />
                 )}
 
                 {block.type === "image" && (
                   <>
-                    <div>
-                      <Label>URL изображения</Label>
-                      <Input
-                        value={block.content.url || ""}
-                        onChange={(e) =>
-                          updateBlock(block.id, {
-                            content: { ...block.content, url: e.target.value },
-                          })
-                        }
-                      />
-                    </div>
+                    <ImageUploader
+                      value={block.content.url || ""}
+                      onChange={(url) =>
+                        updateBlock(block.id, {
+                          content: { ...block.content, url },
+                        })
+                      }
+                    />
                     <div>
                       <Label>Alt текст</Label>
                       <Input
@@ -347,18 +348,90 @@ export const TourGuideEditor = ({ tour, onSave, tourPlaces }: TourGuideEditorPro
                         }
                       />
                     </div>
+                  </>
+                )}
+
+                {block.type === "info-card" && (
+                  <InfoCardEditor
+                    value={block.content}
+                    onChange={(content) => updateBlock(block.id, { content })}
+                  />
+                )}
+
+                {block.type === "gallery" && (
+                  <GalleryEditor
+                    value={block.content.images || []}
+                    onChange={(images) =>
+                      updateBlock(block.id, {
+                        content: { ...block.content, images },
+                      })
+                    }
+                  />
+                )}
+
+                {block.type === "two-column" && (
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Подпись</Label>
-                      <Input
-                        value={block.content.caption || ""}
-                        onChange={(e) =>
+                      <Label>Левая колонка</Label>
+                      <RichTextEditor
+                        value={block.content.leftColumn || ""}
+                        onChange={(leftColumn) =>
                           updateBlock(block.id, {
-                            content: { ...block.content, caption: e.target.value },
+                            content: { ...block.content, leftColumn },
                           })
                         }
                       />
                     </div>
-                  </>
+                    <div>
+                      <Label>Правая колонка</Label>
+                      <RichTextEditor
+                        value={block.content.rightColumn || ""}
+                        onChange={(rightColumn) =>
+                          updateBlock(block.id, {
+                            content: { ...block.content, rightColumn },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {block.type === "three-column" && (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label>Левая колонка</Label>
+                      <RichTextEditor
+                        value={block.content.leftColumn || ""}
+                        onChange={(leftColumn) =>
+                          updateBlock(block.id, {
+                            content: { ...block.content, leftColumn },
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Центральная колонка</Label>
+                      <RichTextEditor
+                        value={block.content.middleColumn || ""}
+                        onChange={(middleColumn) =>
+                          updateBlock(block.id, {
+                            content: { ...block.content, middleColumn },
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Правая колонка</Label>
+                      <RichTextEditor
+                        value={block.content.rightColumn || ""}
+                        onChange={(rightColumn) =>
+                          updateBlock(block.id, {
+                            content: { ...block.content, rightColumn },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
                 )}
 
                 {block.type === "anchor" && (
@@ -430,18 +503,14 @@ export const TourGuideEditor = ({ tour, onSave, tourPlaces }: TourGuideEditorPro
                 )}
 
                 {block.type === "table" && (
-                  <div>
-                    <Label>HTML таблицы</Label>
-                    <Textarea
-                      value={block.content.html || ""}
-                      onChange={(e) =>
-                        updateBlock(block.id, {
-                          content: { ...block.content, html: e.target.value },
-                        })
-                      }
-                      rows={8}
-                    />
-                  </div>
+                  <TableEditor
+                    value={block.content.tableData || [["", ""], ["", ""]]}
+                    onChange={(tableData) =>
+                      updateBlock(block.id, {
+                        content: { ...block.content, tableData },
+                      })
+                    }
+                  />
                 )}
               </CardContent>
             </Card>
