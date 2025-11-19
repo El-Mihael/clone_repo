@@ -11,6 +11,7 @@ import { Plus, Pencil, Trash2, MapPin, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { TourContentEditor } from "./TourContentEditor";
+import { TourGuideEditor } from "@/components/tour-guide/TourGuideEditor";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -29,6 +30,7 @@ export const ToursTab = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [translating, setTranslating] = useState(false);
+  const [editingGuide, setEditingGuide] = useState<Tour | null>(null);
   const [formData, setFormData] = useState<{
     city_id: string;
     name: string;
@@ -347,6 +349,44 @@ export const ToursTab = () => {
     ? places.filter(place => place.city_id === formData.city_id)
     : places;
 
+  // If editing guide, show the guide editor
+  if (editingGuide) {
+    const tourPlaces = places
+      .filter(place => 
+        selectedPlaces.includes(place.id) || 
+        (editingGuide.id && places.some(p => p.id === place.id))
+      )
+      .map(place => ({
+        place_id: place.id,
+        place_name: place.name,
+      }));
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Редактор путеводителя: {editingGuide.name}</CardTitle>
+              <Button variant="ghost" onClick={() => setEditingGuide(null)}>
+                Назад к турам
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TourGuideEditor
+              tour={editingGuide}
+              onSave={() => {
+                fetchTours();
+                setEditingGuide(null);
+              }}
+              tourPlaces={tourPlaces}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -590,6 +630,9 @@ export const ToursTab = () => {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setEditingGuide(tour)}>
+                    Путеводитель
+                  </Button>
                   <Button size="sm" variant="outline" onClick={() => handleEdit(tour)}>
                     <Pencil className="w-4 h-4" />
                   </Button>
