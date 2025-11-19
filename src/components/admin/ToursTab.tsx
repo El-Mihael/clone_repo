@@ -207,16 +207,15 @@ export const ToursTab = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let imageUrl = formData.image_url;
-    
+    // Если выбрано новое изображение, сначала загружаем его
     if (imageFile) {
       await handleImageUpload(imageFile);
-      return;
+      setImageFile(null);
     }
 
     const submitData = {
       ...formData,
-      image_url: imageUrl,
+      image_url: formData.image_url,
       price: parseFloat(formData.price) || 0,
       tour_content: formData.tour_content,
     };
