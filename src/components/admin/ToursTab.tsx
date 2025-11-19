@@ -31,6 +31,9 @@ export const ToursTab = () => {
     name_en: "",
     description: "",
     description_en: "",
+    price: "0",
+    image_url: "",
+    tour_content: "",
     is_active: true,
   });
 
@@ -75,10 +78,16 @@ export const ToursTab = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const submitData = {
+      ...formData,
+      price: parseFloat(formData.price) || 0,
+      tour_content: formData.tour_content ? JSON.parse(formData.tour_content) : {},
+    };
+
     if (editingId) {
       const { error } = await supabase
         .from("tours")
-        .update(formData)
+        .update(submitData)
         .eq("id", editingId);
 
       if (error) {
@@ -104,7 +113,7 @@ export const ToursTab = () => {
       const { data: newTour, error } = await supabase
         .from("tours")
         .insert({
-          ...formData,
+          ...submitData,
           display_order: tours.length,
         })
         .select()
@@ -139,6 +148,9 @@ export const ToursTab = () => {
       name_en: "",
       description: "",
       description_en: "",
+      price: "0",
+      image_url: "",
+      tour_content: "",
       is_active: true,
     });
     setSelectedPlaces([]);
@@ -153,6 +165,9 @@ export const ToursTab = () => {
       name_en: tour.name_en || "",
       description: tour.description || "",
       description_en: tour.description_en || "",
+      price: tour.price?.toString() || "0",
+      image_url: tour.image_url || "",
+      tour_content: JSON.stringify(tour.tour_content || {}, null, 2),
       is_active: tour.is_active,
     });
     
@@ -259,6 +274,40 @@ export const ToursTab = () => {
                   rows={3}
                 />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="price">Цена (0 = бесплатно)</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="image_url">URL картинки</Label>
+              <Input
+                id="image_url"
+                type="url"
+                placeholder="https://..."
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="tour_content">Контент попапа (JSON)</Label>
+              <Textarea
+                id="tour_content"
+                placeholder='{"includes": ["Пункт 1", "Пункт 2"], "details": "Подробное описание"}'
+                value={formData.tour_content}
+                onChange={(e) => setFormData({ ...formData, tour_content: e.target.value })}
+                rows={6}
+              />
             </div>
 
             <div className="space-y-2">

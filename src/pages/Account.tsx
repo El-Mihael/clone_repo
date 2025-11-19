@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, LogOut, MapPin, Crown, ShoppingCart, History } from "lucide-react";
+import { Coins, LogOut, MapPin, Crown, ShoppingCart, History, Check } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -33,13 +33,25 @@ interface Place {
   created_at: string;
 }
 
+interface PurchasedTour {
+  id: string;
+  tour_id: string;
+  purchased_at: string;
+  tours: {
+    name: string;
+    name_en: string | null;
+    description: string | null;
+  };
+}
+
 const Account = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
+  const [purchasedTours, setPurchasedTours] = useState<PurchasedTour[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,6 +69,7 @@ const Account = () => {
     await fetchProfile(session.user.id);
     await fetchTransactions(session.user.id);
     await fetchPlaces(session.user.id);
+    await fetchPurchasedTours(session.user.id);
   };
 
   const fetchProfile = async (userId: string) => {
@@ -98,6 +111,16 @@ const Account = () => {
       .order("created_at", { ascending: false });
 
     if (data) setPlaces(data);
+  };
+
+  const fetchPurchasedTours = async (userId: string) => {
+    const { data } = await supabase
+      .from("purchased_tours")
+      .select("id, tour_id, purchased_at, tours(name, name_en, description)")
+      .eq("user_id", userId)
+      .order("purchased_at", { ascending: false });
+
+    if (data) setPurchasedTours(data as PurchasedTour[]);
   };
 
   const handleSignOut = async () => {
@@ -156,6 +179,10 @@ const Account = () => {
               <History className="w-4 h-4 mr-2" />
               {t("transactionHistory")}
             </TabsTrigger>
+            <TabsTrigger value="tours">
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {language === "sr" ? "Моје туре" : language === "ru" ? "Мои туры" : "My Tours"}
+            </TabsTrigger>
             {profile.user_type === "business" && (
               <TabsTrigger value="places">
                 <MapPin className="w-4 h-4 mr-2" />
@@ -202,6 +229,55 @@ const Account = () => {
                       ))}
                     </TableBody>
                   </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tours">
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {language === "sr" ? "Моје туре" : language === "ru" ? "Мои туры" : "My Tours"}
+                </CardTitle>
+                <CardDescription>
+                  {language === "sr" ? "Туре које сте купили" : language === "ru" ? "Туры которые вы купили" : "Tours you have purchased"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {purchasedTours.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">
+                      {language === "sr" ? "Још увек нисте купили ниједну туру" : language === "ru" ? "Вы еще не купили ни один тур" : "You haven't purchased any tours yet"}
+                    </p>
+                    <Button onClick={() => navigate("/tours")}>
+                      {language === "sr" ? "Прегледај туре" : language === "ru" ? "Просмотреть туры" : "Browse Tours"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {purchasedTours.map((purchase) => (
+                      <div key={purchase.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <ShoppingCart className="w-5 h-5" />
+                          <div>
+                            <div className="font-medium">
+                              {language === "en" && purchase.tours.name_en 
+                                ? purchase.tours.name_en 
+                                : purchase.tours.name}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(purchase.purchased_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          {language === "sr" ? "Купљено" : language === "ru" ? "Куплено" : "Owned"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>

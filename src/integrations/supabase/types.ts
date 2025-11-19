@@ -395,10 +395,12 @@ export type Database = {
           description_en: string | null
           display_order: number | null
           id: string
+          image_url: string | null
           is_active: boolean | null
           name: string
           name_en: string | null
           price: number | null
+          tour_content: Json | null
           updated_at: string
         }
         Insert: {
@@ -408,10 +410,12 @@ export type Database = {
           description_en?: string | null
           display_order?: number | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           name: string
           name_en?: string | null
           price?: number | null
+          tour_content?: Json | null
           updated_at?: string
         }
         Update: {
@@ -421,10 +425,12 @@ export type Database = {
           description_en?: string | null
           display_order?: number | null
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           name?: string
           name_en?: string | null
           price?: number | null
+          tour_content?: Json | null
           updated_at?: string
         }
         Relationships: [
