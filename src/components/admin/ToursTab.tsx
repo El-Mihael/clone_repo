@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { TourContentEditor } from "./TourContentEditor";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -25,7 +26,17 @@ export const ToursTab = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    city_id: string;
+    name: string;
+    name_en: string;
+    description: string;
+    description_en: string;
+    price: string;
+    image_url: string;
+    tour_content: { includes?: string[]; details?: string };
+    is_active: boolean;
+  }>({
     city_id: "",
     name: "",
     name_en: "",
@@ -33,7 +44,7 @@ export const ToursTab = () => {
     description_en: "",
     price: "0",
     image_url: "",
-    tour_content: "",
+    tour_content: { includes: [], details: "" },
     is_active: true,
   });
 
@@ -81,7 +92,7 @@ export const ToursTab = () => {
     const submitData = {
       ...formData,
       price: parseFloat(formData.price) || 0,
-      tour_content: formData.tour_content ? JSON.parse(formData.tour_content) : {},
+      tour_content: formData.tour_content,
     };
 
     if (editingId) {
@@ -150,7 +161,7 @@ export const ToursTab = () => {
       description_en: "",
       price: "0",
       image_url: "",
-      tour_content: "",
+      tour_content: { includes: [], details: "" },
       is_active: true,
     });
     setSelectedPlaces([]);
@@ -167,7 +178,7 @@ export const ToursTab = () => {
       description_en: tour.description_en || "",
       price: tour.price?.toString() || "0",
       image_url: tour.image_url || "",
-      tour_content: JSON.stringify(tour.tour_content || {}, null, 2),
+      tour_content: (tour.tour_content as any) || { includes: [], details: "" },
       is_active: tour.is_active,
     });
     
@@ -300,13 +311,10 @@ export const ToursTab = () => {
             </div>
 
             <div>
-              <Label htmlFor="tour_content">Контент попапа (JSON)</Label>
-              <Textarea
-                id="tour_content"
-                placeholder='{"includes": ["Пункт 1", "Пункт 2"], "details": "Подробное описание"}'
+              <Label>Контент попапа</Label>
+              <TourContentEditor
                 value={formData.tour_content}
-                onChange={(e) => setFormData({ ...formData, tour_content: e.target.value })}
-                rows={6}
+                onChange={(content) => setFormData({ ...formData, tour_content: content })}
               />
             </div>
 

@@ -46,6 +46,7 @@ export default function Tours() {
       .from("tours")
       .select("*, cities(name_sr, name_en, name_ru)")
       .eq("is_active", true)
+      .gt("price", 0)
       .order("display_order");
     
     setTours(data || []);
