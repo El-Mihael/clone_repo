@@ -27,12 +27,15 @@ export const PlacesTab = () => {
   const [places, setPlaces] = useState<PlaceWithCity[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingPagePlace, setEditingPagePlace] = useState<Place | null>(null);
+  const [translating, setTranslating] = useState(false);
   const [formData, setFormData] = useState({
     category_id: "",
     city_id: "",
     name: "",
+    name_sr: "",
     name_en: "",
     description: "",
+    description_sr: "",
     description_en: "",
     latitude: "",
     longitude: "",
@@ -111,13 +114,60 @@ export const PlacesTab = () => {
     fetchPlaces();
   };
 
+  const translateText = async (text: string, targetLanguage: string) => {
+    if (!text.trim()) return "";
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("translate-text", {
+        body: { text, targetLanguage },
+      });
+
+      if (error) throw error;
+      return data.translatedText || "";
+    } catch (error) {
+      console.error("Translation error:", error);
+      toast.error("Ошибка перевода");
+      return "";
+    }
+  };
+
+  const handleTranslate = async (field: string, value: string) => {
+    if (!value.trim() || translating) return;
+
+    setTranslating(true);
+    const isNameField = field.includes("name");
+    const fieldBase = isNameField ? "name" : "description";
+    const currentLang = field.split("_")[1] || "sr";
+    
+    const languages = ["sr", "ru", "en"].filter(lang => lang !== currentLang);
+
+    for (const lang of languages) {
+      const targetField = lang === "sr" && fieldBase === "name" 
+        ? "name" 
+        : lang === "sr" && fieldBase === "description"
+        ? "description"
+        : `${fieldBase}_${lang}`;
+      
+      const currentValue = (formData as any)[targetField];
+      if (!currentValue || !currentValue.trim()) {
+        const translated = await translateText(value, lang);
+        if (translated) {
+          setFormData((prev) => ({ ...prev, [targetField]: translated }));
+        }
+      }
+    }
+    setTranslating(false);
+  };
+
   const resetForm = () => {
     setFormData({
       category_id: "",
       city_id: "",
       name: "",
+      name_sr: "",
       name_en: "",
       description: "",
+      description_sr: "",
       description_en: "",
       latitude: "",
       longitude: "",
@@ -136,13 +186,15 @@ export const PlacesTab = () => {
       category_id: place.category_id || "",
       city_id: place.city_id || "",
       name: place.name,
+      name_sr: (place as any).name_sr || "",
       name_en: place.name_en || "",
       description: place.description || "",
+      description_sr: (place as any).description_sr || "",
       description_en: place.description_en || "",
       latitude: place.latitude.toString(),
       longitude: place.longitude.toString(),
       address: place.address || "",
-      is_premium: place.is_premium,
+      is_premium: place.is_premium || false,
       custom_button_text: place.custom_button_text || "",
       custom_button_url: place.custom_button_url || "",
       google_maps_url: place.google_maps_url || "",
@@ -197,14 +249,24 @@ export const PlacesTab = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Название (RU) *</Label>
+                <Label htmlFor="name">Название (SR) *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onBlur={(e) => handleTranslate("name", e.target.value)}
                   required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="name_sr">Название (RU)</Label>
+                <Input
+                  id="name_sr"
+                  value={formData.name_sr}
+                  onChange={(e) => setFormData({ ...formData, name_sr: e.target.value })}
+                  onBlur={(e) => handleTranslate("name_sr", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -213,6 +275,7 @@ export const PlacesTab = () => {
                   id="name_en"
                   value={formData.name_en}
                   onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
+                  onBlur={(e) => handleTranslate("name_en", e.target.value)}
                 />
               </div>
             </div>
@@ -236,13 +299,24 @@ export const PlacesTab = () => {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="description">Описание (RU)</Label>
+                <Label htmlFor="description">Описание (SR)</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onBlur={(e) => handleTranslate("description", e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description_sr">Описание (RU)</Label>
+                <Textarea
+                  id="description_sr"
+                  value={formData.description_sr}
+                  onChange={(e) => setFormData({ ...formData, description_sr: e.target.value })}
+                  onBlur={(e) => handleTranslate("description_sr", e.target.value)}
                   rows={3}
                 />
               </div>
@@ -252,6 +326,7 @@ export const PlacesTab = () => {
                   id="description_en"
                   value={formData.description_en}
                   onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                  onBlur={(e) => handleTranslate("description_en", e.target.value)}
                   rows={3}
                 />
               </div>
@@ -337,9 +412,9 @@ export const PlacesTab = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit">
+              <Button type="submit" disabled={translating}>
                 {editingId ? <Pencil className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-                {editingId ? "Обновить" : "Создать"}
+                {translating ? "Перевод..." : editingId ? "Обновить" : "Создать"}
               </Button>
               {editingId && (
                 <Button type="button" variant="outline" onClick={resetForm}>
