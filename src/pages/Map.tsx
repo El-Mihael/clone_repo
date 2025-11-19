@@ -407,6 +407,7 @@ const Map = () => {
           userLocation={userLocation}
           onPlacePageOpen={(place) => setViewingPlacePage(place)}
           cityCenter={[selectedCity.latitude, selectedCity.longitude]}
+          cityZoom={selectedCity.zoom_level}
         />
       </div>
     </div>
