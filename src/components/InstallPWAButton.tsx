@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -47,14 +53,22 @@ export const InstallPWAButton = () => {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleInstallClick}
-      className="gap-1 sm:gap-2 px-2 sm:px-3"
-    >
-      <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-      <span className="hidden sm:inline">{t("install")}</span>
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleInstallClick}
+            className="h-9 w-9"
+          >
+            <Download className="w-4 h-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{t("install") || "Установить приложение"}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
