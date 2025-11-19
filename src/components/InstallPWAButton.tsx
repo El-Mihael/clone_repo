@@ -37,18 +37,23 @@ export const InstallPWAButton = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (deferredPrompt) {
+      // Browser supports native install prompt
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
 
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === "accepted") {
-      setShowButton(false);
-      setDeferredPrompt(null);
+      if (outcome === "accepted") {
+        setShowButton(false);
+        setDeferredPrompt(null);
+      }
+    } else {
+      // Browser doesn't support native prompt, redirect to instructions page
+      window.location.href = '/install';
     }
   };
 
-  if (!showButton) {
+  // Only hide button if app is already installed
+  if (window.matchMedia("(display-mode: standalone)").matches) {
     return null;
   }
 
