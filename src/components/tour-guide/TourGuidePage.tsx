@@ -1,9 +1,10 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
-import DOMPurify from "dompurify";
-import { useState, useEffect } from "react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import DOMPurify from "dompurify";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 
@@ -42,31 +43,23 @@ export const TourGuidePage = ({ tour, onBack, onNavigateToPlace }: TourGuidePage
   const { header, blocks = [], pageStyle = {} } = content;
   const [activeAnchor, setActiveAnchor] = useState<string>("");
 
-  // Get tour name based on language
   const getTourName = () => {
     if (language === "en" && tour.name_en) return tour.name_en;
     if (language === "sr" && tour.name_sr) return tour.name_sr;
     return tour.name;
   };
 
-  // Sanitize HTML content
   const sanitizeHTML = (html: string) => {
     return DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
-      ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
-      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
     });
   };
 
-  // Get all anchors from blocks
   const anchors = blocks
     .filter(block => block.type === "anchor" && block.content.anchorId)
-    .map(block => ({
-      id: block.content.anchorId,
-      label: block.content.anchorLabel || block.content.anchorId,
-    }));
+    .map(block => ({ id: block.content.anchorId, label: block.content.anchorLabel || block.content.anchorId }));
 
-  // Scroll to anchor
   const scrollToAnchor = (anchorId: string) => {
     const element = document.getElementById(`anchor-${anchorId}`);
     if (element) {
@@ -75,11 +68,9 @@ export const TourGuidePage = ({ tour, onBack, onNavigateToPlace }: TourGuidePage
     }
   };
 
-  // Track scroll position for active anchor
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100;
-      
       for (const anchor of anchors) {
         const element = document.getElementById(`anchor-${anchor.id}`);
         if (element) {
@@ -91,50 +82,28 @@ export const TourGuidePage = ({ tour, onBack, onNavigateToPlace }: TourGuidePage
         }
       }
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [anchors]);
 
   return (
-    <div 
-      className="h-full overflow-y-auto"
-      style={{
-        backgroundColor: pageStyle.backgroundColor || "hsl(var(--background))",
-        fontFamily: pageStyle.fontFamily || "inherit",
-      }}
-    >
-      {/* Back Button */}
+    <div className="h-full overflow-y-auto" style={{ backgroundColor: pageStyle.backgroundColor || "hsl(var(--background))" }}>
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
         <div className="container mx-auto px-4 py-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Назад к карте
+          <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+            <ArrowLeft className="w-4 h-4" />Назад к карте
           </Button>
         </div>
       </div>
 
       <div className="flex">
-        {/* Sticky Navigation */}
         {anchors.length > 0 && (
           <aside className="hidden lg:block w-64 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-6">
             <nav className="space-y-2">
               <h3 className="font-semibold text-sm text-muted-foreground mb-4">Навигация</h3>
               {anchors.map((anchor) => (
-                <button
-                  key={anchor.id}
-                  onClick={() => scrollToAnchor(anchor.id)}
-                  className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    activeAnchor === anchor.id
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
+                <button key={anchor.id} onClick={() => scrollToAnchor(anchor.id)}
+                  className={`block w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${activeAnchor === anchor.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
                   {anchor.label}
                 </button>
               ))}
@@ -142,177 +111,71 @@ export const TourGuidePage = ({ tour, onBack, onNavigateToPlace }: TourGuidePage
           </aside>
         )}
 
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Header Section */}
           {header && (
-            <div
-              className="relative overflow-hidden"
-              style={{
-                backgroundColor: header.backgroundColor || "hsl(var(--primary))",
-                backgroundImage: header.backgroundImage ? `url(${header.backgroundImage})` : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                color: header.textColor || "white",
-                height: header.height || "400px",
-              }}
-            >
+            <div className="relative overflow-hidden" style={{
+              backgroundColor: header.backgroundColor || "hsl(var(--primary))",
+              backgroundImage: header.backgroundImage ? `url(${header.backgroundImage})` : undefined,
+              backgroundSize: "cover", backgroundPosition: "center",
+              color: header.textColor || "white", height: header.height || "400px"
+            }}>
               <div className="absolute inset-0 bg-black/30" />
               <div className="relative container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
-                <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                  {header.title || getTourName()}
-                </h1>
-                {header.subtitle && (
-                  <p className="text-xl md:text-2xl opacity-90 max-w-2xl">
-                    {header.subtitle}
-                  </p>
-                )}
+                <h1 className="text-4xl md:text-6xl font-bold mb-4">{header.title || getTourName()}</h1>
+                {header.subtitle && <p className="text-xl md:text-2xl opacity-90 max-w-2xl">{header.subtitle}</p>}
               </div>
             </div>
           )}
 
-          {/* Content Blocks */}
-          <div 
-            className="container mx-auto px-4 py-8"
-            style={{
-              maxWidth: pageStyle.maxWidth || "1200px",
-            }}
-          >
-            {blocks
-              .sort((a, b) => a.order - b.order)
-              .map((block) => (
-                <div
-                  key={block.id}
-                  id={block.type === "anchor" ? `anchor-${block.content.anchorId}` : undefined}
-                  className="mb-8"
-                  style={block.style}
-                >
-                  {block.type === "text" && (
-                    <div
-                      className="prose prose-lg max-w-none dark:prose-invert"
-                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.html || "") }}
-                    />
-                  )}
-
-                  {block.type === "image" && (
-                    <div className="relative">
-                      <img
-                        src={block.content.url}
-                        alt={block.content.alt || ""}
-                        className="w-full rounded-lg shadow-lg"
-                        style={{
-                          maxHeight: block.content.maxHeight || "600px",
-                          objectFit: block.content.objectFit || "cover",
-                        }}
-                      />
-                      {block.content.caption && (
-                        <p className="text-center text-sm text-muted-foreground mt-2">
-                          {block.content.caption}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {block.type === "info-card" && (
-                    <div 
-                      className="rounded-lg p-6 shadow-md"
-                      style={{
-                        backgroundColor: block.content.backgroundColor || "hsl(var(--card))",
-                        borderLeft: `4px solid ${block.content.accentColor || "hsl(var(--primary))"}`,
-                      }}
-                    >
-                      {block.content.title && (
-                        <h3 className="text-2xl font-bold mb-3" style={{ color: block.content.titleColor }}>
-                          {block.content.title}
-                        </h3>
-                      )}
-                      {block.content.text && (
-                        <div
-                          className="prose max-w-none dark:prose-invert"
-                          dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.text) }}
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  {block.type === "gallery" && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {(block.content.images || []).map((img: any, idx: number) => (
-                        <img
-                          key={idx}
-                          src={img.url}
-                          alt={img.alt || ""}
-                          className="w-full h-64 object-cover rounded-lg shadow-md hover:scale-105 transition-transform cursor-pointer"
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {block.type === "two-column" && (
-                    <div className="grid md:grid-cols-2 gap-8">
-                      <div
-                        className="prose max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.leftColumn || "") }}
-                      />
-                      <div
-                        className="prose max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.rightColumn || "") }}
-                      />
-                    </div>
-                  )}
-
-                  {block.type === "three-column" && (
-                    <div className="grid md:grid-cols-3 gap-6">
-                      <div
-                        className="prose max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.leftColumn || "") }}
-                      />
-                      <div
-                        className="prose max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.middleColumn || "") }}
-                      />
-                      <div
-                        className="prose max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.rightColumn || "") }}
-                      />
-                    </div>
-                  )}
-
-                  {block.type === "table" && (
-                    <div className="overflow-x-auto">
-                      <div
-                        className="prose max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.html || "") }}
-                      />
-                    </div>
-                  )}
-
-                  {block.type === "anchor" && (
-                    <div className="border-t pt-8">
-                      <h2 className="text-3xl font-bold mb-4">{block.content.anchorLabel}</h2>
-                    </div>
-                  )}
-
-                  {block.type === "place-link" && onNavigateToPlace && (
-                    <Button
-                      onClick={() => onNavigateToPlace(block.content.placeId)}
-                      className="gap-2"
-                      variant="outline"
-                    >
-                      <MapPin className="w-4 h-4" />
-                      {block.content.linkText || "Показать на карте"}
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-            {/* Default content if no blocks */}
-            {blocks.length === 0 && (
-              <div className="prose prose-lg max-w-none dark:prose-invert">
-                <h2>{getTourName()}</h2>
-                {tour.description && <p>{tour.description}</p>}
+          <div className="container mx-auto px-4 py-8" style={{ maxWidth: pageStyle.maxWidth || "1200px" }}>
+            {blocks.sort((a, b) => a.order - b.order).map((block) => (
+              <div key={block.id} id={block.type === "anchor" ? `anchor-${block.content.anchorId}` : undefined} className="mb-8">
+                {block.type === "text" && <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.html || "") }} />}
+                {block.type === "image" && <figure className="my-8"><img src={block.content.url} alt={block.content.alt || ""} className="w-full rounded-lg shadow-lg" /></figure>}
+                {block.type === "info-card" && (
+                  <div className="p-6 rounded-lg my-6" style={{ backgroundColor: block.content.backgroundColor || "#f3f4f6", color: block.content.textColor || "#1f2937", borderColor: block.content.borderColor || "#e5e7eb", borderWidth: "2px", borderStyle: block.content.borderStyle || "solid" }}>
+                    <h3 className="text-xl font-semibold mb-3">{block.content.title}</h3>
+                    <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.text || "") }} />
+                  </div>
+                )}
+                {block.type === "gallery" && block.content.images?.length > 0 && (
+                  <div className="my-8 px-12">
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {block.content.images.map((img: any, idx: number) => (
+                          <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                            <div className="p-1"><img src={img.url} alt={img.caption || ""} className="w-full h-64 object-cover rounded-lg shadow-lg" /></div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious /><CarouselNext />
+                    </Carousel>
+                  </div>
+                )}
+                {block.type === "two-column" && (
+                  <div className="grid md:grid-cols-2 gap-8 my-8">
+                    <div className="prose dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.leftColumn || "") }} />
+                    <div className="prose dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.rightColumn || "") }} />
+                  </div>
+                )}
+                {block.type === "three-column" && (
+                  <div className="grid md:grid-cols-3 gap-6 my-8">
+                    <div className="prose dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.leftColumn || "") }} />
+                    <div className="prose dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.middleColumn || "") }} />
+                    <div className="prose dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.rightColumn || "") }} />
+                  </div>
+                )}
+                {block.type === "table" && block.content.tableData && (
+                  <div className="overflow-x-auto my-8">
+                    <table className="w-full border-collapse border border-border">
+                      <thead><tr className="bg-muted">{block.content.tableData[0]?.map((cell: string, idx: number) => <th key={idx} className="border border-border p-3 text-left font-semibold">{cell}</th>)}</tr></thead>
+                      <tbody>{block.content.tableData.slice(1).map((row: string[], rowIdx: number) => <tr key={rowIdx} className="hover:bg-muted/50">{row.map((cell: string, cellIdx: number) => <td key={cellIdx} className="border border-border p-3">{cell}</td>)}</tr>)}</tbody>
+                    </table>
+                  </div>
+                )}
+                {block.type === "place-link" && <Button onClick={() => onNavigateToPlace?.(block.content.placeId)} className="my-4"><MapPin className="w-4 h-4 mr-2" />{block.content.linkText || "Показать на карте"}</Button>}
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
