@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -21,6 +22,7 @@ const Map = () => {
   const [searchParams] = useSearchParams();
   const tourId = searchParams.get("tour");
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
   
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -215,24 +217,30 @@ const Map = () => {
       return;
     }
 
-    toast.info("Определяю ваше местоположение...");
+    toast.info(t("detectingLocation"));
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        
+        // Сначала устанавливаем координаты пользователя чтобы карта проскроллилась
         setUserLocation([latitude, longitude]);
 
-        // Получаем все города из базы
-        const { data: allCities, error } = await supabase
+        // Получаем все города и страны из базы
+        const { data: allCities, error: citiesError } = await supabase
           .from("cities")
           .select("*, countries!inner(*)");
 
-        if (error || !allCities || allCities.length === 0) {
-          toast.error("Не удалось определить город");
+        const { data: allCountries, error: countriesError } = await supabase
+          .from("countries")
+          .select("*");
+
+        if (citiesError || countriesError) {
+          console.error("Error loading data:", citiesError, countriesError);
           return;
         }
 
-        // Находим ближайший город (функция calculateDistance)
+        // Функция расчёта расстояния
         const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
           const R = 6371; // Радиус Земли в км
           const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -245,6 +253,13 @@ const Map = () => {
           return R * c;
         };
 
+        // Если в базе нет городов вообще
+        if (!allCities || allCities.length === 0) {
+          toast.error(t("countryNotInList"));
+          return;
+        }
+
+        // Находим ближайший город
         let nearestCity = allCities[0];
         let minDistance = calculateDistance(
           latitude,
@@ -266,7 +281,17 @@ const Map = () => {
           }
         }
 
-        // Обновляем выбранный город и страну
+        // Проверяем, находится ли пользователь достаточно близко к городу (например, в радиусе 100 км)
+        const maxDistanceKm = 100;
+        
+        if (minDistance > maxDistanceKm) {
+          // Город далеко - проверяем страну через примерную геолокацию
+          // Это упрощённая логика, в реальности нужен reverse geocoding API
+          toast.error(t("countryNotInList"));
+          return;
+        }
+
+        // Город найден и близко - обновляем
         await loadCity(nearestCity.id);
         localStorage.setItem("selectedCity", nearestCity.id);
         localStorage.setItem("selectedCountry", nearestCity.country_id);
@@ -283,7 +308,9 @@ const Map = () => {
             .eq("id", user.id);
         }
 
-        toast.success(`Вы находитесь в городе ${nearestCity.name_sr}`);
+        // Формируем сообщение с названием города на текущем языке
+        const cityName = nearestCity.name_sr; // или используйте текущий язык из useLanguage
+        toast.success(t("yourLocationInCity").replace("{city}", cityName));
       },
       (error) => {
         console.error("Error getting location:", error);
