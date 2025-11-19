@@ -1,4 +1,4 @@
-import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon, Menu } from "lucide-react";
+import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon, Menu, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,6 +32,7 @@ interface HeaderProps {
   onCityChange: (cityId: string) => void;
   onMenuClick?: () => void;
   showMenuButton?: boolean;
+  onMyLocation: () => void;
 }
 
 export const Header = ({ 
@@ -44,7 +45,8 @@ export const Header = ({
   selectedCity,
   onCityChange,
   onMenuClick,
-  showMenuButton = false
+  showMenuButton = false,
+  onMyLocation
 }: HeaderProps) => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
@@ -182,6 +184,18 @@ export const Header = ({
         
         {/* Push Notifications */}
         <PushNotificationButton />
+        
+        {/* My Location Button */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onMyLocation}
+          className="px-2"
+          title="Где я"
+        >
+          <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span className="hidden lg:inline ml-2 text-xs sm:text-sm">Где я</span>
+        </Button>
         
         {/* Language selector */}
         <DropdownMenu>
