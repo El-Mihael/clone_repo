@@ -11,6 +11,7 @@ import { NotificationsTab } from "@/components/admin/NotificationsTab";
 import { CountriesTab } from "@/components/admin/CountriesTab";
 import { CitiesTab } from "@/components/admin/CitiesTab";
 import { CreditsTab } from "@/components/admin/CreditsTab";
+import { SubscriptionsTab } from "@/components/admin/SubscriptionsTab";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
@@ -89,13 +90,14 @@ const Admin = () => {
 
       <div className="container mx-auto px-6 py-8">
         <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-7">
+          <TabsList className="grid w-full max-w-5xl grid-cols-8">
             <TabsTrigger value="countries">{t("countries")}</TabsTrigger>
             <TabsTrigger value="cities">{t("cities")}</TabsTrigger>
             <TabsTrigger value="categories">{t("categories")}</TabsTrigger>
             <TabsTrigger value="places">{t("places")}</TabsTrigger>
             <TabsTrigger value="tours">{t("tours")}</TabsTrigger>
             <TabsTrigger value="credits">{t("credits")}</TabsTrigger>
+            <TabsTrigger value="subscriptions">{t("subscriptions")}</TabsTrigger>
             <TabsTrigger value="notifications">{t("notifications")}</TabsTrigger>
           </TabsList>
 
@@ -121,6 +123,10 @@ const Admin = () => {
 
           <TabsContent value="credits" className="space-y-4">
             <CreditsTab />
+          </TabsContent>
+
+          <TabsContent value="subscriptions" className="space-y-4">
+            <SubscriptionsTab />
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-4">
