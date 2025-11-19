@@ -48,8 +48,23 @@ export const InitialSetup = ({ onComplete }: InitialSetupProps) => {
     setStep("location");
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    // Save to localStorage
     localStorage.setItem("selectedCity", selectedCity);
+    localStorage.setItem("selectedCountry", selectedCountry);
+    
+    // Save to user profile
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({
+          country_id: selectedCountry,
+          city_id: selectedCity,
+        })
+        .eq("id", user.id);
+    }
+    
     onComplete(selectedCity);
   };
 

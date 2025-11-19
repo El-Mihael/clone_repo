@@ -62,7 +62,16 @@ export const Header = ({
   }, [selectedCity]);
 
   const fetchCities = async () => {
-    const { data } = await supabase.from("cities").select("*");
+    // Try to filter by user's country
+    const savedCountryId = localStorage.getItem("selectedCountry");
+    
+    let query = supabase.from("cities").select("*");
+    
+    if (savedCountryId) {
+      query = query.eq("country_id", savedCountryId);
+    }
+    
+    const { data } = await query.order("name_sr");
     if (data) setCities(data);
   };
 

@@ -131,6 +131,7 @@ export const CitiesTab = () => {
       zoom_level: city.zoom_level.toString(),
     });
     setEditingId(city.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
