@@ -354,6 +354,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          billing_period: Database["public"]["Enums"]["billing_period"]
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          name_en: string | null
+          name_ru: string | null
+          name_sr: string | null
+          price: number
+          type: Database["public"]["Enums"]["subscription_type"]
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: Database["public"]["Enums"]["billing_period"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          name_en?: string | null
+          name_ru?: string | null
+          name_sr?: string | null
+          price?: number
+          type: Database["public"]["Enums"]["subscription_type"]
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: Database["public"]["Enums"]["billing_period"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_en?: string | null
+          name_ru?: string | null
+          name_sr?: string | null
+          price?: number
+          type?: Database["public"]["Enums"]["subscription_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tour_places: {
         Row: {
           created_at: string
@@ -479,6 +521,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          next_billing_date: string
+          place_id: string | null
+          plan_id: string
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          next_billing_date: string
+          place_id?: string | null
+          plan_id: string
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          next_billing_date?: string
+          place_id?: string | null
+          plan_id?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -494,6 +587,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      billing_period: "daily" | "weekly" | "monthly" | "yearly"
+      subscription_type: "place_listing" | "premium_status"
       user_type: "individual" | "business"
     }
     CompositeTypes: {
@@ -623,6 +718,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      billing_period: ["daily", "weekly", "monthly", "yearly"],
+      subscription_type: ["place_listing", "premium_status"],
       user_type: ["individual", "business"],
     },
   },
