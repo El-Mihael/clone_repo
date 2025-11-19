@@ -1,5 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+
+const togglePremiumSchema = z.object({
+  placeId: z.string().uuid('Invalid place ID'),
+  isPremium: z.boolean(),
+});
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -20,7 +26,8 @@ Deno.serve(async (req) => {
       throw new Error('Not authenticated');
     }
 
-    const { placeId, isPremium } = await req.json();
+    const requestData = await req.json();
+    const { placeId, isPremium } = togglePremiumSchema.parse(requestData);
 
     // Get place and verify ownership
     const { data: place } = await supabaseClient
@@ -94,6 +101,16 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: errorMessage }),
