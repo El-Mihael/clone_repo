@@ -25,6 +25,8 @@ interface SidebarProps {
   onDistanceChange: (distance: number) => void;
   onPlacePageOpen: (place: Place) => void;
   onTourSelect?: (tourId: string) => void;
+  onTourGuideOpen?: () => void;
+  showTourGuideButton?: boolean;
 }
 
 export const Sidebar = ({
@@ -42,6 +44,8 @@ export const Sidebar = ({
   onDistanceChange,
   onPlacePageOpen,
   onTourSelect,
+  onTourGuideOpen,
+  showTourGuideButton = false,
 }: SidebarProps) => {
   const { t, language } = useLanguage();
   
@@ -90,6 +94,19 @@ export const Sidebar = ({
               {maxDistance >= 10000 ? t("allPlaces") : `${t("distance")} ${(maxDistance / 1000).toFixed(1)} км`}
             </p>
           </div>
+        </div>
+      )}
+
+      {showTourGuideButton && onTourGuideOpen && (
+        <div className="p-3 sm:p-4 border-b">
+          <Button
+            onClick={onTourGuideOpen}
+            className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+            size="lg"
+          >
+            <FileText className="w-5 h-5" />
+            <span className="font-semibold">Путеводитель</span>
+          </Button>
         </div>
       )}
 

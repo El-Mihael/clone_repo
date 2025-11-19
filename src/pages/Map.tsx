@@ -5,6 +5,7 @@ import { MapView } from "@/components/map/MapContainer";
 import { Sidebar } from "@/components/map/Sidebar";
 import { Header } from "@/components/map/Header";
 import { PlacePage } from "@/components/place-page/PlacePage";
+import { TourGuidePage } from "@/components/tour-guide/TourGuidePage";
 import { InitialSetup } from "@/components/InitialSetup";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ const Map = () => {
   const [maxDistance, setMaxDistance] = useState<number>(10000);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [viewingPlacePage, setViewingPlacePage] = useState<Place | null>(null);
+  const [viewingTourGuide, setViewingTourGuide] = useState<boolean>(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -469,6 +471,23 @@ const Map = () => {
     return null;
   }
 
+  // If viewing a tour guide, show it instead of the map
+  if (viewingTourGuide && activeTour) {
+    return (
+      <div className="h-screen flex flex-col bg-background">
+        <TourGuidePage
+          tour={activeTour}
+          onBack={() => setViewingTourGuide(false)}
+          onNavigateToPlace={(placeId) => {
+            setViewingTourGuide(false);
+            setSelectedPlace(placeId);
+            setSidebarOpen(true);
+          }}
+        />
+      </div>
+    );
+  }
+
   // If viewing a place page, show it instead of the map
   if (viewingPlacePage) {
     return (
@@ -527,6 +546,8 @@ const Map = () => {
           onPlaceSelect={setSelectedPlace}
           onDistanceChange={setMaxDistance}
           onPlacePageOpen={(place) => setViewingPlacePage(place)}
+          onTourGuideOpen={() => setViewingTourGuide(true)}
+          showTourGuideButton={!!activeTour}
         />
         
         <MapView

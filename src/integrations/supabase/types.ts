@@ -401,6 +401,7 @@ export type Database = {
           description_en: string | null
           description_sr: string | null
           display_order: number | null
+          guide_content: Json | null
           id: string
           image_url: string | null
           is_active: boolean | null
@@ -418,6 +419,7 @@ export type Database = {
           description_en?: string | null
           description_sr?: string | null
           display_order?: number | null
+          guide_content?: Json | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
@@ -435,6 +437,7 @@ export type Database = {
           description_en?: string | null
           description_sr?: string | null
           display_order?: number | null
+          guide_content?: Json | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
