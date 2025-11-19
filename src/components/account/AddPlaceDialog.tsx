@@ -13,6 +13,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
+type SubscriptionPlan = Database["public"]["Tables"]["subscription_plans"]["Row"];
 
 interface AddPlaceDialogProps {
   open: boolean;
@@ -26,6 +27,8 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [formData, setFormData] = useState({
     category_id: "",
     city_id: "",
@@ -42,6 +45,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
     if (open) {
       fetchCategories();
       fetchCities();
+      fetchSubscriptionPlans();
     }
   }, [open]);
 
@@ -60,6 +64,26 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
     setCities(data || []);
   };
 
+  const fetchSubscriptionPlans = async () => {
+    const { data } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("type", "place_listing")
+      .eq("is_active", true)
+      .order("price");
+    setSubscriptionPlans(data || []);
+  };
+
+  const getPlanLabel = (plan: SubscriptionPlan) => {
+    const periodLabels = {
+      daily: t("daily"),
+      weekly: t("weekly"),
+      monthly: t("monthly"),
+      yearly: t("yearly"),
+    };
+    return `${plan.name} - ${plan.price} ${t("credits")} / ${periodLabels[plan.billing_period as keyof typeof periodLabels]}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -68,7 +92,11 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-place`, {
+      if (!selectedPlan) {
+        throw new Error(t("selectSubscriptionPlan"));
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-place-with-subscription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,6 +108,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
           longitude: parseFloat(formData.longitude),
           category_id: formData.category_id || null,
           city_id: formData.city_id || null,
+          plan_id: selectedPlan,
         }),
       });
 
@@ -91,7 +120,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
 
       toast({
         title: t("success"),
-        description: t("placeAddedSuccess"),
+        description: t("placeAddedWithSubscription"),
       });
 
       onSuccess();
@@ -120,6 +149,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
       longitude: "",
       address: "",
     });
+    setSelectedPlan("");
   };
 
   return (
@@ -242,13 +272,40 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
             </div>
           </div>
 
+          <div className="space-y-2 pt-4 border-t">
+            <Label htmlFor="subscription_plan" className="text-base font-semibold">
+              {t("subscriptionPlan")} *
+            </Label>
+            <Select
+              value={selectedPlan}
+              onValueChange={setSelectedPlan}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t("selectSubscriptionPlan")} />
+              </SelectTrigger>
+              <SelectContent>
+                {subscriptionPlans.map((plan) => (
+                  <SelectItem key={plan.id} value={plan.id}>
+                    {getPlanLabel(plan)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedPlan && (
+              <p className="text-sm text-muted-foreground">
+                {t("subscriptionInfo")}
+              </p>
+            )}
+          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || subscriptionPlans.length === 0}>
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Add Place (15 credits)
+              {subscriptionPlans.length === 0 ? t("noPlansAvailable") : t("addNewPlace")}
             </Button>
           </DialogFooter>
         </form>
