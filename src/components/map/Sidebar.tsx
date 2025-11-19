@@ -41,7 +41,7 @@ export const Sidebar = ({
   onDistanceChange,
   onPlacePageOpen,
 }: SidebarProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const sidebarContent = (
     <>
@@ -93,9 +93,18 @@ export const Sidebar = ({
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
-          <h2 className="font-semibold mb-3 text-lg text-foreground">
-            {t("placesCount").replace("{count}", places.length.toString())}
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-lg text-foreground">
+              {t("placesCount").replace("{count}", places.length.toString())}
+            </h2>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/tours'}
+            >
+              {language === "sr" ? "Туре" : language === "ru" ? "Туры" : "Tours"}
+            </Button>
+          </div>
           {places.map((place) => {
             const category = categories.find(c => c.id === place.category_id);
             return (
