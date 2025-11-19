@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, MapPin, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { TourContentEditor } from "./TourContentEditor";
@@ -26,6 +26,8 @@ export const ToursTab = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPlaces, setSelectedPlaces] = useState<string[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<{
     city_id: string;
     name: string;
@@ -86,11 +88,66 @@ export const ToursTab = () => {
     return data?.map(tp => tp.place_id) || [];
   };
 
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('tour-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('tour-images')
+        .getPublicUrl(filePath);
+
+      setFormData({ ...formData, image_url: publicUrl });
+      toast.success("Изображение загружено");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Ошибка загрузки изображения");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleImageRemove = async () => {
+    if (formData.image_url) {
+      try {
+        const urlParts = formData.image_url.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        
+        await supabase.storage
+          .from('tour-images')
+          .remove([fileName]);
+        
+        setFormData({ ...formData, image_url: "" });
+        setImageFile(null);
+        toast.success("Изображение удалено");
+      } catch (error) {
+        console.error("Error removing image:", error);
+        toast.error("Ошибка удаления изображения");
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let imageUrl = formData.image_url;
+    
+    if (imageFile) {
+      await handleImageUpload(imageFile);
+      return;
+    }
+
     const submitData = {
       ...formData,
+      image_url: imageUrl,
       price: parseFloat(formData.price) || 0,
       tour_content: formData.tour_content,
     };
@@ -165,6 +222,7 @@ export const ToursTab = () => {
       is_active: true,
     });
     setSelectedPlaces([]);
+    setImageFile(null);
     setEditingId(null);
   };
 
@@ -299,15 +357,52 @@ export const ToursTab = () => {
               />
             </div>
 
-            <div>
-              <Label htmlFor="image_url">URL картинки</Label>
-              <Input
-                id="image_url"
-                type="url"
-                placeholder="https://..."
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              />
+            <div className="space-y-2">
+              <Label>Изображение тура</Label>
+              {formData.image_url ? (
+                <div className="relative">
+                  <img 
+                    src={formData.image_url} 
+                    alt="Tour preview" 
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={handleImageRemove}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setImageFile(file);
+                        handleImageUpload(file);
+                      }
+                    }}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={uploadingImage}
+                  />
+                  <Label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <Upload className="w-8 h-8 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {uploadingImage ? "Загрузка..." : "Нажмите для загрузки изображения"}
+                    </span>
+                  </Label>
+                </div>
+              )}
             </div>
 
             <div>
