@@ -1,5 +1,25 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+
+const placeSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200, "Name must be less than 200 characters"),
+  name_en: z.string().max(200).optional().nullable(),
+  description: z.string().max(2000, "Description must be less than 2000 characters").optional().nullable(),
+  description_en: z.string().max(2000).optional().nullable(),
+  latitude: z.number().min(-90, "Latitude must be between -90 and 90").max(90, "Latitude must be between -90 and 90"),
+  longitude: z.number().min(-180, "Longitude must be between -180 and 180").max(180, "Longitude must be between -180 and 180"),
+  address: z.string().max(500).optional().nullable(),
+  category_id: z.string().uuid("Invalid category ID").optional().nullable(),
+  city_id: z.string().uuid("Invalid city ID").optional().nullable(),
+  image_url: z.string().url("Invalid image URL").max(500).optional().nullable(),
+  google_maps_url: z.string().url("Invalid Google Maps URL").max(500).optional().nullable(),
+  custom_button_url: z.string().url("Invalid custom button URL").max(500).optional().nullable(),
+  custom_button_text: z.string().max(100).optional().nullable(),
+  custom_page_content: z.record(z.any()).optional().nullable(),
+  has_custom_page: z.boolean().optional().nullable(),
+  is_premium: z.boolean().optional().nullable(),
+});
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -35,7 +55,10 @@ Deno.serve(async (req) => {
       throw new Error('Insufficient credits. You need 15 credits to add a place.');
     }
 
-    const placeData = await req.json();
+    const rawData = await req.json();
+    
+    // Validate input data
+    const placeData = placeSchema.parse(rawData);
 
     // Create place
     const { data: place, error: placeError } = await supabaseClient
@@ -70,6 +93,19 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    console.error('Error in add-place function:', error);
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Validation failed', 
+          details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ error: errorMessage }),

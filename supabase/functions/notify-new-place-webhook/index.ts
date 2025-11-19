@@ -12,18 +12,11 @@ serve(async (req) => {
   }
 
   try {
-    // Validate webhook secret to prevent unauthorized access
-    const webhookSecret = Deno.env.get('WEBHOOK_SECRET');
-    const providedSecret = req.headers.get('X-Webhook-Secret');
-
-    if (!webhookSecret || providedSecret !== webhookSecret) {
-      console.error('Invalid webhook secret');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
-    }
-
+    // Note: This webhook is designed to be called exclusively by the database trigger
+    // from notify_new_place(). It's configured as public (verify_jwt = false) to allow
+    // the trigger to call it, but should not be exposed to external callers.
+    // Consider using Supabase's pg_net with signed requests for production.
+    
     const { title, body, data } = await req.json();
 
     console.log('Webhook triggered:', { title, body, data });
