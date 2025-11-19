@@ -158,7 +158,7 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
                   {block.content.text && (
                     <div
                       className="prose max-w-none dark:prose-invert"
-                      dangerouslySetInnerHTML={{ __html: block.content.text }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.text) }}
                     />
                   )}
                 </div>
@@ -181,11 +181,11 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
                 <div className="grid md:grid-cols-2 gap-8">
                   <div
                     className="prose max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: block.content.leftColumn || "" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.leftColumn || "") }}
                   />
                   <div
                     className="prose max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: block.content.rightColumn || "" }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(block.content.rightColumn || "") }}
                   />
                 </div>
               )}
