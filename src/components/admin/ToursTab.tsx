@@ -83,23 +83,42 @@ export const ToursTab = () => {
 
     setTranslating(true);
     
-    // Определяем тип поля (name или description) и исходный язык
     const isNameField = sourceField.includes("name");
     const fieldBase = isNameField ? "name" : "description";
     
-    // Извлекаем язык из названия поля (например, name_sr -> sr, description_en -> en)
-    const parts = sourceField.split("_");
-    const currentLang = parts.length > 1 ? parts[1] : "sr";
+    // Маппинг полей: name = SR, name_sr = RU, name_en = EN
+    let currentLang: string;
+    let targetFields: { lang: string; field: string }[];
     
-    const languages = ["sr", "ru", "en"].filter(lang => lang !== currentLang);
+    if (sourceField === fieldBase) {
+      // Поле без суффикса = сербский
+      currentLang = "sr";
+      targetFields = [
+        { lang: "ru", field: `${fieldBase}_sr` },
+        { lang: "en", field: `${fieldBase}_en` }
+      ];
+    } else if (sourceField === `${fieldBase}_sr`) {
+      // Поле с _sr = русский
+      currentLang = "ru";
+      targetFields = [
+        { lang: "sr", field: fieldBase },
+        { lang: "en", field: `${fieldBase}_en` }
+      ];
+    } else {
+      // Поле с _en = английский
+      currentLang = "en";
+      targetFields = [
+        { lang: "sr", field: fieldBase },
+        { lang: "ru", field: `${fieldBase}_sr` }
+      ];
+    }
 
-    for (const lang of languages) {
-      const targetField = `${fieldBase}_${lang}`;
-      const currentValue = (formData as any)[targetField];
+    for (const { lang, field } of targetFields) {
+      const currentValue = (formData as any)[field];
       if (!currentValue || !currentValue.trim()) {
         const translated = await translateText(sourceValue, lang);
         if (translated) {
-          setFormData((prev) => ({ ...prev, [targetField]: translated }));
+          setFormData((prev) => ({ ...prev, [field]: translated }));
         }
       }
     }
