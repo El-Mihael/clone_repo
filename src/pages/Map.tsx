@@ -209,6 +209,108 @@ const Map = () => {
     }
   };
 
+  const handleMyLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Геолокация не поддерживается вашим браузером");
+      return;
+    }
+
+    toast.info("Определяю ваше местоположение...");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation([latitude, longitude]);
+
+        // Получаем все города из базы
+        const { data: allCities, error } = await supabase
+          .from("cities")
+          .select("*, countries!inner(*)");
+
+        if (error || !allCities || allCities.length === 0) {
+          toast.error("Не удалось определить город");
+          return;
+        }
+
+        // Находим ближайший город (функция calculateDistance)
+        const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+          const R = 6371; // Радиус Земли в км
+          const dLat = (lat2 - lat1) * Math.PI / 180;
+          const dLon = (lon2 - lon1) * Math.PI / 180;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          return R * c;
+        };
+
+        let nearestCity = allCities[0];
+        let minDistance = calculateDistance(
+          latitude,
+          longitude,
+          nearestCity.latitude,
+          nearestCity.longitude
+        );
+
+        for (const city of allCities) {
+          const distance = calculateDistance(
+            latitude,
+            longitude,
+            city.latitude,
+            city.longitude
+          );
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestCity = city;
+          }
+        }
+
+        // Обновляем выбранный город и страну
+        await loadCity(nearestCity.id);
+        localStorage.setItem("selectedCity", nearestCity.id);
+        localStorage.setItem("selectedCountry", nearestCity.country_id);
+
+        // Сохраняем в профиль пользователя
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from("profiles")
+            .update({
+              city_id: nearestCity.id,
+              country_id: nearestCity.country_id,
+            })
+            .eq("id", user.id);
+        }
+
+        toast.success(`Вы находитесь в городе ${nearestCity.name_sr}`);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        let errorMessage = "Не удалось получить доступ к вашему местоположению";
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Разрешите доступ к геолокации в настройках браузера";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Информация о местоположении недоступна";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Время ожидания геолокации истекло";
+            break;
+        }
+        
+        toast.error(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   const fetchCategories = async () => {
     const { data, error } = await supabase
       .from("categories")
@@ -374,6 +476,7 @@ const Map = () => {
         }}
         onMenuClick={() => setSidebarOpen(true)}
         showMenuButton={isMobile}
+        onMyLocation={handleMyLocation}
       />
       
       <div className="flex-1 flex overflow-hidden">
