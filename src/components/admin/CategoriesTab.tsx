@@ -100,9 +100,10 @@ export const CategoriesTab = () => {
     if (!sourceValue.trim() || translating) return;
 
     setTranslating(true);
-    const languages = ["sr", "ru", "en"].filter(
-      (lang) => `name_${lang}` !== sourceField
-    );
+    
+    // Определяем исходный язык из названия поля (name_sr, name_ru, name_en)
+    const currentLang = sourceField.split("_")[1] as "sr" | "ru" | "en";
+    const languages = ["sr", "ru", "en"].filter(lang => lang !== currentLang);
 
     for (const lang of languages) {
       const targetField = `name_${lang}` as keyof typeof formData;
