@@ -37,17 +37,23 @@ export default function Tours() {
       await fetchPurchasedTours(session.user.id);
     }
 
-    await fetchTours();
+    const savedCityId = localStorage.getItem("selectedCity");
+    await fetchTours(savedCityId);
     setLoading(false);
   };
 
-  const fetchTours = async () => {
-    const { data } = await supabase
+  const fetchTours = async (cityId: string | null) => {
+    let query = supabase
       .from("tours")
       .select("*, cities(name_sr, name_en, name_ru)")
       .eq("is_active", true)
-      .gt("price", 0)
-      .order("display_order");
+      .gt("price", 0);
+    
+    if (cityId) {
+      query = query.eq("city_id", cityId);
+    }
+    
+    const { data } = await query.order("display_order");
     
     setTours(data || []);
   };

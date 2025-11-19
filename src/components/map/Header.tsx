@@ -52,9 +52,14 @@ export const Header = ({
 
   useEffect(() => {
     fetchCities();
-    fetchFreeTours();
-    fetchPurchasedTours();
   }, []);
+
+  useEffect(() => {
+    if (selectedCity) {
+      fetchFreeTours();
+      fetchPurchasedTours();
+    }
+  }, [selectedCity]);
 
   const fetchCities = async () => {
     const { data } = await supabase.from("cities").select("*");
@@ -62,15 +67,20 @@ export const Header = ({
   };
 
   const fetchFreeTours = async () => {
+    if (!selectedCity) return;
+    
     const { data } = await supabase
       .from("tours")
       .select("*")
       .eq("price", 0)
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .eq("city_id", selectedCity.id);
     if (data) setFreeTours(data);
   };
 
   const fetchPurchasedTours = async () => {
+    if (!selectedCity) return;
+    
     const { data } = await supabase
       .from("purchased_tours")
       .select("tour_id")
@@ -86,7 +96,7 @@ export const Header = ({
 
   const availableTours = [
     ...freeTours,
-    ...tours.filter(t => purchasedTourIds.includes(t.id))
+    ...tours.filter(t => purchasedTourIds.includes(t.id) && t.city_id === selectedCity?.id)
   ].filter((tour, index, self) => 
     index === self.findIndex(t => t.id === tour.id)
   );
