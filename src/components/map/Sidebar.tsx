@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { Crown, ExternalLink, MapPinned, FileText, ChevronDown } from "lucide-react";
+import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { supabase } from "@/integrations/supabase/client";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -46,56 +44,6 @@ export const Sidebar = ({
   onTourSelect,
 }: SidebarProps) => {
   const { t, language } = useLanguage();
-  const [showToursDropdown, setShowToursDropdown] = useState(false);
-  const [freeTours, setFreeTours] = useState<any[]>([]);
-  const [purchasedTourIds, setPurchasedTourIds] = useState<string[]>([]);
-  const [allTours, setAllTours] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetchFreeTours();
-    fetchPurchasedTours();
-  }, []);
-
-  const fetchFreeTours = async () => {
-    const { data } = await supabase
-      .from("tours")
-      .select("*")
-      .eq("is_active", true)
-      .eq("price", 0)
-      .order("display_order");
-    
-    if (data) setFreeTours(data);
-  };
-
-  const fetchPurchasedTours = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
-      const { data: purchased } = await supabase
-        .from("purchased_tours")
-        .select("tour_id")
-        .eq("user_id", session.user.id);
-      
-      if (purchased) {
-        setPurchasedTourIds(purchased.map(pt => pt.tour_id));
-        
-        // Fetch tour details for purchased tours
-        const { data: tours } = await supabase
-          .from("tours")
-          .select("*")
-          .in("id", purchased.map(pt => pt.tour_id))
-          .eq("is_active", true)
-          .order("display_order");
-        
-        if (tours) setAllTours(tours);
-      }
-    }
-  };
-
-  const getTourName = (tour: any) => {
-    if (language === "en" && tour.name_en) return tour.name_en;
-    return tour.name;
-  };
   
   const sidebarContent = (
     <>
@@ -147,79 +95,9 @@ export const Sidebar = ({
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
-          <div className="flex flex-col gap-2 mb-3">
-            <h2 className="font-semibold text-lg text-foreground">
-              {t("placesCount").replace("{count}", places.length.toString())}
-            </h2>
-            
-            <div className="relative">
-              <Button
-                variant="outline"
-                className="w-full flex items-center justify-between"
-                size="sm"
-                onClick={() => setShowToursDropdown(!showToursDropdown)}
-              >
-                <span className="flex items-center gap-1">
-                  {language === "sr" ? "Туре" : language === "ru" ? "Туры" : "Tours"}
-                </span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showToursDropdown ? "rotate-180" : ""}`} />
-              </Button>
-              
-              {showToursDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
-                  <Button
-                    variant="default"
-                    className="w-full rounded-none border-b bg-primary text-primary-foreground hover:bg-primary/90"
-                    size="sm"
-                    onClick={() => {
-                      window.location.href = '/tours';
-                      setShowToursDropdown(false);
-                    }}
-                  >
-                    {language === "sr" ? "Купити тур" : language === "ru" ? "Купить тур" : "Buy Tour"}
-                  </Button>
-                  
-                  {(freeTours.length > 0 || allTours.length > 0) ? (
-                    <div className="p-1">
-                      {freeTours.map((tour) => (
-                        <button
-                          key={tour.id}
-                          className="w-full text-left px-3 py-2 hover:bg-muted rounded text-sm"
-                          onClick={() => {
-                            onTourSelect?.(tour.id);
-                            setShowToursDropdown(false);
-                          }}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span>{getTourName(tour)}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {language === "sr" ? "(бесплатно)" : language === "ru" ? "(бесплатно)" : "(free)"}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                      {allTours.filter(tour => !freeTours.find(ft => ft.id === tour.id)).map((tour) => (
-                        <button
-                          key={tour.id}
-                          className="w-full text-left px-3 py-2 hover:bg-muted rounded text-sm"
-                          onClick={() => {
-                            onTourSelect?.(tour.id);
-                            setShowToursDropdown(false);
-                          }}
-                        >
-                          {getTourName(tour)}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-3 text-sm text-muted-foreground">
-                      {language === "sr" ? "Нема доступних тура" : language === "ru" ? "Нет доступных туров" : "No tours available"}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          <h2 className="font-semibold mb-3 text-lg text-foreground">
+            {t("placesCount").replace("{count}", places.length.toString())}
+          </h2>
           {places.map((place) => {
             const category = categories.find(c => c.id === place.category_id);
             return (

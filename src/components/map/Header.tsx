@@ -47,9 +47,13 @@ export const Header = ({
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
   const [cities, setCities] = useState<City[]>([]);
+  const [freeTours, setFreeTours] = useState<Tour[]>([]);
+  const [purchasedTourIds, setPurchasedTourIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCities();
+    fetchFreeTours();
+    fetchPurchasedTours();
   }, []);
 
   const fetchCities = async () => {
@@ -57,11 +61,35 @@ export const Header = ({
     if (data) setCities(data);
   };
 
+  const fetchFreeTours = async () => {
+    const { data } = await supabase
+      .from("tours")
+      .select("*")
+      .eq("price", 0)
+      .eq("is_active", true);
+    if (data) setFreeTours(data);
+  };
+
+  const fetchPurchasedTours = async () => {
+    const { data } = await supabase
+      .from("purchased_tours")
+      .select("tour_id")
+      .eq("user_id", user.id);
+    if (data) setPurchasedTourIds(data.map(p => p.tour_id));
+  };
+
   const getCityName = (city: City) => {
     if (language === "sr") return city.name_sr;
     if (language === "ru") return city.name_ru;
     return city.name_en;
   };
+
+  const availableTours = [
+    ...freeTours,
+    ...tours.filter(t => purchasedTourIds.includes(t.id))
+  ].filter((tour, index, self) => 
+    index === self.findIndex(t => t.id === tour.id)
+  );
 
   return (
     <header className="h-14 sm:h-16 border-b border-border/50 bg-card/50 backdrop-blur-md shadow-card flex items-center px-2 sm:px-4 md:px-6 sticky top-0 z-50">
@@ -138,7 +166,7 @@ export const Header = ({
         </DropdownMenu>
 
         {/* Tours selector */}
-        {tours.length > 0 && (
+        {availableTours.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant={activeTour ? "default" : "outline"} size="sm" className="hidden sm:flex px-2">
@@ -147,6 +175,14 @@ export const Header = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 sm:w-56 z-[999] bg-popover">
+              <DropdownMenuItem 
+                onClick={() => navigate("/tours")}
+                className="bg-primary/10 hover:bg-primary/20 font-medium"
+              >
+                <Route className="w-4 h-4 mr-2" />
+                Купить тур
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {activeTour && (
                 <>
                   <DropdownMenuItem onClick={() => onTourSelect(null)}>
@@ -155,7 +191,7 @@ export const Header = ({
                   <DropdownMenuSeparator />
                 </>
               )}
-              {tours.map((tour) => (
+              {availableTours.map((tour) => (
                 <DropdownMenuItem
                   key={tour.id}
                   onClick={() => onTourSelect(tour)}
