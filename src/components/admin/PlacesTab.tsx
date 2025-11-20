@@ -503,24 +503,42 @@ export const PlacesTab = () => {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Список мест</h3>
+          <div className="flex items-center gap-2 text-sm">
+            <Badge variant="secondary" className="gap-1">
+              <Eye className="w-3 h-3" />
+              Видимых: {places.filter(p => !p.is_hidden).length}
+            </Badge>
+            <Badge variant="destructive" className="gap-1">
+              <EyeOff className="w-3 h-3" />
+              Скрытых: {places.filter(p => p.is_hidden).length}
+            </Badge>
+            <Badge variant="outline" className="gap-1">
+              Всего: {places.length}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
         {places.map((place) => {
           const category = categories.find(c => c.id === place.category_id);
           const hasActiveSubscription = (place.active_subscriptions || 0) > 0;
           const ownerName = place.owner_profile?.full_name || place.owner_profile?.email || 'Неизвестный';
           
           return (
-            <Card key={place.id}>
+            <Card key={place.id} className={place.is_hidden ? 'border-muted-foreground/30 bg-muted/20' : ''}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className={`font-medium ${place.is_hidden ? 'opacity-50' : ''}`}>{place.name}</h3>
+                      <h3 className={`font-medium ${place.is_hidden ? 'text-muted-foreground' : ''}`}>{place.name}</h3>
                       {place.is_premium && <Crown className="w-4 h-4 text-premium" />}
                       {place.is_hidden && (
-                        <Badge variant="outline" className="gap-1 text-xs">
+                        <Badge variant="destructive" className="gap-1 text-xs">
                           <EyeOff className="w-3 h-3" />
-                          Скрыто
+                          Скрыто от пользователей
                         </Badge>
                       )}
                     </div>
@@ -586,6 +604,7 @@ export const PlacesTab = () => {
             </Card>
           );
         })}
+        </div>
       </div>
 
       {/* Page Editor Dialog */}
