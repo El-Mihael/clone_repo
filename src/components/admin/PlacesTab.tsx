@@ -29,7 +29,7 @@ type PlaceWithCity = Place & {
 };
 
 export const PlacesTab = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [places, setPlaces] = useState<PlaceWithCity[]>([]);
@@ -37,6 +37,7 @@ export const PlacesTab = () => {
   const [editingPagePlace, setEditingPagePlace] = useState<Place | null>(null);
   const [viewingWishlistPlace, setViewingWishlistPlace] = useState<{ id: string; name: string } | null>(null);
   const [translating, setTranslating] = useState(false);
+  const [visibilityFilter, setVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
   const [formData, setFormData] = useState({
     category_id: "",
     city_id: "",
@@ -303,11 +304,11 @@ export const PlacesTab = () => {
       .eq("id", id);
 
     if (error) {
-      toast.error("Ошибка изменения видимости");
+      toast.error(t("error"));
       return;
     }
 
-    toast.success(currentHidden ? "Место показано" : "Место скрыто");
+    toast.success(currentHidden ? t("placeRestored") : t("placeHidden"));
     fetchPlaces();
   };
 
@@ -518,25 +519,50 @@ export const PlacesTab = () => {
       </Card>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <h3 className="text-lg font-semibold">Список мест</h3>
-          <div className="flex items-center gap-2 text-sm">
-            <Badge variant="secondary" className="gap-1">
-              <Eye className="w-3 h-3" />
-              Видимых: {places.filter(p => !p.is_hidden).length}
-            </Badge>
-            <Badge variant="destructive" className="gap-1">
-              <EyeOff className="w-3 h-3" />
-              Скрытых: {places.filter(p => p.is_hidden).length}
-            </Badge>
-            <Badge variant="outline" className="gap-1">
-              Всего: {places.length}
-            </Badge>
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 text-sm">
+              <Badge 
+                variant={visibilityFilter === "visible" ? "default" : "secondary"} 
+                className="gap-1 cursor-pointer"
+                onClick={() => setVisibilityFilter(visibilityFilter === "visible" ? "all" : "visible")}
+              >
+                <Eye className="w-3 h-3" />
+                {t("visiblePlaces")}: {places.filter(p => !p.is_hidden).length}
+              </Badge>
+              <Badge 
+                variant={visibilityFilter === "hidden" ? "default" : "destructive"} 
+                className="gap-1 cursor-pointer"
+                onClick={() => setVisibilityFilter(visibilityFilter === "hidden" ? "all" : "hidden")}
+              >
+                <EyeOff className="w-3 h-3" />
+                {t("hiddenPlaces")}: {places.filter(p => p.is_hidden).length}
+              </Badge>
+              <Badge variant="outline" className="gap-1">
+                {t("totalPlaces")}: {places.length}
+              </Badge>
+            </div>
+            {visibilityFilter !== "all" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setVisibilityFilter("all")}
+              >
+                {t("resetFilter")}
+              </Button>
+            )}
           </div>
         </div>
 
         <div className="grid gap-4">
-        {places.map((place) => {
+        {places
+          .filter(place => {
+            if (visibilityFilter === "visible") return !place.is_hidden;
+            if (visibilityFilter === "hidden") return place.is_hidden;
+            return true;
+          })
+          .map((place) => {
           const category = categories.find(c => c.id === place.category_id);
           const hasActiveSubscription = (place.active_subscriptions || 0) > 0;
           const ownerName = place.owner_profile?.full_name || place.owner_profile?.email || 'Неизвестный';
@@ -554,7 +580,7 @@ export const PlacesTab = () => {
                       {place.is_hidden && (
                         <Badge variant="destructive" className="gap-1 text-xs">
                           <EyeOff className="w-3 h-3" />
-                          Скрыто от пользователей
+                          {t("hiddenFromUsers")}
                         </Badge>
                       )}
                     </div>
@@ -614,11 +640,19 @@ export const PlacesTab = () => {
                     )}
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant={place.is_hidden ? "default" : "ghost"}
                       onClick={() => toggleHidden(place.id, place.is_hidden || false)}
-                      title={place.is_hidden ? "Показать место" : "Скрыть место"}
+                      title={place.is_hidden ? t("restorePlace") : t("hidePlace")}
+                      className={place.is_hidden ? "bg-green-600 hover:bg-green-700 text-white" : ""}
                     >
-                      {place.is_hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      {place.is_hidden ? (
+                        <>
+                          <Eye className="w-4 h-4 mr-1" />
+                          {t("restorePlace")}
+                        </>
+                      ) : (
+                        <EyeOff className="w-4 h-4" />
+                      )}
                     </Button>
                     <Button
                       size="sm"
