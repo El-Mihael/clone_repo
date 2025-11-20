@@ -7,10 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName } from "@/lib/i18n/languageUtils";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 
 export const CategoriesTab = () => {
+  const { language } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -234,7 +237,7 @@ export const CategoriesTab = () => {
                     style={{ backgroundColor: category.color }}
                   />
                   <div>
-                    <h3 className="font-medium">{category.name_sr || category.name_ru || category.name}</h3>
+                    <h3 className="font-medium">{getLocalizedName(category, language)}</h3>
                     <div className="text-sm text-muted-foreground space-y-1">
                       {category.name_ru && <p>RU: {category.name_ru}</p>}
                       {category.name_en && <p>EN: {category.name_en}</p>}

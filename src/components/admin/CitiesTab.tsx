@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName } from "@/lib/i18n/languageUtils";
 
 type Country = {
   id: string;
@@ -34,7 +35,7 @@ type City = {
 };
 
 export const CitiesTab = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [countries, setCountries] = useState<Country[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [formData, setFormData] = useState({
@@ -215,7 +216,7 @@ export const CitiesTab = () => {
                 <SelectContent>
                   {countries.map((country) => (
                     <SelectItem key={country.id} value={country.id}>
-                      {country.name_sr}
+                      {getLocalizedName(country, language)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -316,7 +317,7 @@ export const CitiesTab = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">
-                  {city.name_sr} / {city.name_en} / {city.name_ru}
+                  {getLocalizedName(city, language)}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {t("country")}: {getCountryName(city.country_id)}

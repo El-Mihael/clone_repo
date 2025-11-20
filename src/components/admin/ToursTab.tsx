@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 import { TourContentEditor } from "./TourContentEditor";
 import { TourGuideEditor } from "@/components/tour-guide/TourGuideEditor";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName, getLocalizedDescription } from "@/lib/i18n/languageUtils";
 
 type Tour = Database["public"]["Tables"]["tours"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -22,6 +24,7 @@ type TourWithCity = Tour & {
 };
 
 export const ToursTab = () => {
+  const { language } = useLanguage();
   const [tours, setTours] = useState<TourWithCity[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -410,7 +413,7 @@ export const ToursTab = () => {
                 <SelectContent>
                   {cities.map((city) => (
                     <SelectItem key={city.id} value={city.id}>
-                      {city.name_sr}
+                      {getLocalizedName(city, language)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -615,17 +618,19 @@ export const ToursTab = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-medium">{tour.name}</h3>
+                    <h3 className="font-medium">{getLocalizedName(tour, language)}</h3>
                     {!tour.is_active && (
                       <span className="text-xs bg-muted px-2 py-1 rounded">Неактивен</span>
                     )}
                   </div>
-                  {tour.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{tour.description}</p>
+                  {getLocalizedDescription(tour, language) && (
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {getLocalizedDescription(tour, language)}
+                    </p>
                   )}
                   {tour.cities && (
                     <div className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted">
-                      {tour.cities.name_sr}
+                      {getLocalizedName(tour.cities, language)}
                     </div>
                   )}
                 </div>
