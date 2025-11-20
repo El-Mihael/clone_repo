@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Send } from "lucide-react";
+import { Send, Bell } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const NotificationsTab = () => {
   const { t } = useLanguage();
@@ -15,6 +16,33 @@ export const NotificationsTab = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, []);
+
+  const fetchSubscriptions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("push_subscriptions")
+        .select("id, user_id, created_at")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSubscriptions(data || []);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+      toast({
+        title: t("error"),
+        description: "Не удалось загрузить подписки",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSendNotification = async () => {
     if (!title.trim() || !body.trim()) {
@@ -64,6 +92,48 @@ export const NotificationsTab = () => {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            Подписчики на уведомления
+          </CardTitle>
+          <CardDescription>
+            Всего подписчиков: {subscriptions.length}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-4">Загрузка...</div>
+          ) : subscriptions.length === 0 ? (
+            <div className="text-center py-4 text-muted-foreground">
+              Нет подписчиков на уведомления
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID Пользователя</TableHead>
+                  <TableHead>Дата подписки</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscriptions.map((sub) => (
+                  <TableRow key={sub.id}>
+                    <TableCell className="font-mono text-xs">
+                      {sub.user_id || "Анонимный"}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(sub.created_at).toLocaleString("ru-RU")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
