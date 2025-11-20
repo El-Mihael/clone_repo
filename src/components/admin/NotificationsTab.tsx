@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Send, Bell, TestTube } from "lucide-react";
+import { Send, Bell, TestTube, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotificationStatistics } from "./NotificationStatistics";
@@ -21,6 +21,7 @@ export const NotificationsTab = () => {
   const [isSending, setIsSending] = useState(false);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCleaning, setIsCleaning] = useState(false);
 
   useEffect(() => {
     fetchSubscriptions();
@@ -99,6 +100,45 @@ export const NotificationsTab = () => {
     }
   };
 
+  const handleCleanupInvalidSubscriptions = async () => {
+    setIsCleaning(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const { data, error } = await supabase.functions.invoke("cleanup-invalid-subscriptions", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      console.log("Cleanup result:", data);
+
+      toast({
+        title: t("success"),
+        description: `Очистка завершена: удалено ${data.deleted} из ${data.checked} подписок`,
+      });
+
+      // Refresh subscriptions list
+      await fetchSubscriptions();
+    } catch (error) {
+      console.error("Error cleaning up subscriptions:", error);
+      toast({
+        title: t("error"),
+        description: "Не удалось выполнить очистку подписок",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCleaning(false);
+    }
+  };
+
   return (
     <Tabs defaultValue="send" className="space-y-6">
       <TabsList>
@@ -110,13 +150,26 @@ export const NotificationsTab = () => {
       <TabsContent value="send" className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Подписчики на уведомления
-            </CardTitle>
-            <CardDescription>
-              Всего подписчиков: {subscriptions.length}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Подписчики на уведомления
+                </CardTitle>
+                <CardDescription>
+                  Всего подписчиков: {subscriptions.length}
+                </CardDescription>
+              </div>
+              <Button
+                onClick={handleCleanupInvalidSubscriptions}
+                disabled={isCleaning || subscriptions.length === 0}
+                variant="outline"
+                size="sm"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {isCleaning ? "Очистка..." : "Удалить невалидные"}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
