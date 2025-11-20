@@ -26,6 +26,26 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
   return outputArray;
 }
 
+// Normalize VAPID private key input (supports base64url raw or PEM)
+function parseVapidPrivateKey(vapidPrivateKey: string): Uint8Array {
+  // If it's a PEM string, strip header/footer and newlines
+  if (vapidPrivateKey.includes('BEGIN PRIVATE KEY')) {
+    const pemBody = vapidPrivateKey
+      .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+      .replace(/-----END PRIVATE KEY-----/g, '')
+      .replace(/\s+/g, '');
+    const raw = atob(pemBody);
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) {
+      bytes[i] = raw.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  // Otherwise assume base64url-encoded PKCS#8
+  return base64urlToUint8Array(vapidPrivateKey.trim());
+}
+
 // Generate VAPID JWT token
 async function generateVapidJWT(audience: string, subject: string, vapidPrivateKey: string): Promise<string> {
   const header = {
@@ -46,8 +66,8 @@ async function generateVapidJWT(audience: string, subject: string, vapidPrivateK
   const payloadEncoded = base64urlEncode(payloadBytes.buffer);
   const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
 
-  // Import private key
-  const privateKeyBytes = base64urlToUint8Array(vapidPrivateKey);
+  // Import private key (PKCS#8) from either PEM or base64url
+  const privateKeyBytes = parseVapidPrivateKey(vapidPrivateKey);
   const cryptoKey = await crypto.subtle.importKey(
     'pkcs8',
     privateKeyBytes as BufferSource,
