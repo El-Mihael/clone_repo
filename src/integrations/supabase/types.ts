@@ -506,6 +506,35 @@ export type Database = {
           },
         ]
       }
+      user_places: {
+        Row: {
+          created_at: string
+          id: string
+          place_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          place_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          place_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_places_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

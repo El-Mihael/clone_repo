@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, LogOut, MapPin, ShoppingCart, History, Check } from "lucide-react";
+import { Coins, LogOut, MapPin, ShoppingCart, History, Check, Heart } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { UserPlacesManager } from "@/components/account/UserPlacesManager";
+import { UserWishlist } from "@/components/account/UserWishlist";
 
 interface Profile {
   id: string;
@@ -285,6 +286,10 @@ const Account = () => {
               <ShoppingCart className="w-4 h-4 mr-2" />
               {language === "sr" ? "Моје туре" : language === "ru" ? "Мои туры" : "My Tours"}
             </TabsTrigger>
+            <TabsTrigger value="wishlist">
+              <Heart className="w-4 h-4 mr-2" />
+              {language === "sr" ? "Желим посетити" : language === "ru" ? "Хочу посетить" : "Wishlist"}
+            </TabsTrigger>
             {profile.user_type === "business" && (
               <TabsTrigger value="places">
                 <MapPin className="w-4 h-4 mr-2" />
@@ -383,6 +388,10 @@ const Account = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="wishlist">
+            <UserWishlist />
           </TabsContent>
 
           {profile.user_type === "business" && (
