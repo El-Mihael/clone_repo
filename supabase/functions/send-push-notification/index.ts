@@ -242,38 +242,37 @@ async function sendPushNotification(
   vapidPublicKey: string,
   vapidPrivateKey: string
 ): Promise<void> {
-  const url = new URL(subscription.endpoint);
-  const audience = `${url.protocol}//${url.host}`;
-  
-  // Generate VAPID auth
-  const jwt = await generateVapidJWT(audience, 'mailto:support@example.com', vapidPrivateKey);
-  
-  // Encrypt payload
-  const { ciphertext, salt, publicKey } = await encryptPayload(
-    payload,
-    subscription.p256dh,
-    subscription.auth
+  // Use web-push style VAPID handling with base64url-encoded keys.
+  // The VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY secrets MUST be base64url strings
+  // generated specifically for Web Push (like with `npx web-push generate-vapid-keys`).
+
+  // Dynamically import web-push via esm.sh to handle all encryption and VAPID details
+  const webpushModule = await import("https://esm.sh/web-push@3.6.3");
+  const webpush = (webpushModule as any).default ?? webpushModule;
+
+  if (!webpush) {
+    throw new Error("Failed to load web-push library");
+  }
+
+  // Configure VAPID details
+  webpush.setVapidDetails(
+    "mailto:support@example.com",
+    vapidPublicKey,
+    vapidPrivateKey,
   );
 
-  // Send encrypted notification
-  const response = await fetch(subscription.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/octet-stream',
-      'Content-Encoding': 'aes128gcm',
-      'Content-Length': ciphertext.length.toString(),
-      'TTL': '86400', // 24 hours
-      'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
-      'Crypto-Key': `dh=${base64urlEncode(publicKey as unknown as ArrayBuffer)}`,
-      'Encryption': `salt=${base64urlEncode(salt as unknown as ArrayBuffer)}`,
+  // Use web-push to send the notification; it will handle
+  // all required encryption and headers internally.
+  await webpush.sendNotification(
+    {
+      endpoint: subscription.endpoint,
+      keys: {
+        p256dh: subscription.p256dh,
+        auth: subscription.auth,
+      },
     },
-    body: ciphertext as unknown as BodyInit,
-  });
-
-  if (!response.ok) {
-    const responseText = await response.text();
-    throw new Error(`Push notification failed: ${response.status} ${response.statusText} - ${responseText}`);
-  }
+    payload,
+  );
 }
 
 serve(async (req) => {
