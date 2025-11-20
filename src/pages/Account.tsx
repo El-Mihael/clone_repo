@@ -35,6 +35,15 @@ interface Place {
   created_at: string;
 }
 
+interface SubscriptionDetail {
+  placeId: string;
+  placeName: string;
+  nextBillingDate: string;
+  placeListingCost: number;
+  premiumCost: number;
+  billingPeriod: string;
+}
+
 interface PurchasedTour {
   id: string;
   tour_id: string;
@@ -55,9 +64,7 @@ const Account = () => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [purchasedTours, setPurchasedTours] = useState<PurchasedTour[]>([]);
   const [loading, setLoading] = useState(true);
-  const [nextBillingTotal, setNextBillingTotal] = useState<number>(0);
-  const [nextBillingDate, setNextBillingDate] = useState<string | null>(null);
-  const [billingBreakdown, setBillingBreakdown] = useState<{ place: number; premium: number }>({ place: 0, premium: 0 });
+  const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionDetail[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -122,7 +129,7 @@ const Account = () => {
     if (data) {
       setPlaces(data);
       
-      // Calculate next billing
+      // Calculate subscription details for each place
       const { data: subscriptions } = await supabase
         .from("user_subscriptions")
         .select(`
@@ -132,6 +139,8 @@ const Account = () => {
             billing_period
           ),
           places!inner (
+            id,
+            name,
             is_premium
           )
         `)
@@ -139,28 +148,21 @@ const Account = () => {
         .eq("is_active", true);
 
       if (subscriptions && subscriptions.length > 0) {
-        let totalPlace = 0;
-        let totalPremium = 0;
-        let earliestDate: Date | null = null;
-
-        subscriptions.forEach((sub: any) => {
+        const details: SubscriptionDetail[] = subscriptions.map((sub: any) => {
           const plan = sub.subscription_plans;
           const place = sub.places;
           
-          totalPlace += plan.price;
-          if (place?.is_premium) {
-            totalPremium += 8;
-          }
-
-          const subDate = new Date(sub.next_billing_date);
-          if (!earliestDate || subDate < earliestDate) {
-            earliestDate = subDate;
-          }
+          return {
+            placeId: place.id,
+            placeName: place.name,
+            nextBillingDate: sub.next_billing_date,
+            placeListingCost: plan.price,
+            premiumCost: place?.is_premium ? 8 : 0,
+            billingPeriod: plan.billing_period,
+          };
         });
 
-        setNextBillingTotal(totalPlace + totalPremium);
-        setBillingBreakdown({ place: totalPlace, premium: totalPremium });
-        setNextBillingDate(earliestDate ? earliestDate.toISOString() : null);
+        setSubscriptionDetails(details);
       }
     }
   };
@@ -224,6 +226,49 @@ const Account = () => {
             </p>
           </CardContent>
         </Card>
+
+        {subscriptionDetails.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>{t("upcomingBillings")}</CardTitle>
+              <CardDescription>{t("subscriptionDetails")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {subscriptionDetails.map((detail) => {
+                  const total = detail.placeListingCost + detail.premiumCost;
+                  return (
+                    <div key={detail.placeId} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="font-medium">{detail.placeName}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {t("billingPeriod")}: {
+                            detail.billingPeriod === 'daily' ? t("billingPeriod_daily") :
+                            detail.billingPeriod === 'weekly' ? t("billingPeriod_weekly") :
+                            detail.billingPeriod === 'monthly' ? t("billingPeriod_monthly") :
+                            t("billingPeriod_yearly")
+                          }
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {t("nextBilling")}: {new Date(detail.nextBillingDate).toLocaleDateString(language === "sr" ? "sr-RS" : language === "ru" ? "ru-RU" : "en-US")}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold">{total} {t("credits")}</div>
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <div>{t("placeListing")}: {detail.placeListingCost}</div>
+                          {detail.premiumCost > 0 && (
+                            <div>{t("premiumStatus")}: {detail.premiumCost}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs defaultValue="history" className="space-y-4">
           <TabsList>
