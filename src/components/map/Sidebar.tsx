@@ -125,7 +125,13 @@ export const Sidebar = ({
                     ? "border-primary bg-primary/10 shadow-card"
                     : "border-border bg-card hover:border-primary/50"
                 } ${place.is_premium ? "shadow-premium/20" : ""}`}
-                onClick={() => onPlaceSelect(place.id)}
+                onClick={() => {
+                  onPlaceSelect(place.id);
+                  // На мобильных закрываем sidebar с небольшой задержкой чтобы увидеть анимацию
+                  if (isMobile) {
+                    setTimeout(() => onOpenChange(false), 300);
+                  }
+                }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0 overflow-hidden">
