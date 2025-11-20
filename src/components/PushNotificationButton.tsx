@@ -2,6 +2,8 @@ import { Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -12,8 +14,22 @@ import {
 export const PushNotificationButton = () => {
   const { isSubscribed, isSupported, subscribe, unsubscribe } = usePushNotifications();
   const { t } = useLanguage();
+  const [user, setUser] = useState<any>(null);
 
-  if (!isSupported) {
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Don't show the button if push notifications are not supported or user is not logged in
+  if (!isSupported || !user) {
     return null;
   }
 
