@@ -6,62 +6,82 @@
 
 @layer base {
   :root {
-    --background: 220 13% 13%;
-    --foreground: 60 30% 96%;
-    --card: 220 13% 18%;
-    --card-foreground: 60 30% 96%;
-    --popover: 220 13% 18%;
-    --popover-foreground: 60 30% 96%;
-    --primary: 220 100% 66%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 14 100% 61%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 142 76% 36%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 220 13% 25%;
-    --muted-foreground: 60 9% 58%;
-    --accent: 0 100% 66%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 14 100% 61%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 30%;
-    --input: 220 13% 30%;
-    --ring: 220 100% 66%;
-    --radius: 0rem;
-    --premium: 45 100% 50%;
-    --premium-foreground: 0 0% 0%;
-    --marker-museum: 280 100% 66%;
-    --marker-cafe: 35 100% 50%;
-    --marker-public: 142 76% 36%;
-    --marker-park: 120 100% 40%;
-    --marker-landmark: 0 100% 66%;
-    --marker-entertainment: 300 100% 50%;
-    --pixel-border: 4px;
-    --scanline: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
-    --shadow-retro-sm: 2px 2px 0px hsl(220 13% 10%);
-    --shadow-retro-md: 4px 4px 0px hsl(220 13% 10%);
-    --shadow-retro-lg: 6px 6px 0px hsl(220 13% 10%);
-    --shadow-retro-glow: 0 0 10px currentColor, 0 0 20px currentColor;
-    --gradient-primary: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 100%);
-    --gradient-primary-vibrant: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 50%, hsl(300 100% 50%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(0 100% 66%) 0%, hsl(35 100% 50%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 50%) 100%);
-    --gradient-premium-vibrant: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 50%) 50%, hsl(45 100% 50%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(220 100% 66%) 0%, hsl(280 100% 66%) 50%, hsl(300 100% 50%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(220 13% 18%) 0%, hsl(220 13% 20%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(120 100% 40%) 100%);
-    --shadow-card: var(--shadow-retro-md);
-    --shadow-card-hover: var(--shadow-retro-lg);
-    --shadow-premium: var(--shadow-retro-lg);
-    --shadow-premium-hover: 8px 8px 0px hsl(220 13% 10%), var(--shadow-retro-glow);
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 14 100% 61%;
+    --radius: 0.25rem;
+    --premium: 14 100% 61%;
+    --premium-foreground: 0 0% 100%;
+    --marker-museum: 14 100% 61%;
+    --marker-cafe: 38 100% 50%;
+    --marker-public: 200 100% 50%;
+    --marker-park: 150 80% 45%;
+    --marker-landmark: 280 80% 60%;
+    --marker-entertainment: 330 80% 55%;
+    --pixel-border: 2px;
+    --scanline: none;
+    --shadow-retro-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-retro-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-retro-lg: 0 8px 20px rgba(0, 0, 0, 0.2);
+    --shadow-retro-glow: 0 0 15px hsl(14 100% 61% / 0.3);
+    --gradient-primary: linear-gradient(135deg, hsl(14 100% 61%) 0%, hsl(14 100% 51%) 100%);
+    --gradient-primary-vibrant: linear-gradient(135deg, hsl(14 100% 61%) 0%, hsl(14 100% 51%) 50%, hsl(0 100% 61%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(14 100% 61%) 0%, hsl(0 84% 60%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(14 100% 61%) 0%, hsl(14 100% 51%) 100%);
+    --gradient-premium-vibrant: linear-gradient(135deg, hsl(14 100% 61%) 0%, hsl(14 100% 51%) 50%, hsl(0 100% 61%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(14 100% 61%) 0%, hsl(14 100% 51%) 50%, hsl(0 100% 61%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 98%) 0%, hsl(0 0% 100%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 10%) 0%, hsl(0 0% 15%) 100%);
+    --shadow-card: var(--shadow-retro-sm);
+    --shadow-card-hover: var(--shadow-retro-md);
+    --shadow-premium: var(--shadow-retro-md);
+    --shadow-premium-hover: var(--shadow-retro-lg), var(--shadow-retro-glow);
     --shadow-marker: var(--shadow-retro-sm);
     --shadow-glow: var(--shadow-retro-glow);
-    --shadow-glow-premium: 0 0 15px hsl(45 100% 50%), 0 0 30px hsl(45 100% 50%);
-    --transition-smooth: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --shadow-glow-premium: 0 0 20px hsl(14 100% 61% / 0.4);
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    --background: 220 13% 13%;
-    --foreground: 60 30% 96%;
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 14 100% 61%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 14 100% 61%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 14 100% 61%;
+    --premium: 14 100% 61%;
+    --premium-foreground: 0 0% 100%;
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 10%) 0%, hsl(0 0% 12%) 100%);
   }
 
   * {
@@ -74,58 +94,62 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Advent Pro', 'VT323', 'Courier New', monospace;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
+    font-family: 'Advent Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
   
   h1 {
     font-size: clamp(1.875rem, 1.5rem + 2vw, 3rem);
-    line-height: 1.2;
-    font-weight: 700;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.03em;
   }
   
   h2 {
     font-size: clamp(1.5rem, 1.25rem + 1.5vw, 2.25rem);
-    line-height: 1.3;
-    font-weight: 600;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
   
   h3 {
     font-size: clamp(1.25rem, 1.1rem + 1vw, 1.875rem);
-    line-height: 1.4;
-    font-weight: 600;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
   
   h4 {
     font-size: clamp(1.125rem, 1rem + 0.625vw, 1.5rem);
-    line-height: 1.4;
-    font-weight: 500;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 
   button, input, select, textarea {
-    font-family: 'Advent Pro', 'VT323', 'Courier New', monospace;
+    font-family: inherit;
+    font-weight: 600;
     font-size: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
   }
   
   .retro-text-shadow {
-    text-shadow: 3px 3px 0px hsl(220 13% 10%), -1px -1px 0px hsl(220 100% 66% / 0.5);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   .retro-glow {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 3px 3px 0px hsl(220 13% 10%);
-    animation: glow 2s ease-in-out infinite alternate;
+    box-shadow: 0 0 20px hsl(14 100% 61% / 0.3);
+    animation: glow 3s ease-in-out infinite alternate;
   }
   
   @keyframes glow {
     from {
-      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor, 3px 3px 0px hsl(220 13% 10%);
+      box-shadow: 0 0 20px hsl(14 100% 61% / 0.3);
     }
     to {
-      text-shadow: 0 0 20px currentColor, 0 0 30px currentColor, 0 0 40px currentColor, 3px 3px 0px hsl(220 13% 10%);
+      box-shadow: 0 0 30px hsl(14 100% 61% / 0.5);
     }
   }
 }
@@ -142,57 +166,49 @@
 
 @layer components {
   .pixel-border {
-    border-width: var(--pixel-border);
-    border-style: solid;
+    @apply border border-border;
   }
 
   .pixel-corners {
-    clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
+    border-radius: 2px;
   }
 
   .scanlines {
-    position: relative;
-  }
-
-  .scanlines::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--scanline);
-    pointer-events: none;
-    opacity: 0.5;
+    @apply relative;
   }
 
   .retro-button {
-    @apply relative overflow-hidden;
-    box-shadow: var(--shadow-retro-md);
-    transition: var(--transition-bounce);
+    @apply relative overflow-hidden px-8 py-4 font-bold uppercase tracking-wide transition-all duration-200;
+    @apply bg-primary text-primary-foreground rounded-sm;
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .retro-button:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-retro-lg);
+    @apply bg-primary/90 scale-[1.02];
+    box-shadow: 
+      0 6px 16px rgba(0, 0, 0, 0.2),
+      0 3px 6px rgba(0, 0, 0, 0.15);
   }
 
   .retro-button:active {
-    transform: translateY(0);
-    box-shadow: var(--shadow-retro-sm);
+    @apply scale-[0.98];
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .premium-glow {
-    box-shadow: var(--shadow-glow-premium);
-    animation: premium-pulse 2s ease-in-out infinite;
+    animation: premium-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   @keyframes premium-pulse {
     0%, 100% {
-      box-shadow: var(--shadow-glow-premium);
+      box-shadow: 0 4px 12px rgba(255, 92, 57, 0.2);
     }
     50% {
-      box-shadow: 0 0 25px hsl(45 100% 50%), 0 0 50px hsl(45 100% 50%);
+      box-shadow: 0 8px 20px rgba(255, 92, 57, 0.4);
     }
   }
 }
