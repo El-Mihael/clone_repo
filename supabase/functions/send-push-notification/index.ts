@@ -61,7 +61,12 @@ function parseVapidPrivateKey(vapidPrivateKey: string): Uint8Array {
 }
 
 // Generate VAPID JWT token
-async function generateVapidJWT(audience: string, subject: string, vapidPrivateKey: string): Promise<string> {
+async function generateVapidJWT(
+  audience: string,
+  subject: string,
+  vapidPrivateKey: string,
+  vapidPublicKey: string,
+): Promise<string> {
   const header = {
     typ: 'JWT',
     alg: 'ES256',
@@ -80,22 +85,59 @@ async function generateVapidJWT(audience: string, subject: string, vapidPrivateK
   const payloadEncoded = base64urlEncode(payloadBytes.buffer);
   const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
 
-  // Import private key (PKCS#8) from either PEM or base64url
-  const privateKeyBytes = parseVapidPrivateKey(vapidPrivateKey);
-  const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8',
-    privateKeyBytes as BufferSource,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign']
-  );
+  let cryptoKey: CryptoKey;
 
-  // Sign
+  // Case 1: PEM (PKCS#8 or EC PRIVATE KEY)
+  if (
+    vapidPrivateKey.includes('BEGIN PRIVATE KEY') ||
+    vapidPrivateKey.includes('BEGIN EC PRIVATE KEY')
+  ) {
+    const privateKeyBytes = parseVapidPrivateKey(vapidPrivateKey);
+    cryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      privateKeyBytes as BufferSource,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign'],
+    );
+  } else {
+    // Case 2: base64url "d" + base64url public key (uncompressed EC point)
+    const publicKeyBytes = base64urlToUint8Array(vapidPublicKey.trim());
+    if (publicKeyBytes[0] !== 4 || publicKeyBytes.length !== 65) {
+      throw new Error('Invalid VAPID public key format');
+    }
+
+    const xBytes = publicKeyBytes.slice(1, 33);
+    const yBytes = publicKeyBytes.slice(33, 65);
+
+    const x = base64urlEncode(xBytes as unknown as ArrayBuffer);
+    const y = base64urlEncode(yBytes as unknown as ArrayBuffer);
+    const d = vapidPrivateKey.trim();
+
+    const jwk = {
+      kty: 'EC',
+      crv: 'P-256',
+      x,
+      y,
+      d,
+      ext: false,
+      key_ops: ['sign'],
+    } as JsonWebKey;
+
+    cryptoKey = await crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['sign'],
+    );
+  }
+
   const signatureBytes = encoder.encode(unsignedToken);
   const signature = await crypto.subtle.sign(
     { name: 'ECDSA', hash: 'SHA-256' },
     cryptoKey,
-    signatureBytes.buffer
+    signatureBytes.buffer,
   );
 
   const signatureEncoded = base64urlEncode(signature);
@@ -246,7 +288,7 @@ async function sendPushNotification(
   const audience = `${url.protocol}//${url.host}`;
   
   // Generate VAPID auth
-  const jwt = await generateVapidJWT(audience, 'mailto:support@example.com', vapidPrivateKey);
+  const jwt = await generateVapidJWT(audience, 'mailto:support@example.com', vapidPrivateKey, vapidPublicKey);
   
   // Encrypt payload
   const { ciphertext, salt, publicKey } = await encryptPayload(
