@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Crown, Plus, Loader2, Trash2, Pencil, FileText } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -184,6 +185,13 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
           </div>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-4">
+            <Crown className="h-4 w-4" />
+            <AlertDescription className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              {t("customPagePremiumInfo")}
+            </AlertDescription>
+          </Alert>
           {places.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-4">
