@@ -33,18 +33,28 @@ export const usePushNotifications = () => {
   };
 
   const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding)
-      .replace(/\-/g, "+")
-      .replace(/_/g, "/");
+    try {
+      // Remove any whitespace and ensure it's a clean base64url string
+      const cleanBase64 = base64String.trim().replace(/\s/g, '');
+      
+      // Add padding if needed
+      const padding = "=".repeat((4 - (cleanBase64.length % 4)) % 4);
+      const base64 = (cleanBase64 + padding)
+        .replace(/\-/g, "+")
+        .replace(/_/g, "/");
 
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
 
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    } catch (error) {
+      console.error("Failed to decode VAPID key:", error);
+      console.error("Base64 string:", base64String);
+      throw new Error("VAPID ключ имеет неверный формат. Проверьте секрет VAPID_PUBLIC_KEY в настройках.");
     }
-    return outputArray;
   };
 
   const subscribe = async () => {
@@ -72,11 +82,14 @@ export const usePushNotifications = () => {
       const registration = await navigator.serviceWorker.ready;
       
       // Generate VAPID keys using edge function
-      const { data: vapidData } = await supabase.functions.invoke("get-vapid-key");
+      const { data: vapidData, error: vapidError } = await supabase.functions.invoke("get-vapid-key");
       
-      if (!vapidData?.publicKey) {
-        throw new Error("Failed to get VAPID key");
+      if (vapidError || !vapidData?.publicKey) {
+        console.error("VAPID key error:", vapidError);
+        throw new Error("Не удалось получить VAPID ключ");
       }
+
+      console.log("VAPID public key received, length:", vapidData.publicKey.length);
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -121,10 +134,11 @@ export const usePushNotifications = () => {
         description: "Вы подписались на уведомления",
       });
     } catch (error) {
+      const err = error as Error;
       console.error("Error subscribing to push notifications:", error);
       toast({
         title: "Ошибка",
-        description: "Не удалось подписаться на уведомления",
+        description: err.message || "Не удалось подписаться на уведомления",
         variant: "destructive",
       });
     }
