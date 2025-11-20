@@ -85,7 +85,12 @@ export const StatisticsTab = () => {
         `)
         .order("shared_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching share statistics:", error);
+        throw error;
+      }
+
+      console.log("Share data received:", shareData);
 
       // Process data for place statistics
       const placeStatsMap = new Map<string, PlaceShareStats>();
@@ -107,7 +112,7 @@ export const StatisticsTab = () => {
             .from("profiles")
             .select("full_name, email")
             .eq("id", item.places.owner_id)
-            .single();
+            .maybeSingle();
           ownerName = ownerData?.full_name || ownerData?.email || null;
         }
 
@@ -158,7 +163,7 @@ export const StatisticsTab = () => {
               .from("profiles")
               .select("full_name, email")
               .eq("id", ownerId)
-              .single();
+              .maybeSingle();
             
             businessOwnerStatsMap.set(ownerId, {
               owner_id: ownerId,
@@ -214,6 +219,7 @@ export const StatisticsTab = () => {
       setTotalShares(total);
     } catch (error) {
       console.error("Error fetching statistics:", error);
+      console.error("Full error details:", JSON.stringify(error, null, 2));
     } finally {
       setLoading(false);
     }
