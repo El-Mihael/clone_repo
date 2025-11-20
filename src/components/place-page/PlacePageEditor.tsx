@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Trash2, MoveUp, MoveDown, Image, Type, LayoutGrid, Columns, Info } from "lucide-react";
+import { Plus, Trash2, MoveUp, MoveDown, Image, Type, LayoutGrid, Columns, Info, Crown, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -33,6 +34,25 @@ export const PlacePageEditor = ({ place, onSave }: PlacePageEditorProps) => {
     pageStyle: {},
   });
   const [saving, setSaving] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    
+    setIsAdmin(!!data);
+  };
 
   const addBlock = (type: Block["type"]) => {
     const newBlock: Block = {
@@ -96,6 +116,12 @@ export const PlacePageEditor = ({ place, onSave }: PlacePageEditorProps) => {
   };
 
   const handleSave = async () => {
+    // Check if place is premium or user is admin
+    if (!place.is_premium && !isAdmin) {
+      toast.error("Кастомные страницы доступны только для премиум-мест");
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -120,6 +146,26 @@ export const PlacePageEditor = ({ place, onSave }: PlacePageEditorProps) => {
 
   return (
     <div className="space-y-6">
+      {!place.is_premium && !isAdmin && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center gap-2">
+            <Crown className="w-4 h-4" />
+            Кастомные страницы доступны только для премиум-мест. Активируйте премиум-статус, чтобы сохранить изменения.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {!place.is_premium && isAdmin && (
+        <Alert>
+          <Crown className="h-4 w-4" />
+          <AlertDescription>
+            Это место не имеет премиум-статуса. Вы можете редактировать страницу как администратор, 
+            но владелец не сможет изменять её без активации премиум.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Tabs defaultValue="header" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="header">Хедер</TabsTrigger>
