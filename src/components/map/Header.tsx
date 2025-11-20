@@ -196,13 +196,13 @@ export const Header = ({
       )}
 
       <div className="ml-auto flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-        {/* Install PWA Button */}
+        {/* Install PWA Button (desktop only) */}
         <div className="hidden sm:block">
           <InstallPWAButton />
         </div>
         
-        {/* Push Notifications */}
-        <div className="hidden sm:block">
+        {/* Push Notifications (available on all devices) */}
+        <div>
           <PushNotificationButton />
         </div>
         
