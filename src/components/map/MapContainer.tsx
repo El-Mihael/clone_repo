@@ -40,6 +40,7 @@ const MapUpdater = ({
   flyToUserLocationTrigger?: number;
 }) => {
   const map = useMap();
+  const lastFlyTrigger = useRef<number>(0);
 
   useEffect(() => {
     if (selectedPlace) {
@@ -55,8 +56,9 @@ const MapUpdater = ({
 
   useEffect(() => {
     // Летим к местоположению пользователя при изменении trigger
-    if (flyToUserLocationTrigger && flyToUserLocationTrigger > 0 && userLocation) {
-      map.flyTo(userLocation, 17, {
+    if (flyToUserLocationTrigger && flyToUserLocationTrigger > lastFlyTrigger.current && userLocation) {
+      lastFlyTrigger.current = flyToUserLocationTrigger;
+      map.flyTo(userLocation, 18, {
         duration: 1.5,
         easeLinearity: 0.25,
       });
@@ -64,13 +66,13 @@ const MapUpdater = ({
   }, [flyToUserLocationTrigger, userLocation, map]);
 
   useEffect(() => {
-    // Летим к центру города только если не выбрано конкретное место
-    if (!selectedPlace) {
+    // Летим к центру города только если не выбрано конкретное место и не было недавнего полета к пользователю
+    if (!selectedPlace && (!flyToUserLocationTrigger || flyToUserLocationTrigger === 0)) {
       map.flyTo(cityCenter, cityZoom, {
         duration: 1.5,
       });
     }
-  }, [cityCenter, cityZoom, map, selectedPlace]);
+  }, [cityCenter, cityZoom, map, selectedPlace, flyToUserLocationTrigger]);
 
   return null;
 };
