@@ -25,6 +25,7 @@ interface Place {
   is_premium: boolean;
   premium_expires_at: string | null;
   created_at: string;
+  cancel_at_period_end?: boolean;
 }
 
 interface UserPlacesManagerProps {
@@ -60,7 +61,8 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
   };
 
   const handleTogglePremium = async (place: Place, skipDialog = false) => {
-    if (place.is_premium && !skipDialog) {
+    // If premium is active and not cancelled, show cancellation dialog
+    if (place.is_premium && !premiumCancelledPlace && !skipDialog) {
       openPremiumDialog(place);
       return;
     }
@@ -74,7 +76,7 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
       const response = await supabase.functions.invoke("toggle-premium", {
         body: {
           placeId: place.id,
-          isPremium: !place.is_premium,
+          isPremium: !place.is_premium || premiumCancelledPlace === place.id,
         },
       });
 
@@ -84,13 +86,15 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
 
       toast({
         title: t("success"),
-        description: place.is_premium 
+        description: place.is_premium && !premiumCancelledPlace
           ? t("premiumCancelledAtPeriodEnd")
           : t("premiumEnabled"),
       });
 
-      if (place.is_premium) {
+      if (place.is_premium && !premiumCancelledPlace) {
         setPremiumCancelledPlace(place.id);
+      } else if (premiumCancelledPlace === place.id) {
+        setPremiumCancelledPlace(null);
       }
 
       setPremiumDialogOpen(false);
@@ -198,12 +202,12 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                           Premium
                         </Badge>
                       )}
-                      {premiumCancelledPlace === place.id && place.premium_expires_at && (
-                        <span className="text-xs text-muted-foreground">
-                          {t("premiumCancelledUntil")} {new Date(place.premium_expires_at).toLocaleDateString()}
-                        </span>
-                      )}
                     </div>
+                    {premiumCancelledPlace === place.id && place.premium_expires_at && (
+                      <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                        {t("premiumCancelledUntil")} {new Date(place.premium_expires_at).toLocaleDateString()}. {t("noChargeNextPeriod")}
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -214,18 +218,23 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                         {t("edit")}
                       </Button>
                       <Button
-                        variant={place.is_premium ? "outline" : "default"}
+                        variant={place.is_premium && !premiumCancelledPlace ? "outline" : "default"}
                         size="sm"
-                        onClick={() => openPremiumDialog(place)}
-                        disabled={toggleLoading === place.id || (!place.is_premium && credits < 8)}
+                        onClick={() => premiumCancelledPlace === place.id ? handleTogglePremium(place, true) : openPremiumDialog(place)}
+                        disabled={toggleLoading === place.id || (!place.is_premium && !premiumCancelledPlace && credits < 8)}
                       >
                         {toggleLoading === place.id ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <Crown className="w-4 h-4 mr-2" />
                         )}
-                        {place.is_premium ? t("cancelPremium") : t("enablePremium")}
-                        {!place.is_premium && ` (8 ${t("credits")})`}
+                        {premiumCancelledPlace === place.id 
+                          ? t("activatePremium") 
+                          : place.is_premium 
+                            ? t("cancelPremium") 
+                            : t("enablePremium")
+                        }
+                        {!place.is_premium && !premiumCancelledPlace && ` (8 ${t("credits")})`}
                       </Button>
                       <Button
                         variant="destructive"
