@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Crown, FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 import type { Database } from "@/integrations/supabase/types";
@@ -19,6 +20,8 @@ type City = Database["public"]["Tables"]["cities"]["Row"];
 
 type PlaceWithCity = Place & {
   cities?: { name_sr: string; name_en: string; name_ru: string } | null;
+  owner_profile?: { email: string; full_name: string | null } | null;
+  active_subscriptions?: number;
 };
 
 export const PlacesTab = () => {
@@ -68,11 +71,50 @@ export const PlacesTab = () => {
   };
 
   const fetchPlaces = async () => {
-    const { data } = await supabase
+    const { data: placesData } = await supabase
       .from("places")
       .select("*, cities(name_sr, name_en, name_ru)")
       .order("created_at", { ascending: false });
-    setPlaces(data || []);
+    
+    if (!placesData) {
+      setPlaces([]);
+      return;
+    }
+
+    // Get owner profiles for places that have owners
+    const ownerIds = placesData
+      .filter(p => p.owner_id)
+      .map(p => p.owner_id)
+      .filter((id): id is string => id !== null);
+
+    const { data: profiles } = ownerIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, email, full_name")
+          .in("id", ownerIds)
+      : { data: null };
+
+    // Get active subscriptions count for places
+    const placeIds = placesData.map(p => p.id);
+    const { data: subscriptions } = await supabase
+      .from("user_subscriptions")
+      .select("place_id, is_active")
+      .in("place_id", placeIds)
+      .eq("is_active", true);
+
+    // Combine data
+    const enrichedPlaces: PlaceWithCity[] = placesData.map(place => {
+      const owner = profiles?.find(p => p.id === place.owner_id);
+      const activeSubsCount = subscriptions?.filter(s => s.place_id === place.id).length || 0;
+      
+      return {
+        ...place,
+        owner_profile: owner ? { email: owner.email, full_name: owner.full_name } : null,
+        active_subscriptions: activeSubsCount,
+      };
+    });
+
+    setPlaces(enrichedPlaces);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -449,6 +491,9 @@ export const PlacesTab = () => {
       <div className="grid gap-4">
         {places.map((place) => {
           const category = categories.find(c => c.id === place.category_id);
+          const hasActiveSubscription = (place.active_subscriptions || 0) > 0;
+          const ownerName = place.owner_profile?.full_name || place.owner_profile?.email || 'Неизвестный';
+          
           return (
             <Card key={place.id}>
               <CardContent className="p-4">
@@ -476,6 +521,20 @@ export const PlacesTab = () => {
                         </div>
                       )}
                     </div>
+                    {place.owner_id && (
+                      <div className="flex items-center gap-2 flex-wrap mt-2">
+                        <Badge variant="outline" className="gap-1">
+                          <UserCircle className="w-3 h-3" />
+                          {ownerName}
+                        </Badge>
+                        {hasActiveSubscription && (
+                          <Badge variant="secondary" className="gap-1 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20">
+                            <CreditCard className="w-3 h-3" />
+                            По подписке
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button
