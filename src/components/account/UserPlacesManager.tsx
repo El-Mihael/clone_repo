@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Crown, Plus, Loader2, Trash2, Pencil } from "lucide-react";
+import { MapPin, Crown, Plus, Loader2, Trash2, Pencil, FileText } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { AddPlaceDialog } from "./AddPlaceDialog";
 import { EditPlaceDialog } from "./EditPlaceDialog";
+import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +52,8 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingPlace, setDeletingPlace] = useState<Place | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [pageEditorOpen, setPageEditorOpen] = useState(false);
+  const [pageEditingPlace, setPageEditingPlace] = useState<Place | null>(null);
 
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [premiumPlace, setPremiumPlace] = useState<Place | null>(null);
@@ -160,6 +163,11 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
     setEditDialogOpen(true);
   };
 
+  const openPageEditor = (place: Place) => {
+    setPageEditingPlace(place);
+    setPageEditorOpen(true);
+  };
+
   return (
     <>
       <Card>
@@ -216,7 +224,7 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
                         {t("premiumCancelledUntil")} {new Date(place.premium_expires_at).toLocaleDateString()}. {t("noChargeNextPeriod")}
                       </div>
                     )}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -225,6 +233,16 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
                         <Pencil className="w-4 h-4 mr-2" />
                         {t("edit")}
                       </Button>
+                      {place.is_premium && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openPageEditor(place)}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          {t("editCustomPage")}
+                        </Button>
+                      )}
                       <Button
                         variant={place.is_premium && !isPlacePremiumCancelled(place.id) ? "outline" : "default"}
                         size="sm"
@@ -319,6 +337,36 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {pageEditingPlace && (
+        <AlertDialog open={pageEditorOpen} onOpenChange={setPageEditorOpen}>
+          <AlertDialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {t("editCustomPage")}: {pageEditingPlace.name}
+              </AlertDialogTitle>
+            </AlertDialogHeader>
+            <div className="flex-1 overflow-y-auto">
+              <PlacePageEditor
+                place={pageEditingPlace as any}
+                onSave={() => {
+                  setPageEditorOpen(false);
+                  setPageEditingPlace(null);
+                  onRefresh();
+                }}
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setPageEditorOpen(false);
+                setPageEditingPlace(null);
+              }}>
+                {t("close")}
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 };
