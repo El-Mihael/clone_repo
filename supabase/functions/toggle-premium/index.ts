@@ -51,10 +51,10 @@ Deno.serve(async (req) => {
       throw new Error('Profile not found');
     }
 
-    // Get place subscription to check billing period
+    // Get place subscription to check billing period and cancellation status
     const { data: subscription } = await supabaseClient
       .from('user_subscriptions')
-      .select('next_billing_date, plan_id, subscription_plans(billing_period)')
+      .select('next_billing_date, plan_id, cancel_at_period_end, subscription_plans(billing_period)')
       .eq('place_id', placeId)
       .eq('is_active', true)
       .single();
@@ -63,21 +63,11 @@ Deno.serve(async (req) => {
       throw new Error('No active subscription found for this place');
     }
 
-      // Check if enabling premium
-    if (isPremium && !place.is_premium) {
-      // Check if premium was cancelled but period hasn't expired yet
-      const now = new Date();
-      if (place.premium_expires_at && new Date(place.premium_expires_at) > now) {
-        // Premium is still active in current period, just re-enable it
-        await supabaseClient
-          .from('places')
-          .update({ 
-            is_premium: true,
-            premium_expires_at: place.premium_expires_at // Keep existing expiration
-          })
-          .eq('id', placeId);
-
-        // Re-enable premium in subscription (remove cancellation)
+    // Check if enabling premium
+    if (isPremium) {
+      // Check if reactivating cancelled premium (premium still active but marked for cancellation)
+      if (place.is_premium && subscription.cancel_at_period_end) {
+        // Just remove cancellation flag - premium already paid for current period
         await supabaseClient
           .from('user_subscriptions')
           .update({ cancel_at_period_end: false })
@@ -86,52 +76,65 @@ Deno.serve(async (req) => {
 
         return new Response(
           JSON.stringify({ 
-            place: { ...place, is_premium: true },
-            message: 'Premium re-enabled for current period'
+            place: place,
+            message: 'Premium reactivated - will continue after current period'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // New premium activation - deduct credits
-      if (profile.credits < 8) {
-        throw new Error('Insufficient credits. You need 8 credits to make place premium.');
+      // Check if premium already active and not cancelled
+      if (place.is_premium && !subscription.cancel_at_period_end) {
+        return new Response(
+          JSON.stringify({ 
+            place: place,
+            message: 'Premium already active'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      // Calculate premium expiration based on subscription billing period
-      const nextBilling = new Date(subscription.next_billing_date);
+      // New premium activation (not currently premium)
+      if (!place.is_premium) {
+        if (profile.credits < 8) {
+          throw new Error('Insufficient credits. You need 8 credits to make place premium.');
+        }
 
-      // Deduct credits
-      await supabaseClient
-        .from('profiles')
-        .update({ credits: profile.credits - 8 })
-        .eq('id', user.id);
+        // Calculate premium expiration based on subscription billing period
+        const nextBilling = new Date(subscription.next_billing_date);
 
-      // Log transaction
-      await supabaseClient.from('credit_transactions').insert({
-        user_id: user.id,
-        amount: -8,
-        type: 'premium_enabled',
-        description: `Enabled premium for place until ${nextBilling.toISOString()}`,
-      });
+        // Deduct credits
+        await supabaseClient
+          .from('profiles')
+          .update({ credits: profile.credits - 8 })
+          .eq('id', user.id);
 
-      // Update place with premium and expiration
-      const { data: updatedPlace, error: updateError } = await supabaseClient
-        .from('places')
-        .update({ 
-          is_premium: true,
-          premium_expires_at: nextBilling.toISOString()
-        })
-        .eq('id', placeId)
-        .select()
-        .single();
+        // Log transaction
+        await supabaseClient.from('credit_transactions').insert({
+          user_id: user.id,
+          amount: -8,
+          type: 'premium_enabled',
+          description: `Enabled premium for place until ${nextBilling.toISOString()}`,
+        });
 
-      if (updateError) throw updateError;
+        // Update place with premium and expiration
+        const { data: updatedPlace, error: updateError } = await supabaseClient
+          .from('places')
+          .update({ 
+            is_premium: true,
+            premium_expires_at: nextBilling.toISOString()
+          })
+          .eq('id', placeId)
+          .select()
+          .single();
 
-      return new Response(
-        JSON.stringify({ place: updatedPlace }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        if (updateError) throw updateError;
+
+        return new Response(
+          JSON.stringify({ place: updatedPlace }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     } else if (!isPremium && place.is_premium) {
       // Disabling premium - set cancellation flag, don't return credits
       // Premium will stay active until current period ends
