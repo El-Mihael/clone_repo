@@ -151,6 +151,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_statistics: {
+        Row: {
+          body: string
+          created_at: string
+          failed_count: number
+          id: string
+          is_test: boolean | null
+          sent_at: string
+          sent_by: string | null
+          successful_count: number
+          title: string
+          total_recipients: number
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          failed_count?: number
+          id?: string
+          is_test?: boolean | null
+          sent_at?: string
+          sent_by?: string | null
+          successful_count?: number
+          title: string
+          total_recipients?: number
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          failed_count?: number
+          id?: string
+          is_test?: boolean | null
+          sent_at?: string
+          sent_by?: string | null
+          successful_count?: number
+          title?: string
+          total_recipients?: number
+        }
+        Relationships: []
+      }
       places: {
         Row: {
           address: string | null
@@ -357,6 +396,42 @@ export type Database = {
           p256dh?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      scheduled_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          scheduled_for: string
+          sent: boolean | null
+          sent_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scheduled_for: string
+          sent?: boolean | null
+          sent_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scheduled_for?: string
+          sent?: boolean | null
+          sent_at?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
