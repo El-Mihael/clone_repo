@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Share2, TrendingUp, Users, History } from "lucide-react";
+import { Share2, TrendingUp, Users, History, Building2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,11 +43,24 @@ interface ShareDetail {
   shared_at: string;
 }
 
+interface BusinessOwnerStats {
+  owner_id: string;
+  owner_name: string;
+  owner_email: string;
+  total_shares: number;
+  places: Array<{
+    place_id: string;
+    place_name: string;
+    shares: number;
+  }>;
+}
+
 export const StatisticsTab = () => {
   const { t } = useLanguage();
   const [placeStats, setPlaceStats] = useState<PlaceShareStats[]>([]);
   const [userStats, setUserStats] = useState<UserShareStats[]>([]);
   const [shareDetails, setShareDetails] = useState<ShareDetail[]>([]);
+  const [businessOwnerStats, setBusinessOwnerStats] = useState<BusinessOwnerStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalShares, setTotalShares] = useState(0);
 
@@ -77,6 +90,7 @@ export const StatisticsTab = () => {
       // Process data for place statistics
       const placeStatsMap = new Map<string, PlaceShareStats>();
       const userStatsMap = new Map<string, UserShareStats>();
+      const businessOwnerStatsMap = new Map<string, BusinessOwnerStats>();
       const details: ShareDetail[] = [];
       let total = 0;
 
@@ -136,6 +150,40 @@ export const StatisticsTab = () => {
           userStatsMap.get(userId)!.total_shares++;
         }
 
+        // Business owner statistics
+        if (item.places?.owner_id) {
+          const ownerId = item.places.owner_id;
+          if (!businessOwnerStatsMap.has(ownerId)) {
+            const { data: ownerData } = await supabase
+              .from("profiles")
+              .select("full_name, email")
+              .eq("id", ownerId)
+              .single();
+            
+            businessOwnerStatsMap.set(ownerId, {
+              owner_id: ownerId,
+              owner_name: ownerData?.full_name || ownerData?.email || "Unknown",
+              owner_email: ownerData?.email || "",
+              total_shares: 0,
+              places: [],
+            });
+          }
+          
+          const ownerStats = businessOwnerStatsMap.get(ownerId)!;
+          ownerStats.total_shares++;
+          
+          const existingPlace = ownerStats.places.find(p => p.place_id === placeId);
+          if (existingPlace) {
+            existingPlace.shares++;
+          } else {
+            ownerStats.places.push({
+              place_id: placeId,
+              place_name: placeName,
+              shares: 1,
+            });
+          }
+        }
+
         // Share details
         const profile = item.profiles as any;
         details.push({
@@ -153,6 +201,14 @@ export const StatisticsTab = () => {
       );
       setUserStats(
         Array.from(userStatsMap.values()).sort((a, b) => b.total_shares - a.total_shares)
+      );
+      setBusinessOwnerStats(
+        Array.from(businessOwnerStatsMap.values())
+          .sort((a, b) => b.total_shares - a.total_shares)
+          .map(owner => ({
+            ...owner,
+            places: owner.places.sort((a, b) => b.shares - a.shares)
+          }))
       );
       setShareDetails(details);
       setTotalShares(total);
@@ -233,6 +289,7 @@ export const StatisticsTab = () => {
         <TabsList>
           <TabsTrigger value="places">По местам</TabsTrigger>
           <TabsTrigger value="users">По пользователям</TabsTrigger>
+          <TabsTrigger value="business">По владельцам бизнеса</TabsTrigger>
           <TabsTrigger value="details">Детали</TabsTrigger>
         </TabsList>
 
@@ -344,6 +401,73 @@ export const StatisticsTab = () => {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="business" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-5 h-5" />
+                Статистика по владельцам бизнеса
+              </CardTitle>
+              <CardDescription>
+                Статистика шерингов мест по владельцам бизнеса
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {businessOwnerStats.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Нет данных о владельцах бизнеса
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {businessOwnerStats.map((owner, index) => (
+                    <Card key={owner.owner_id} className="border-l-4 border-l-primary/50">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {index < 3 && (
+                              <Badge variant="secondary" className="text-xs">
+                                #{index + 1}
+                              </Badge>
+                            )}
+                            <div>
+                              <CardTitle className="text-lg">{owner.owner_name}</CardTitle>
+                              <CardDescription className="text-sm">{owner.owner_email}</CardDescription>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-primary">{owner.total_shares}</div>
+                            <p className="text-xs text-muted-foreground">всего шерингов</p>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-muted-foreground mb-2">
+                            Места ({owner.places.length}):
+                          </p>
+                          <div className="grid gap-2">
+                            {owner.places.map((place) => (
+                              <div 
+                                key={place.place_id}
+                                className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                              >
+                                <span className="font-medium">{place.place_name}</span>
+                                <Badge variant="secondary">
+                                  {place.shares} {place.shares === 1 ? 'шеринг' : 'шерингов'}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </CardContent>
