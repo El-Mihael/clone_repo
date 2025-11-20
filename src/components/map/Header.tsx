@@ -1,4 +1,4 @@
-import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon, Menu, Navigation } from "lucide-react";
+import { MapPin, LogOut, Settings, Route, Globe, MapPinned, User as UserIcon, Menu, Navigation, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,6 +33,8 @@ interface HeaderProps {
   onMenuClick?: () => void;
   showMenuButton?: boolean;
   onMyLocation: () => void;
+  wishlistMode?: boolean;
+  onExitWishlistMode?: () => void;
 }
 
 export const Header = ({ 
@@ -46,7 +48,9 @@ export const Header = ({
   onCityChange,
   onMenuClick,
   showMenuButton = false,
-  onMyLocation
+  onMyLocation,
+  wishlistMode = false,
+  onExitWishlistMode
 }: HeaderProps) => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
@@ -174,6 +178,22 @@ export const Header = ({
           <h1 className="text-sm sm:text-base font-bold text-foreground truncate">{t("map")}</h1>
         </div>
       </div>
+
+      {wishlistMode && (
+        <div className="flex items-center gap-2 bg-primary/10 px-2 sm:px-3 py-1.5 rounded-md">
+          <span className="text-xs sm:text-sm font-medium text-primary">
+            Режим вишлиста
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onExitWishlistMode}
+            className="h-6 w-6 hover:bg-primary/20"
+          >
+            <X className="h-3 w-3 text-primary" />
+          </Button>
+        </div>
+      )}
 
       <div className="ml-auto flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
         {/* Install PWA Button */}
