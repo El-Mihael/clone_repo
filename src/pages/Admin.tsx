@@ -72,37 +72,38 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/")}
+                className="flex-shrink-0"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                {t("backToMap")}
+                <ArrowLeft className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t("backToMap")}</span>
               </Button>
-              <h1 className="text-2xl font-bold">{t("adminPanel")}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">{t("adminPanel")}</h1>
             </div>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate w-full sm:w-auto">{user?.email}</p>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
-        <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl grid-cols-10">
-            <TabsTrigger value="countries">{t("countries")}</TabsTrigger>
-            <TabsTrigger value="cities">{t("cities")}</TabsTrigger>
-            <TabsTrigger value="categories">{t("categories")}</TabsTrigger>
-            <TabsTrigger value="places">{t("places")}</TabsTrigger>
-            <TabsTrigger value="tours">{t("tours")}</TabsTrigger>
-            <TabsTrigger value="users">Пользователи</TabsTrigger>
-            <TabsTrigger value="credits">{t("credits")}</TabsTrigger>
-            <TabsTrigger value="subscriptions">{t("subscriptions")}</TabsTrigger>
-            <TabsTrigger value="statistics">Статистика</TabsTrigger>
-            <TabsTrigger value="notifications">{t("notifications")}</TabsTrigger>
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <Tabs defaultValue="categories" className="space-y-4 sm:space-y-6">
+          <TabsList className="w-full flex-wrap h-auto justify-start gap-1 p-1">
+            <TabsTrigger value="countries" className="flex-shrink-0 text-xs px-2 py-1.5">{t("countries")}</TabsTrigger>
+            <TabsTrigger value="cities" className="flex-shrink-0 text-xs px-2 py-1.5">{t("cities")}</TabsTrigger>
+            <TabsTrigger value="categories" className="flex-shrink-0 text-xs px-2 py-1.5">{t("categories")}</TabsTrigger>
+            <TabsTrigger value="places" className="flex-shrink-0 text-xs px-2 py-1.5">{t("places")}</TabsTrigger>
+            <TabsTrigger value="tours" className="flex-shrink-0 text-xs px-2 py-1.5">{t("tours")}</TabsTrigger>
+            <TabsTrigger value="users" className="flex-shrink-0 text-xs px-2 py-1.5">Польз.</TabsTrigger>
+            <TabsTrigger value="credits" className="flex-shrink-0 text-xs px-2 py-1.5">{t("credits")}</TabsTrigger>
+            <TabsTrigger value="subscriptions" className="flex-shrink-0 text-xs px-2 py-1.5">Подп.</TabsTrigger>
+            <TabsTrigger value="statistics" className="flex-shrink-0 text-xs px-2 py-1.5">Стат.</TabsTrigger>
+            <TabsTrigger value="notifications" className="flex-shrink-0 text-xs px-2 py-1.5">Увед.</TabsTrigger>
           </TabsList>
 
           <TabsContent value="countries" className="space-y-4">

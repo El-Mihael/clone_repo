@@ -298,15 +298,15 @@ export const StatisticsTab = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Всего поделились</CardTitle>
-            <Share2 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Всего поделились</CardTitle>
+            <Share2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalShares}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalShares}</div>
             <p className="text-xs text-muted-foreground">
               Общее количество шерингов
             </p>
@@ -315,11 +315,11 @@ export const StatisticsTab = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Популярных мест</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Популярных мест</CardTitle>
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{placeStats.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{placeStats.length}</div>
             <p className="text-xs text-muted-foreground">
               Мест с шерингами
             </p>
@@ -328,11 +328,11 @@ export const StatisticsTab = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Активных пользователей</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Активных пользователей</CardTitle>
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userStats.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{userStats.length}</div>
             <p className="text-xs text-muted-foreground">
               Пользователей делились
             </p>
@@ -341,65 +341,65 @@ export const StatisticsTab = () => {
       </div>
 
       <Tabs defaultValue="places" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="places">По местам</TabsTrigger>
-          <TabsTrigger value="users">По пользователям</TabsTrigger>
-          <TabsTrigger value="business">По владельцам бизнеса</TabsTrigger>
-          <TabsTrigger value="details">Детали</TabsTrigger>
+        <TabsList className="w-full flex-wrap h-auto justify-start gap-1 p-1">
+          <TabsTrigger value="places" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">По местам</TabsTrigger>
+          <TabsTrigger value="users" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">По польз.</TabsTrigger>
+          <TabsTrigger value="business" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">По бизнесу</TabsTrigger>
+          <TabsTrigger value="details" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">Детали</TabsTrigger>
         </TabsList>
 
         <TabsContent value="places" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Статистика шерингов по местам</CardTitle>
-              <CardDescription>
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-base sm:text-lg">Статистика шерингов по местам</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Самые популярные места по количеству поделившихся
               </CardDescription>
             </CardHeader>
             <CardContent>
               {placeStats.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-sm text-muted-foreground">
                   Нет данных о шерингах
                 </div>
               ) : (
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto -mx-4 sm:mx-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Место</TableHead>
-                        <TableHead>Владелец</TableHead>
-                        <TableHead className="text-right">Всего</TableHead>
-                        <TableHead className="text-right">WhatsApp</TableHead>
-                        <TableHead className="text-right">Telegram</TableHead>
-                        <TableHead className="text-right">Facebook</TableHead>
-                        <TableHead className="text-right">Mobile</TableHead>
-                        <TableHead className="text-right">Ссылка</TableHead>
+                        <TableHead className="text-xs sm:text-sm">Место</TableHead>
+                        <TableHead className="text-xs sm:text-sm hidden md:table-cell">Владелец</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm">Всего</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden lg:table-cell">WA</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden lg:table-cell">TG</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden xl:table-cell">FB</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden xl:table-cell">Mob</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden xl:table-cell">Ссыл</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {placeStats.map((stat, index) => (
                         <TableRow key={stat.place_id}>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
+                          <TableCell className="text-xs sm:text-sm font-medium">
+                            <div className="flex items-center gap-1 sm:gap-2">
                               {index < 3 && (
                                 <Badge variant="secondary" className="text-xs">
                                   #{index + 1}
                                 </Badge>
                               )}
-                              {stat.place_name}
+                              <span className="truncate max-w-[120px] sm:max-w-none">{stat.place_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {stat.place_owner_name || "—"}
+                          <TableCell className="text-xs sm:text-sm text-muted-foreground hidden md:table-cell">
+                            <span className="truncate block max-w-[150px]">{stat.place_owner_name || "—"}</span>
                           </TableCell>
-                          <TableCell className="text-right font-bold">
+                          <TableCell className="text-right text-xs sm:text-sm font-bold whitespace-nowrap">
                             {stat.total_shares}
                           </TableCell>
-                          <TableCell className="text-right">{stat.whatsapp}</TableCell>
-                          <TableCell className="text-right">{stat.telegram}</TableCell>
-                          <TableCell className="text-right">{stat.facebook}</TableCell>
-                          <TableCell className="text-right">{stat.native}</TableCell>
-                          <TableCell className="text-right">{stat.link}</TableCell>
+                          <TableCell className="text-right text-xs sm:text-sm hidden lg:table-cell">{stat.whatsapp}</TableCell>
+                          <TableCell className="text-right text-xs sm:text-sm hidden lg:table-cell">{stat.telegram}</TableCell>
+                          <TableCell className="text-right text-xs sm:text-sm hidden xl:table-cell">{stat.facebook}</TableCell>
+                          <TableCell className="text-right text-xs sm:text-sm hidden xl:table-cell">{stat.native}</TableCell>
+                          <TableCell className="text-right text-xs sm:text-sm hidden xl:table-cell">{stat.link}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
