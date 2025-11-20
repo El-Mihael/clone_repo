@@ -26,6 +26,7 @@ interface Place {
   premium_expires_at: string | null;
   created_at: string;
   cancel_at_period_end?: boolean;
+  has_custom_page: boolean | null;
 }
 
 interface SubscriptionInfo {
