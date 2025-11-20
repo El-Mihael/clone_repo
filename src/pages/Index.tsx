@@ -9,62 +9,53 @@ const Index = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Retro Grid Background */}
-      <div className="absolute inset-0 opacity-10" style={{
-        backgroundImage: `
-          linear-gradient(hsl(220 100% 66%) 2px, transparent 2px),
-          linear-gradient(90deg, hsl(220 100% 66%) 2px, transparent 2px)
-        `,
-        backgroundSize: '40px 40px'
-      }} />
-
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative py-8 md:py-12 lg:py-20">
-        <div className="container mx-auto px-3 sm:px-4">
+      <section className="relative py-12 md:py-20 lg:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="mx-auto max-w-4xl text-center animate-fade-in-up">
-            {/* Pixel Badge */}
-            <div className="mb-6 md:mb-8 inline-flex items-center gap-2 bg-primary text-primary-foreground px-2.5 py-1 md:px-3 border-2 border-primary shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] animate-pixel-float text-xs md:text-sm">
-              <Sparkles className="h-3 w-3 md:h-4 md:w-4 animate-blink" />
-              <span className="font-bold uppercase">NEW GAME+</span>
+            {/* Badge */}
+            <div className="mb-6 md:mb-8 inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-sm border border-primary/20">
+              <Sparkles className="h-4 w-4" />
+              <span className="font-bold uppercase text-sm tracking-wide">Новое поколение</span>
             </div>
             
             {/* Main Title */}
-            <h1 className="mb-4 md:mb-6 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold retro-text-shadow leading-tight px-2">
-              {t("heroTitle").split(" ").slice(0, 1).join(" ")} <br />
-              <span className="text-primary retro-glow animate-blink">
-                {t("heroTitle").split(" ").slice(1).join(" ")}
-              </span>
+            <h1 className="mb-6 text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
+              Открой город <br />
+              <span className="text-primary">по-новому</span>
             </h1>
             
-            <p className="mb-6 md:mb-8 text-base md:text-lg lg:text-xl text-foreground/80 leading-relaxed max-w-2xl mx-auto px-2">
+            <p className="mb-8 text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               {t("heroSubtitle")}
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-center items-center px-2">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-12">
               <Button 
                 size="lg" 
                 variant="default"
                 onClick={() => navigate("/map")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto min-w-[200px]"
               >
-                <MapPin className="mr-2 h-4 w-4" />
+                <MapPin className="mr-2 h-5 w-5" />
                 {t("startGame")}
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
                 onClick={() => navigate("/auth")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto min-w-[200px]"
               >
-                <Star className="mr-2 h-4 w-4" />
+                <Star className="mr-2 h-5 w-5" />
                 {t("joinNow")}
               </Button>
             </div>
 
-            {/* Pixel Stats */}
-            <div className="mt-8 md:mt-12 grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xl mx-auto px-2">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-2xl mx-auto">
               {[
                 { value: "500+", label: t("placesCount2") },
                 { value: "50+", label: t("toursCount") },
@@ -72,11 +63,10 @@ const Index = () => {
               ].map((stat, i) => (
                 <div 
                   key={i} 
-                  className="bg-card border-2 border-border p-2 sm:p-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
-                  style={{ animationDelay: `${i * 100}ms` }}
+                  className="p-4 sm:p-6 bg-card border border-border rounded-md hover:shadow-md transition-all"
                 >
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary retro-glow">{stat.value}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground uppercase leading-tight">{stat.label}</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground uppercase">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -85,79 +75,60 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-8 md:py-12 lg:py-20 relative">
-        <div className="container mx-auto px-3 sm:px-4">
-          {/* Section Title */}
-          <div className="mb-8 md:mb-12 text-center">
-            <h2 className="mb-3 md:mb-4 text-xl sm:text-2xl md:text-4xl font-bold retro-text-shadow uppercase px-2">
-              GAME <span className="text-premium retro-glow">{t("gameFeatures")}</span>
+      <section className="py-12 md:py-20 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-2xl sm:text-3xl md:text-4xl font-bold">
+              Возможности
             </h2>
-            <div className="h-1 w-16 md:w-24 mx-auto bg-primary" />
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Все что нужно для идеального путешествия
+            </p>
           </div>
 
-          {/* Feature Cards */}
-          <div className="grid gap-4 sm:gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
               {
                 icon: MapPin,
-                title: "КАРТА",
-                description: "Интерактивная карта с сотнями мест",
-                color: "primary",
-                bgColor: "bg-primary/20",
+                title: "Интерактивная карта",
+                description: "Сотни проверенных мест с подробными описаниями",
               },
               {
                 icon: Crown,
-                title: "ПРЕМИУМ",
-                description: "Эксклюзивные локации и контент",
-                color: "premium",
-                bgColor: "bg-premium/20",
+                title: "Премиум контент",
+                description: "Эксклюзивные локации и детальные путеводители",
               },
               {
                 icon: Globe,
-                title: "ТУРЫ",
-                description: "Готовые маршруты по городу",
-                color: "accent",
-                bgColor: "bg-accent/20",
+                title: "Готовые туры",
+                description: "Лучшие маршруты, составленные экспертами",
               },
               {
                 icon: Smartphone,
-                title: "МОБИЛЬНАЯ",
-                description: "Играй на ходу с телефона",
-                color: "secondary",
-                bgColor: "bg-secondary/20",
+                title: "Мобильное приложение",
+                description: "Пользуйтесь картой где угодно со смартфона",
               },
               {
                 icon: TrendingUp,
-                title: "БИЗНЕС",
-                description: "Размести свою точку на карте",
-                color: "accent",
-                bgColor: "bg-accent/20",
+                title: "Для бизнеса",
+                description: "Разместите свою точку на карте города",
               },
               {
                 icon: Zap,
-                title: "БЫСТРО",
-                description: "Молниеносная работа системы",
-                color: "primary",
-                bgColor: "bg-primary/20",
+                title: "Быстро и удобно",
+                description: "Молниеносная работа без лишних действий",
               },
             ].map((feature, i) => (
               <Card 
                 key={i} 
-                className="group relative p-3 sm:p-4 bg-card border-2 border-border hover:border-primary transition-all hover:-translate-y-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-fade-in overflow-hidden"
-                style={{ animationDelay: `${i * 100}ms` }}
+                className="group p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border"
               >
-                {/* Icon */}
-                <div className={`mb-2 sm:mb-3 inline-flex ${feature.bgColor} p-1.5 sm:p-2 border-2 border-current`}>
-                  <feature.icon className={`h-4 w-4 sm:h-5 sm:w-5 text-${feature.color}`} />
+                <div className="mb-4 inline-flex p-3 bg-primary/10 text-primary rounded-md">
+                  <feature.icon className="h-6 w-6" />
                 </div>
                 
-                {/* Content */}
-                <h3 className="mb-1.5 sm:mb-2 text-sm sm:text-base font-bold uppercase retro-text-shadow">{feature.title}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-                
-                {/* Decorative Corner */}
-                <div className="absolute top-0 right-0 w-2 h-2 bg-primary" />
-                <div className="absolute bottom-0 left-0 w-2 h-2 bg-accent" />
+                <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
               </Card>
             ))}
           </div>
@@ -165,63 +136,40 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-8 md:py-12 lg:py-20 relative">
-        <div className="container mx-auto px-3 sm:px-4">
-          <Card className="relative overflow-hidden border-2 border-premium bg-premium/10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] max-w-4xl mx-auto">
-            {/* Animated Border Effect */}
-            <div className="absolute inset-0 border-2 border-premium animate-blink" />
-            
-            <div className="relative p-4 sm:p-6 md:p-10 text-center">
-              {/* Badge */}
-              <div className="mb-4 md:mb-6 inline-flex items-center gap-2 bg-premium text-premium-foreground px-2.5 py-1 md:px-3 border-2 border-premium shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] animate-pixel-float text-xs md:text-sm">
-                <Crown className="h-3 w-3 md:h-4 md:w-4 animate-blink" />
-                <span className="font-bold uppercase">PREMIUM ACCESS</span>
+      <section className="py-12 md:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20 max-w-4xl mx-auto">
+            <div className="p-8 sm:p-12 md:p-16 text-center">
+              <div className="mb-6 inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-sm">
+                <Crown className="h-5 w-5" />
+                <span className="font-bold uppercase text-sm">Premium</span>
               </div>
               
-              {/* Title */}
-              <h2 className="mb-3 md:mb-4 text-xl sm:text-2xl md:text-4xl font-bold retro-text-shadow uppercase px-2">
-                ГОТОВ К ПРИКЛЮЧЕНИЯМ?
+              <h2 className="mb-4 text-2xl sm:text-3xl md:text-4xl font-bold">
+                Готовы начать?
               </h2>
               
-              {/* Description */}
-              <p className="mb-6 md:mb-8 text-sm sm:text-base md:text-lg lg:text-xl text-foreground/80 max-w-xl mx-auto leading-relaxed px-2">
-                ПРИСОЕДИНЯЙСЯ К ТЫСЯЧАМ ИГРОКОВ УЖЕ СЕГОДНЯ
+              <p className="mb-8 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+                Присоединяйтесь к тысячам путешественников и откройте город заново
               </p>
               
-              {/* Buttons */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center px-2">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   size="lg" 
-                  variant="premium"
-                  onClick={() => navigate("/auth")}
-                  className="w-full sm:w-auto"
+                  variant="default"
+                  onClick={() => navigate("/map")}
+                  className="w-full sm:w-auto min-w-[200px]"
                 >
-                  <Crown className="mr-2 h-4 w-4" />
-                  GET PREMIUM
+                  Начать бесплатно
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => navigate("/map")}
-                  className="w-full sm:w-auto"
+                  onClick={() => navigate("/auth")}
+                  className="w-full sm:w-auto min-w-[200px]"
                 >
-                  <Zap className="mr-2 h-4 w-4" />
-                  TRY FREE
+                  Узнать больше
                 </Button>
-              </div>
-
-              {/* Pixel Coins Animation */}
-              <div className="mt-6 md:mt-8 flex justify-center gap-1.5 sm:gap-2">
-                {[...Array(5)].map((_, i) => (
-                  <div 
-                    key={i}
-                    className="w-3 h-3 sm:w-4 sm:h-4 bg-premium border-2 border-premium-foreground animate-pixel-float"
-                    style={{ 
-                      animationDelay: `${i * 0.2}s`,
-                      clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)'
-                    }}
-                  />
-                ))}
               </div>
             </div>
           </Card>
@@ -229,15 +177,10 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t-2 border-border py-4 md:py-6 relative bg-card">
-        <div className="container mx-auto px-3 sm:px-4 text-center">
-          <p className="text-xs sm:text-sm text-muted-foreground uppercase leading-relaxed">
-            © 2024 • RETRO CITY MAP • ALL RIGHTS RESERVED
-          </p>
-          <div className="mt-2 flex justify-center gap-1.5 sm:gap-2">
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary animate-blink" />
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-accent animate-blink" style={{ animationDelay: '0.3s' }} />
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-premium animate-blink" style={{ animationDelay: '0.6s' }} />
+      <footer className="py-8 border-t border-border">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>© 2024 City Explorer. Все права защищены.</p>
           </div>
         </div>
       </footer>
