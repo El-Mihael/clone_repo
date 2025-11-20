@@ -184,27 +184,12 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
           <DialogTitle>{t("editPlace")}</DialogTitle>
         </DialogHeader>
 
-        {/* Premium warning for custom page */}
-        {place && !place.is_premium && (
-          <Alert className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="flex items-center gap-2">
-              <Crown className="w-4 h-4 text-primary" />
-              Кастомные страницы доступны только для премиум-мест. Активируйте премиум, чтобы создать уникальную страницу для вашего места.
-            </AlertDescription>
-          </Alert>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">{t("basicInfo")}</TabsTrigger>
               <TabsTrigger value="translations">{t("translations")}</TabsTrigger>
               <TabsTrigger value="location">{t("locationTab")}</TabsTrigger>
-              <TabsTrigger value="custompage" disabled={!place?.is_premium}>
-                <FileText className="w-4 h-4 mr-2" />
-                {place?.is_premium ? "Страница" : "Страница 🔒"}
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 mt-4">
@@ -383,69 +368,6 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
                   {t("googleMapsUrlHint")}
                 </p>
               </div>
-            </TabsContent>
-
-            <TabsContent value="custompage" className="space-y-4 mt-4">
-              {place?.is_premium ? (
-                <div className="space-y-4">
-                  <Alert>
-                    <FileText className="h-4 w-4" />
-                    <AlertDescription>
-                      Создайте уникальную страницу для вашего места с кастомным контентом, изображениями и оформлением.
-                      {place.has_custom_page && " Ваша страница уже создана и доступна посетителям."}
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      onClick={() => setEditingCustomPage(true)}
-                      className="flex-1"
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      {place.has_custom_page ? "Редактировать страницу" : "Создать страницу"}
-                    </Button>
-                    
-                    {place.has_custom_page && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={async () => {
-                          try {
-                            const { error } = await supabase
-                              .from("places")
-                              .update({ has_custom_page: false, custom_page_content: null })
-                              .eq("id", place.id);
-                            
-                            if (error) throw error;
-                            
-                            toast({
-                              title: "Успешно",
-                              description: "Кастомная страница удалена",
-                            });
-                            onSuccess();
-                          } catch (error) {
-                            toast({
-                              title: "Ошибка",
-                              description: "Не удалось удалить страницу",
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                      >
-                        Удалить страницу
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <Alert>
-                  <Crown className="h-4 w-4" />
-                  <AlertDescription>
-                    Кастомные страницы доступны только для премиум-мест. Активируйте премиум-статус для вашего места, чтобы получить доступ к этой функции.
-                  </AlertDescription>
-                </Alert>
-              )}
             </TabsContent>
           </Tabs>
 
