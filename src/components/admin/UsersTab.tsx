@@ -279,7 +279,7 @@ export const UsersTab = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <History className="w-5 h-5" />
-                    История транзакций ({selectedUser.transactions.length})
+                    История операций ({selectedUser.transactions.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
