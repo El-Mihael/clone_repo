@@ -68,7 +68,140 @@ async function generateVapidJWT(audience: string, subject: string, vapidPrivateK
   return `${unsignedToken}.${signatureEncoded}`;
 }
 
-// Send push notification using Web Push Protocol
+// HKDF key derivation
+async function hkdf(
+  salt: Uint8Array,
+  ikm: Uint8Array,
+  info: Uint8Array,
+  length: number
+): Promise<Uint8Array> {
+  // Import IKM
+  const key = await crypto.subtle.importKey(
+    'raw',
+    ikm as BufferSource,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  // Extract
+  const prk = await crypto.subtle.sign('HMAC', key, salt as BufferSource);
+
+  // Expand
+  const prkKey = await crypto.subtle.importKey(
+    'raw',
+    prk,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const okm = new Uint8Array(length);
+  let previousT = new Uint8Array(0);
+  const iterations = Math.ceil(length / 32);
+
+  for (let i = 0; i < iterations; i++) {
+    const input = new Uint8Array(previousT.length + info.length + 1);
+    input.set(previousT);
+    input.set(info, previousT.length);
+    input[previousT.length + info.length] = i + 1;
+
+    const t = await crypto.subtle.sign('HMAC', prkKey, input);
+    const tArray = new Uint8Array(t);
+    const copyLength = Math.min(tArray.length, length - i * 32);
+    okm.set(tArray.slice(0, copyLength), i * 32);
+    previousT = tArray;
+  }
+
+  return okm;
+}
+
+// Encrypt payload using ECDH + AES-GCM
+async function encryptPayload(
+  payload: string,
+  userPublicKey: string,
+  userAuth: string
+): Promise<{ ciphertext: Uint8Array; salt: Uint8Array; publicKey: Uint8Array }> {
+  // Generate local key pair
+  const localKeyPair = await crypto.subtle.generateKey(
+    { name: 'ECDH', namedCurve: 'P-256' },
+    true,
+    ['deriveBits']
+  );
+
+  // Export local public key
+  const localPublicKeyRaw = await crypto.subtle.exportKey('raw', localKeyPair.publicKey);
+  const localPublicKeyBytes = new Uint8Array(localPublicKeyRaw);
+
+  // Import user's public key
+  const userPublicKeyBytes = base64urlToUint8Array(userPublicKey);
+  const userPublicKeyCrypto = await crypto.subtle.importKey(
+    'raw',
+    userPublicKeyBytes as BufferSource,
+    { name: 'ECDH', namedCurve: 'P-256' },
+    false,
+    []
+  );
+
+  // Derive shared secret using ECDH
+  const sharedSecret = await crypto.subtle.deriveBits(
+    { name: 'ECDH', public: userPublicKeyCrypto },
+    localKeyPair.privateKey,
+    256
+  );
+
+  // Generate random salt
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+
+  // Decode auth secret
+  const authSecret = base64urlToUint8Array(userAuth);
+
+  // Build key info
+  const keyInfoEncoder = new TextEncoder();
+  const keyInfo = keyInfoEncoder.encode('Content-Encoding: aes128gcm\0');
+
+  // Derive encryption key using HKDF
+  const ikm = new Uint8Array(authSecret.length + sharedSecret.byteLength);
+  ikm.set(authSecret);
+  ikm.set(new Uint8Array(sharedSecret), authSecret.length);
+
+  const contentEncryptionKey = await hkdf(salt, ikm, keyInfo, 16);
+
+  // Build nonce info
+  const nonceInfo = keyInfoEncoder.encode('Content-Encoding: nonce\0');
+  const nonce = await hkdf(salt, ikm, nonceInfo, 12);
+
+  // Pad payload
+  const encoder = new TextEncoder();
+  const payloadBytes = encoder.encode(payload);
+  const paddingLength = 2;
+  const paddedPayload = new Uint8Array(paddingLength + payloadBytes.length);
+  paddedPayload.set(payloadBytes, paddingLength);
+
+  // Import content encryption key
+  const aesKey = await crypto.subtle.importKey(
+    'raw',
+    contentEncryptionKey as BufferSource,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
+
+  // Encrypt
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: nonce as BufferSource, tagLength: 128 },
+    aesKey,
+    paddedPayload as BufferSource
+  );
+
+  return {
+    ciphertext: new Uint8Array(ciphertext),
+    salt,
+    publicKey: localPublicKeyBytes,
+  };
+}
+
+// Send push notification using Web Push Protocol with encryption
 async function sendPushNotification(
   subscription: PushSubscription,
   payload: string,
@@ -81,17 +214,26 @@ async function sendPushNotification(
   // Generate VAPID auth
   const jwt = await generateVapidJWT(audience, 'mailto:support@example.com', vapidPrivateKey);
   
-  // For simplicity, send payload without encryption for now
-  // In production, you should implement proper encryption
+  // Encrypt payload
+  const { ciphertext, salt, publicKey } = await encryptPayload(
+    payload,
+    subscription.p256dh,
+    subscription.auth
+  );
+
+  // Send encrypted notification
   const response = await fetch(subscription.endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/octet-stream',
-      'Content-Length': payload.length.toString(),
+      'Content-Encoding': 'aes128gcm',
+      'Content-Length': ciphertext.length.toString(),
       'TTL': '86400', // 24 hours
       'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
+      'Crypto-Key': `dh=${base64urlEncode(publicKey as unknown as ArrayBuffer)}`,
+      'Encryption': `salt=${base64urlEncode(salt as unknown as ArrayBuffer)}`,
     },
-    body: payload,
+    body: ciphertext as unknown as BodyInit,
   });
 
   if (!response.ok) {
@@ -192,14 +334,14 @@ serve(async (req) => {
       badge: '/pwa-192x192.png',
     });
 
-    console.log(`Sending notifications to ${subscriptions.length} subscription(s)`);
+    console.log(`🔐 Sending encrypted notifications to ${subscriptions.length} subscription(s)`);
 
     // Send notifications to all subscriptions
     const results = await Promise.allSettled(
       subscriptions.map(async (subscription: PushSubscription) => {
         try {
           await sendPushNotification(subscription, payload, vapidPublicKey, vapidPrivateKey);
-          console.log(`✅ Notification sent to subscription ${subscription.id}`);
+          console.log(`✅ Encrypted notification sent to subscription ${subscription.id}`);
           return { success: true, subscriptionId: subscription.id };
         } catch (error) {
           const err = error as any;
