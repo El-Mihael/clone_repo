@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileText, Crown, AlertCircle } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
@@ -29,6 +31,7 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [editingCustomPage, setEditingCustomPage] = useState(false);
   const [formData, setFormData] = useState({
     category_id: "",
     city_id: "",
@@ -147,18 +150,61 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
     }
   };
 
+  if (editingCustomPage && place) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Редактирование страницы: {place.name}</DialogTitle>
+              <Button
+                variant="outline"
+                onClick={() => setEditingCustomPage(false)}
+              >
+                Назад к редактированию
+              </Button>
+            </div>
+          </DialogHeader>
+          <PlacePageEditor
+            place={place}
+            onSave={() => {
+              setEditingCustomPage(false);
+              onSuccess();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("editPlace")}</DialogTitle>
         </DialogHeader>
+
+        {/* Premium warning for custom page */}
+        {place && !place.is_premium && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-primary" />
+              Кастомные страницы доступны только для премиум-мест. Активируйте премиум, чтобы создать уникальную страницу для вашего места.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="basic">{t("basicInfo")}</TabsTrigger>
               <TabsTrigger value="translations">{t("translations")}</TabsTrigger>
               <TabsTrigger value="location">{t("locationTab")}</TabsTrigger>
+              <TabsTrigger value="custompage" disabled={!place?.is_premium}>
+                <FileText className="w-4 h-4 mr-2" />
+                {place?.is_premium ? "Страница" : "Страница 🔒"}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 mt-4">
@@ -337,6 +383,69 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
                   {t("googleMapsUrlHint")}
                 </p>
               </div>
+            </TabsContent>
+
+            <TabsContent value="custompage" className="space-y-4 mt-4">
+              {place?.is_premium ? (
+                <div className="space-y-4">
+                  <Alert>
+                    <FileText className="h-4 w-4" />
+                    <AlertDescription>
+                      Создайте уникальную страницу для вашего места с кастомным контентом, изображениями и оформлением.
+                      {place.has_custom_page && " Ваша страница уже создана и доступна посетителям."}
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => setEditingCustomPage(true)}
+                      className="flex-1"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      {place.has_custom_page ? "Редактировать страницу" : "Создать страницу"}
+                    </Button>
+                    
+                    {place.has_custom_page && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          try {
+                            const { error } = await supabase
+                              .from("places")
+                              .update({ has_custom_page: false, custom_page_content: null })
+                              .eq("id", place.id);
+                            
+                            if (error) throw error;
+                            
+                            toast({
+                              title: "Успешно",
+                              description: "Кастомная страница удалена",
+                            });
+                            onSuccess();
+                          } catch (error) {
+                            toast({
+                              title: "Ошибка",
+                              description: "Не удалось удалить страницу",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        Удалить страницу
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <Alert>
+                  <Crown className="h-4 w-4" />
+                  <AlertDescription>
+                    Кастомные страницы доступны только для премиум-мест. Активируйте премиум-статус для вашего места, чтобы получить доступ к этой функции.
+                  </AlertDescription>
+                </Alert>
+              )}
             </TabsContent>
           </Tabs>
 
