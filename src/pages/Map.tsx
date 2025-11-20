@@ -170,6 +170,7 @@ const Map = () => {
     }
     
     setActiveTour(null);
+    setSelectedPlace(null);
   };
 
   const handleInitialSetupComplete = async (cityId: string) => {
