@@ -701,6 +701,23 @@ export const translations = {
     footer: "© 2025 Retro City Map. All rights reserved.",
     failedToLoadProfile: "Failed to load profile",
     
+    // Place Management
+    premiumCancelledUntil: "Premium cancelled until",
+    editPlace: "Edit Place",
+    placeUpdated: "Place updated successfully",
+    failedToUpdatePlace: "Failed to update place",
+    saveChanges: "Save Changes",
+    nextBilling: "Next Billing",
+    billingDate: "Billing date",
+    placeListing: "Place listing",
+    premiumStatus: "Premium status",
+    placeNameSr: "Place Name (Serbian)",
+    descriptionSr: "Description (Serbian)",
+    googleMapsUrl: "Google Maps URL",
+    placeNameRu: "Place Name (Russian)",
+    placeNameEn: "Place Name (English)",
+    descriptionRu: "Description (Russian)",
+    
     // Geolocation
     countryNotInList: "This country is not in our list yet",
     cityNotInList: "This city is not in our list yet",
@@ -726,8 +743,6 @@ export const translations = {
     subscriptionPlanDeleted: "Subscription plan deleted",
     manageSubscriptionPlans: "Manage subscription plans",
     subscriptionType: "Subscription Type",
-    placeListing: "Place Listing",
-    premiumStatus: "Premium Status",
     priceInCredits: "Price in Credits",
     billingPeriod: "Billing Period",
     daily: "Daily",
