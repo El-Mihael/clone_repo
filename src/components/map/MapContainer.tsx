@@ -20,18 +20,26 @@ interface MapContainerProps {
   cityCenter: [number, number];
   cityZoom: number;
   userId: string | null;
+  shouldFlyToUserLocation?: boolean;
+  onUserLocationFlyComplete?: () => void;
 }
 
 const MapUpdater = ({ 
   selectedPlace, 
   places, 
   cityCenter,
-  cityZoom 
+  cityZoom,
+  userLocation,
+  shouldFlyToUserLocation,
+  onUserLocationFlyComplete
 }: { 
   selectedPlace: string | null; 
   places: Place[]; 
   cityCenter: [number, number];
   cityZoom: number;
+  userLocation: [number, number] | null;
+  shouldFlyToUserLocation?: boolean;
+  onUserLocationFlyComplete?: () => void;
 }) => {
   const map = useMap();
 
@@ -48,13 +56,27 @@ const MapUpdater = ({
   }, [selectedPlace, places, map]);
 
   useEffect(() => {
-    // Летим к центру города только если не выбрано конкретное место
-    if (!selectedPlace) {
+    // Летим к местоположению пользователя если shouldFlyToUserLocation = true
+    if (shouldFlyToUserLocation && userLocation) {
+      map.flyTo(userLocation, 16, {
+        duration: 1.5,
+        easeLinearity: 0.25,
+      });
+      // Сбрасываем флаг после полета
+      if (onUserLocationFlyComplete) {
+        onUserLocationFlyComplete();
+      }
+    }
+  }, [shouldFlyToUserLocation, userLocation, map, onUserLocationFlyComplete]);
+
+  useEffect(() => {
+    // Летим к центру города только если не выбрано конкретное место и не летим к userLocation
+    if (!selectedPlace && !shouldFlyToUserLocation) {
       map.flyTo(cityCenter, cityZoom, {
         duration: 1.5,
       });
     }
-  }, [cityCenter, cityZoom, map, selectedPlace]);
+  }, [cityCenter, cityZoom, map, selectedPlace, shouldFlyToUserLocation]);
 
   return null;
 };
@@ -112,6 +134,8 @@ export const MapView = ({
   cityCenter,
   cityZoom,
   userId,
+  shouldFlyToUserLocation,
+  onUserLocationFlyComplete
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
 
@@ -229,7 +253,15 @@ export const MapView = ({
           );
         })}
         
-        <MapUpdater selectedPlace={selectedPlace} places={places} cityCenter={cityCenter} cityZoom={cityZoom} />
+        <MapUpdater 
+          selectedPlace={selectedPlace} 
+          places={places} 
+          cityCenter={cityCenter} 
+          cityZoom={cityZoom}
+          userLocation={userLocation}
+          shouldFlyToUserLocation={shouldFlyToUserLocation}
+          onUserLocationFlyComplete={onUserLocationFlyComplete}
+        />
       </LeafletMap>
     </div>
   );
