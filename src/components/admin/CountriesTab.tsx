@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName } from "@/lib/i18n/languageUtils";
 
 type Country = {
   id: string;
@@ -17,7 +18,7 @@ type Country = {
 };
 
 export const CountriesTab = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [countries, setCountries] = useState<Country[]>([]);
   const [formData, setFormData] = useState({
     code: "",
@@ -217,7 +218,7 @@ export const CountriesTab = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">
-                  {country.name_sr} / {country.name_en} / {country.name_ru}
+                  {getLocalizedName(country, language)}
                 </p>
                 <p className="text-sm text-muted-foreground">{t("code")}: {country.code}</p>
               </div>

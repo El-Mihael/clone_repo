@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 import { WishlistViewerDialog } from "./WishlistViewerDialog";
 import type { Database } from "@/integrations/supabase/types";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName, getLocalizedDescription } from "@/lib/i18n/languageUtils";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -27,6 +29,7 @@ type PlaceWithCity = Place & {
 };
 
 export const PlacesTab = () => {
+  const { language } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [places, setPlaces] = useState<PlaceWithCity[]>([]);
@@ -331,7 +334,7 @@ export const PlacesTab = () => {
                 <SelectContent>
                   {cities.map((city) => (
                     <SelectItem key={city.id} value={city.id}>
-                      {city.name_sr}
+                      {getLocalizedName(city, language)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -380,7 +383,7 @@ export const PlacesTab = () => {
                 <SelectContent>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
+                      {getLocalizedName(cat, language)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -544,7 +547,9 @@ export const PlacesTab = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className={`font-medium ${place.is_hidden ? 'text-muted-foreground' : ''}`}>{place.name}</h3>
+                      <h3 className={`font-medium ${place.is_hidden ? 'text-muted-foreground' : ''}`}>
+                        {getLocalizedName(place, language)}
+                      </h3>
                       {place.is_premium && <Crown className="w-4 h-4 text-premium" />}
                       {place.is_hidden && (
                         <Badge variant="destructive" className="gap-1 text-xs">
@@ -553,13 +558,15 @@ export const PlacesTab = () => {
                         </Badge>
                       )}
                     </div>
-                     {place.description && (
-                      <p className="text-sm text-muted-foreground mb-2">{place.description}</p>
+                    {getLocalizedDescription(place, language) && (
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {getLocalizedDescription(place, language)}
+                      </p>
                     )}
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                       {place.cities && (
                         <div className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted">
-                          {place.cities.name_sr}
+                          {getLocalizedName(place.cities, language)}
                         </div>
                       )}
                       {category && (
@@ -567,7 +574,7 @@ export const PlacesTab = () => {
                           className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs"
                           style={{ backgroundColor: `${category.color}20`, color: category.color }}
                         >
-                          {category.name}
+                          {getLocalizedName(category, language)}
                         </div>
                       )}
                     </div>

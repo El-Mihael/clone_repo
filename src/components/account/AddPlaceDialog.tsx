@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName } from "@/lib/i18n/languageUtils";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
@@ -23,7 +24,7 @@ interface AddPlaceDialogProps {
 
 export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialogProps) => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -81,7 +82,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
       monthly: t("monthly"),
       yearly: t("yearly"),
     };
-    return `${plan.name} - ${plan.price} ${t("credits")} / ${periodLabels[plan.billing_period as keyof typeof periodLabels]}`;
+    return `${getLocalizedName(plan, language)} - ${plan.price} ${t("credits")} / ${periodLabels[plan.billing_period as keyof typeof periodLabels]}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,7 +193,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
                 <SelectContent>
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
+                      {getLocalizedName(cat, language)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -211,7 +212,7 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
                 <SelectContent>
                   {cities.map((city) => (
                     <SelectItem key={city.id} value={city.id}>
-                      {city.name_en}
+                      {getLocalizedName(city, language)}
                     </SelectItem>
                   ))}
                 </SelectContent>

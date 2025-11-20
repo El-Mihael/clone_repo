@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { getLocalizedName } from "@/lib/i18n/languageUtils";
 
 interface SubscriptionPlan {
   id: string;
@@ -23,7 +24,7 @@ interface SubscriptionPlan {
 }
 
 export function SubscriptionsTab() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -279,7 +280,7 @@ export function SubscriptionsTab() {
             <TableBody>
               {plans.map((plan) => (
                 <TableRow key={plan.id}>
-                  <TableCell>{plan.name}</TableCell>
+                  <TableCell>{getLocalizedName(plan, language)}</TableCell>
                   <TableCell>{getTypeLabel(plan.type)}</TableCell>
                   <TableCell>{plan.price} {t("credits")}</TableCell>
                   <TableCell>{getBillingPeriodLabel(plan.billing_period)}</TableCell>
