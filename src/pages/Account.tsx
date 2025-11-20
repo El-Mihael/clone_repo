@@ -35,6 +35,7 @@ interface Place {
   is_premium: boolean;
   premium_expires_at: string | null;
   created_at: string;
+  has_custom_page: boolean | null;
 }
 
 interface SubscriptionDetail {
@@ -125,7 +126,7 @@ const Account = () => {
   const fetchPlaces = async (userId: string) => {
     const { data } = await supabase
       .from("places")
-      .select("id, name, is_premium, premium_expires_at, created_at")
+      .select("id, name, is_premium, premium_expires_at, created_at, has_custom_page")
       .eq("owner_id", userId)
       .order("created_at", { ascending: false });
 
