@@ -28,22 +28,36 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
 
 // Normalize VAPID private key input (supports base64url raw or PEM)
 function parseVapidPrivateKey(vapidPrivateKey: string): Uint8Array {
-  // If it's a PEM string, strip header/footer and newlines
-  if (vapidPrivateKey.includes('BEGIN PRIVATE KEY')) {
-    const pemBody = vapidPrivateKey
-      .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-      .replace(/-----END PRIVATE KEY-----/g, '')
-      .replace(/\s+/g, '');
-    const raw = atob(pemBody);
-    const bytes = new Uint8Array(raw.length);
-    for (let i = 0; i < raw.length; i++) {
-      bytes[i] = raw.charCodeAt(i);
+  try {
+    // If it's a PEM string, strip header/footer and all whitespace
+    if (vapidPrivateKey.includes('BEGIN PRIVATE KEY') || vapidPrivateKey.includes('BEGIN EC PRIVATE KEY')) {
+      console.log('🔑 Parsing PEM-formatted private key');
+      const pemBody = vapidPrivateKey
+        .replace(/-----BEGIN (EC )?PRIVATE KEY-----/g, '')
+        .replace(/-----END (EC )?PRIVATE KEY-----/g, '')
+        .replace(/\s+/g, '')
+        .trim();
+      
+      console.log('🔑 PEM body length:', pemBody.length);
+      const raw = atob(pemBody);
+      const bytes = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) {
+        bytes[i] = raw.charCodeAt(i);
+      }
+      console.log('✅ PEM key parsed, bytes length:', bytes.length);
+      return bytes;
     }
-    return bytes;
-  }
 
-  // Otherwise assume base64url-encoded PKCS#8
-  return base64urlToUint8Array(vapidPrivateKey.trim());
+    // Otherwise assume base64url-encoded PKCS#8
+    console.log('🔑 Parsing base64url-encoded private key');
+    const result = base64urlToUint8Array(vapidPrivateKey.trim());
+    console.log('✅ Base64url key parsed, bytes length:', result.length);
+    return result;
+  } catch (error) {
+    const err = error as Error;
+    console.error('❌ Failed to parse VAPID private key:', err);
+    throw new Error(`Failed to decode VAPID private key: ${err.message}`);
+  }
 }
 
 // Generate VAPID JWT token
