@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, LogOut, MapPin, ShoppingCart, History, Check, Heart } from "lucide-react";
+import { Coins, LogOut, MapPin, ShoppingCart, History, Check, Heart, BarChart3 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { UserPlacesManager } from "@/components/account/UserPlacesManager";
 import { UserWishlist } from "@/components/account/UserWishlist";
+import { BusinessShareStatistics } from "@/components/account/BusinessShareStatistics";
 
 interface Profile {
   id: string;
@@ -291,10 +292,16 @@ const Account = () => {
               {language === "sr" ? "Желим посетити" : language === "ru" ? "Хочу посетить" : "Wishlist"}
             </TabsTrigger>
             {profile.user_type === "business" && (
-              <TabsTrigger value="places">
-                <MapPin className="w-4 h-4 mr-2" />
-                {t("myPlaces")}
-              </TabsTrigger>
+              <>
+                <TabsTrigger value="places">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {t("myPlaces")}
+                </TabsTrigger>
+                <TabsTrigger value="statistics">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Статистика шерингов
+                </TabsTrigger>
+              </>
             )}
           </TabsList>
 
@@ -395,22 +402,28 @@ const Account = () => {
           </TabsContent>
 
           {profile.user_type === "business" && (
-            <TabsContent value="places">
-              <UserPlacesManager
-                places={places}
-                credits={profile.credits}
-                subscriptions={subscriptionDetails.map(d => ({
-                  placeId: d.placeId,
-                  cancelAtPeriodEnd: d.cancelAtPeriodEnd
-                }))}
-                onRefresh={async () => {
-                  const { data: { session } } = await supabase.auth.getSession();
-                  if (session) {
-                    await fetchData(session.user.id);
-                  }
-                }}
-              />
-            </TabsContent>
+            <>
+              <TabsContent value="places">
+                <UserPlacesManager
+                  places={places}
+                  credits={profile.credits}
+                  subscriptions={subscriptionDetails.map(d => ({
+                    placeId: d.placeId,
+                    cancelAtPeriodEnd: d.cancelAtPeriodEnd
+                  }))}
+                  onRefresh={async () => {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                      await fetchData(session.user.id);
+                    }
+                  }}
+                />
+              </TabsContent>
+              
+              <TabsContent value="statistics">
+                <BusinessShareStatistics />
+              </TabsContent>
+            </>
           )}
         </Tabs>
       </div>
