@@ -4,6 +4,7 @@ import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WishlistButton } from "./WishlistButton";
 import { SharePlaceButton } from "./SharePlaceButton";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Database } from "@/integrations/supabase/types";
@@ -133,6 +134,7 @@ export const MapView = ({
   flyToUserLocationTrigger
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (selectedPlace && markerRefs.current[selectedPlace]) {
@@ -214,7 +216,7 @@ export const MapView = ({
                       size="sm" 
                       className="w-full justify-start"
                     />
-                    {place.has_custom_page && (
+                    {place.has_custom_page && place.is_premium && (
                       <Button
                         size="sm"
                         variant="default"
@@ -222,7 +224,7 @@ export const MapView = ({
                         onClick={() => onPlacePageOpen(place)}
                       >
                         <FileText className="w-4 h-4 mr-2" />
-                        Подробнее о месте
+                        {t("moreAboutPlace")}
                       </Button>
                     )}
                     {place.google_maps_url && (

@@ -482,6 +482,7 @@ const Map = () => {
         <PlacePage
           place={viewingPlacePage}
           onBack={() => setViewingPlacePage(null)}
+          isAdmin={isAdmin}
         />
       </div>
     );
