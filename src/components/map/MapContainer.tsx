@@ -3,6 +3,7 @@ import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMap } from "re
 import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WishlistButton } from "./WishlistButton";
+import { SharePlaceButton } from "./SharePlaceButton";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Database } from "@/integrations/supabase/types";
@@ -213,6 +214,12 @@ export const MapView = ({
 
                   <div className="flex flex-col gap-2">
                     <WishlistButton placeId={place.id} userId={userId} />
+                    <SharePlaceButton 
+                      place={place} 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                    />
                     {place.has_custom_page && (
                       <Button
                         size="sm"
