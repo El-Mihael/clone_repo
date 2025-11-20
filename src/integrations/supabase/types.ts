@@ -167,6 +167,7 @@ export type Database = {
           has_custom_page: boolean | null
           id: string
           image_url: string | null
+          is_hidden: boolean | null
           is_premium: boolean | null
           latitude: number
           longitude: number
@@ -174,6 +175,7 @@ export type Database = {
           name_en: string | null
           name_sr: string | null
           owner_id: string | null
+          premium_expires_at: string | null
           updated_at: string
         }
         Insert: {
@@ -191,6 +193,7 @@ export type Database = {
           has_custom_page?: boolean | null
           id?: string
           image_url?: string | null
+          is_hidden?: boolean | null
           is_premium?: boolean | null
           latitude: number
           longitude: number
@@ -198,6 +201,7 @@ export type Database = {
           name_en?: string | null
           name_sr?: string | null
           owner_id?: string | null
+          premium_expires_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -215,6 +219,7 @@ export type Database = {
           has_custom_page?: boolean | null
           id?: string
           image_url?: string | null
+          is_hidden?: boolean | null
           is_premium?: boolean | null
           latitude?: number
           longitude?: number
@@ -222,6 +227,7 @@ export type Database = {
           name_en?: string | null
           name_sr?: string | null
           owner_id?: string | null
+          premium_expires_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -523,6 +529,8 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          cancel_at_period_end: boolean | null
+          cancelled_at: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -534,6 +542,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancel_at_period_end?: boolean | null
+          cancelled_at?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -545,6 +555,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancel_at_period_end?: boolean | null
+          cancelled_at?: string | null
           created_at?: string
           id?: string
           is_active?: boolean

@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     // Get place and verify ownership
     const { data: place } = await supabaseClient
       .from('places')
-      .select('owner_id, is_premium')
+      .select('owner_id, is_premium, premium_expires_at')
       .eq('id', placeId)
       .single();
 
@@ -51,11 +51,48 @@ Deno.serve(async (req) => {
       throw new Error('Profile not found');
     }
 
+    // Get place subscription to check billing period
+    const { data: subscription } = await supabaseClient
+      .from('user_subscriptions')
+      .select('next_billing_date, plan_id, subscription_plans(billing_period)')
+      .eq('place_id', placeId)
+      .eq('is_active', true)
+      .single();
+
+    if (!subscription) {
+      throw new Error('No active subscription found for this place');
+    }
+
     // Check if enabling premium
     if (isPremium && !place.is_premium) {
+      // Check if premium was cancelled but period hasn't expired yet
+      const now = new Date();
+      if (place.premium_expires_at && new Date(place.premium_expires_at) > now) {
+        // Premium is still active in current period, just re-enable it
+        await supabaseClient
+          .from('places')
+          .update({ 
+            is_premium: true,
+            premium_expires_at: place.premium_expires_at // Keep existing expiration
+          })
+          .eq('id', placeId);
+
+        return new Response(
+          JSON.stringify({ 
+            place: { ...place, is_premium: true },
+            message: 'Premium re-enabled for current period'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // New premium activation - deduct credits
       if (profile.credits < 8) {
         throw new Error('Insufficient credits. You need 8 credits to make place premium.');
       }
+
+      // Calculate premium expiration based on subscription billing period
+      const nextBilling = new Date(subscription.next_billing_date);
 
       // Deduct credits
       await supabaseClient
@@ -68,36 +105,54 @@ Deno.serve(async (req) => {
         user_id: user.id,
         amount: -8,
         type: 'premium_enabled',
-        description: `Enabled premium for place`,
+        description: `Enabled premium for place until ${nextBilling.toISOString()}`,
       });
-    } else if (!isPremium && place.is_premium) {
-      // Return credits when disabling premium
-      await supabaseClient
-        .from('profiles')
-        .update({ credits: profile.credits + 8 })
-        .eq('id', user.id);
 
-      // Log transaction
-      await supabaseClient.from('credit_transactions').insert({
-        user_id: user.id,
-        amount: 8,
-        type: 'premium_disabled',
-        description: `Disabled premium for place`,
-      });
+      // Update place with premium and expiration
+      const { data: updatedPlace, error: updateError } = await supabaseClient
+        .from('places')
+        .update({ 
+          is_premium: true,
+          premium_expires_at: nextBilling.toISOString()
+        })
+        .eq('id', placeId)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      return new Response(
+        JSON.stringify({ place: updatedPlace }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else if (!isPremium && place.is_premium) {
+      // Disabling premium - set expiration, don't return credits
+      // Premium will stay active until current period ends
+      const { data: updatedPlace, error: updateError } = await supabaseClient
+        .from('places')
+        .update({ 
+          is_premium: true, // Keep premium active
+          premium_expires_at: place.premium_expires_at || subscription.next_billing_date
+        })
+        .eq('id', placeId)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      return new Response(
+        JSON.stringify({ 
+          place: updatedPlace,
+          message: 'Premium will be cancelled at period end',
+          expires_at: place.premium_expires_at || subscription.next_billing_date
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Update place
-    const { data: updatedPlace, error: updateError } = await supabaseClient
-      .from('places')
-      .update({ is_premium: isPremium })
-      .eq('id', placeId)
-      .select()
-      .single();
-
-    if (updateError) throw updateError;
-
+    // If we get here, no changes were needed
     return new Response(
-      JSON.stringify({ place: updatedPlace }),
+      JSON.stringify({ place }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

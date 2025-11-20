@@ -361,7 +361,8 @@ const Map = () => {
     const { data, error } = await supabase
       .from("places")
       .select("*")
-      .eq("city_id", selectedCity.id);
+      .eq("city_id", selectedCity.id)
+      .eq("is_hidden", false); // Only show visible places
 
     if (error) {
       toast.error("Ошибка загрузки мест");
@@ -409,7 +410,8 @@ const Map = () => {
         const { data: places } = await supabase
           .from("places")
           .select("*")
-          .in("id", placeIds);
+          .in("id", placeIds)
+          .eq("is_hidden", false); // Only show visible places
         
         if (places) {
           setPlaces(places);

@@ -40,7 +40,26 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
   const [deletingPlace, setDeletingPlace] = useState<Place | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleTogglePremium = async (place: Place) => {
+  const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
+  const [premiumPlace, setPremiumPlace] = useState<Place | null>(null);
+
+  const openPremiumDialog = (place: Place) => {
+    if (place.is_premium) {
+      // Show cancellation dialog
+      setPremiumPlace(place);
+      setPremiumDialogOpen(true);
+    } else {
+      // Enable premium directly
+      handleTogglePremium(place);
+    }
+  };
+
+  const handleTogglePremium = async (place: Place, skipDialog = false) => {
+    if (place.is_premium && !skipDialog) {
+      openPremiumDialog(place);
+      return;
+    }
+
     setToggleLoading(place.id);
 
     try {
@@ -56,13 +75,17 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
 
       if (response.error) throw response.error;
 
+      const data = response.data as any;
+
       toast({
         title: t("success"),
         description: place.is_premium 
-          ? t("premiumDisabled")
+          ? t("premiumCancelledAtPeriodEnd")
           : t("premiumEnabled"),
       });
 
+      setPremiumDialogOpen(false);
+      setPremiumPlace(null);
       onRefresh();
     } catch (error) {
       toast({
@@ -163,7 +186,7 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                     <Button
                       variant={place.is_premium ? "outline" : "default"}
                       size="sm"
-                      onClick={() => handleTogglePremium(place)}
+                      onClick={() => openPremiumDialog(place)}
                       disabled={toggleLoading === place.id || (!place.is_premium && credits < 8)}
                     >
                       {toggleLoading === place.id ? (
@@ -171,7 +194,7 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                       ) : (
                         <Crown className="w-4 h-4 mr-2" />
                       )}
-                      {place.is_premium ? t("disablePremium") : t("enablePremium")}
+                      {place.is_premium ? t("cancelPremium") : t("enablePremium")}
                       {!place.is_premium && ` (8 ${t("credits")})`}
                     </Button>
                     <Button
@@ -214,6 +237,29 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
             >
               {deleteLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={premiumDialogOpen} onOpenChange={setPremiumDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("cancelPremiumTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("cancelPremiumDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={toggleLoading !== null}>
+              {t("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => premiumPlace && handleTogglePremium(premiumPlace, true)}
+              disabled={toggleLoading !== null}
+            >
+              {toggleLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {t("agree")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
