@@ -219,17 +219,17 @@ export default function Tours() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-7xl mx-auto py-8 px-4">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" onClick={() => navigate("/")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("map")}
+      <div className="container max-w-7xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <Button variant="outline" onClick={() => navigate("/")} className="flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t("map")}</span>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl sm:text-3xl font-bold">
               {language === "sr" ? "Туре" : language === "ru" ? "Туры" : "Tours"}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               {language === "sr" ? "Изаберите туру за истраживање" : language === "ru" ? "Выберите тур для исследования" : "Choose a tour to explore"}
             </p>
           </div>

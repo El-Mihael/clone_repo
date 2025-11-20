@@ -201,54 +201,54 @@ const Account = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto py-8 px-4">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">{t("personalAccount")}</h1>
-            <p className="text-muted-foreground mt-1">{profile.email}</p>
+      <div className="container max-w-6xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold">{t("personalAccount")}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 truncate">{profile.email}</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/")}>
-              <MapPin className="w-4 h-4 mr-2" />
-              {t("map")}
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={() => navigate("/")} className="flex-1 sm:flex-none text-sm">
+              <MapPin className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t("map")}</span>
             </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              {t("signOut")}
+            <Button variant="outline" onClick={handleSignOut} className="flex-1 sm:flex-none text-sm">
+              <LogOut className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t("signOut")}</span>
             </Button>
           </div>
         </div>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Coins className="w-5 h-5" />
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
               {t("balance")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold">{profile.credits} {t("credits")}</div>
-            <p className="text-sm text-muted-foreground mt-2">
+            <div className="text-3xl sm:text-4xl font-bold">{profile.credits} {t("credits")}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               {t("topUpComingSoon")}
             </p>
           </CardContent>
         </Card>
 
         {subscriptionDetails.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>{t("upcomingBillings")}</CardTitle>
-              <CardDescription>{t("subscriptionDetails")}</CardDescription>
+          <Card className="mb-6 sm:mb-8">
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="text-lg sm:text-xl">{t("upcomingBillings")}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">{t("subscriptionDetails")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {subscriptionDetails.map((detail) => {
                   const total = detail.placeListingCost + detail.premiumCost;
                   return (
-                    <div key={detail.placeId} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="font-medium">{detail.placeName}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
+                    <div key={detail.placeId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm sm:text-base truncate">{detail.placeName}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                           {t("billingPeriod")}: {
                             detail.billingPeriod === 'daily' ? t("billingPeriod_daily") :
                             detail.billingPeriod === 'weekly' ? t("billingPeriod_weekly") :
@@ -256,13 +256,13 @@ const Account = () => {
                             t("billingPeriod_yearly")
                           }
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs sm:text-sm text-muted-foreground">
                           {t("nextBilling")}: {new Date(detail.nextBillingDate).toLocaleDateString(language === "sr" ? "sr-RS" : language === "ru" ? "ru-RU" : "en-US")}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold">{total} {t("credits")}</div>
-                        <div className="text-xs text-muted-foreground space-y-1">
+                      <div className="text-left sm:text-right flex-shrink-0">
+                        <div className="text-base sm:text-lg font-bold">{total} {t("credits")}</div>
+                        <div className="text-xs text-muted-foreground space-y-0.5">
                           <div>{t("placeListing")}: {detail.placeListingCost}</div>
                           {detail.premiumCost > 0 && (
                             <div>{t("premiumStatus")}: {detail.premiumCost}</div>
@@ -278,28 +278,33 @@ const Account = () => {
         )}
 
         <Tabs defaultValue="history" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="history">
-              <History className="w-4 h-4 mr-2" />
-              {t("transactionHistory")}
+          <TabsList className="w-full flex-wrap h-auto justify-start gap-1 p-1">
+            <TabsTrigger value="history" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+              <History className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t("transactionHistory")}</span>
+              <span className="sm:hidden">История</span>
             </TabsTrigger>
-            <TabsTrigger value="tours">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {language === "sr" ? "Моје туре" : language === "ru" ? "Мои туры" : "My Tours"}
+            <TabsTrigger value="tours" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+              <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{language === "sr" ? "Моје туре" : language === "ru" ? "Мои туры" : "My Tours"}</span>
+              <span className="sm:hidden">Туры</span>
             </TabsTrigger>
-            <TabsTrigger value="wishlist">
-              <Heart className="w-4 h-4 mr-2" />
-              {language === "sr" ? "Желим посетити" : language === "ru" ? "Хочу посетить" : "Wishlist"}
+            <TabsTrigger value="wishlist" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+              <Heart className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{language === "sr" ? "Желим посетити" : language === "ru" ? "Хочу посетить" : "Wishlist"}</span>
+              <span className="sm:hidden">Wishlist</span>
             </TabsTrigger>
             {profile.user_type === "business" && (
               <>
-                <TabsTrigger value="places">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {t("myPlaces")}
+                <TabsTrigger value="places" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t("myPlaces")}</span>
+                  <span className="sm:hidden">Места</span>
                 </TabsTrigger>
-                <TabsTrigger value="statistics">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Статистика шерингов
+                <TabsTrigger value="statistics" className="flex-shrink-0 text-xs sm:text-sm px-2 sm:px-3 py-1.5">
+                  <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden lg:inline">Статистика шерингов</span>
+                  <span className="lg:hidden">Стат.</span>
                 </TabsTrigger>
               </>
             )}
@@ -307,42 +312,44 @@ const Account = () => {
 
           <TabsContent value="history">
             <Card>
-              <CardHeader>
-                <CardTitle>{t("transactionHistory")}</CardTitle>
-                <CardDescription>
+              <CardHeader className="pb-3 sm:pb-6">
+                <CardTitle className="text-lg sm:text-xl">{t("transactionHistory")}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                   {t("recentTransactions")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {transactions.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
+                  <p className="text-center text-sm sm:text-base text-muted-foreground py-8">
                     {t("noTransactions")}
                   </p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("date")}</TableHead>
-                        <TableHead>{t("description")}</TableHead>
-                        <TableHead className="text-right">{t("amount")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {transactions.map((transaction) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell>
-                            {new Date(transaction.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{transaction.description || transaction.type}</TableCell>
-                          <TableCell className="text-right">
-                            <span className={transaction.amount > 0 ? "text-green-600" : "text-red-600"}>
-                              {transaction.amount > 0 ? "+" : ""}{transaction.amount}
-                            </span>
-                          </TableCell>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-xs sm:text-sm">{t("date")}</TableHead>
+                          <TableHead className="text-xs sm:text-sm">{t("description")}</TableHead>
+                          <TableHead className="text-right text-xs sm:text-sm">{t("amount")}</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions.map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell className="text-xs sm:text-sm whitespace-nowrap">
+                              {new Date(transaction.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-xs sm:text-sm">{transaction.description || transaction.type}</TableCell>
+                            <TableCell className="text-right text-xs sm:text-sm whitespace-nowrap">
+                              <span className={transaction.amount > 0 ? "text-green-600" : "text-red-600"}>
+                                {transaction.amount > 0 ? "+" : ""}{transaction.amount}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
