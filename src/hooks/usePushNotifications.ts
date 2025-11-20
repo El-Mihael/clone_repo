@@ -88,20 +88,32 @@ export const usePushNotifications = () => {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        throw new Error("User not authenticated");
+        toast({
+          title: "Требуется авторизация",
+          description: "Войдите в аккаунт для подписки на уведомления",
+          variant: "destructive",
+        });
+        return;
       }
 
       const subscriptionData = subscription.toJSON();
 
+      console.log("Subscribing user:", user.id, "with endpoint:", subscriptionData.endpoint);
+
       // Save subscription to database
-      const { error } = await supabase.from("push_subscriptions").insert({
+      const { error, data } = await supabase.from("push_subscriptions").insert({
         user_id: user.id,
         endpoint: subscriptionData.endpoint!,
         p256dh: subscriptionData.keys!.p256dh,
         auth: subscriptionData.keys!.auth,
-      });
+      }).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Database insert error:", error);
+        throw error;
+      }
+
+      console.log("Subscription saved to database:", data);
 
       setIsSubscribed(true);
       toast({
