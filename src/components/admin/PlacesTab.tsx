@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard } from "lucide-react";
+import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 import type { Database } from "@/integrations/supabase/types";
@@ -282,6 +282,21 @@ export const PlacesTab = () => {
     fetchPlaces();
   };
 
+  const toggleHidden = async (id: string, currentHidden: boolean) => {
+    const { error } = await supabase
+      .from("places")
+      .update({ is_hidden: !currentHidden })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Ошибка изменения видимости");
+      return;
+    }
+
+    toast.success(currentHidden ? "Место показано" : "Место скрыто");
+    fetchPlaces();
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -500,8 +515,14 @@ export const PlacesTab = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-medium">{place.name}</h3>
+                      <h3 className={`font-medium ${place.is_hidden ? 'opacity-50' : ''}`}>{place.name}</h3>
                       {place.is_premium && <Crown className="w-4 h-4 text-premium" />}
+                      {place.is_hidden && (
+                        <Badge variant="outline" className="gap-1 text-xs">
+                          <EyeOff className="w-3 h-3" />
+                          Скрыто
+                        </Badge>
+                      )}
                     </div>
                      {place.description && (
                       <p className="text-sm text-muted-foreground mb-2">{place.description}</p>
@@ -537,6 +558,14 @@ export const PlacesTab = () => {
                     )}
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => toggleHidden(place.id, place.is_hidden || false)}
+                      title={place.is_hidden ? "Показать место" : "Скрыть место"}
+                    >
+                      {place.is_hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"
