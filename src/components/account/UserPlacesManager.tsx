@@ -218,6 +218,12 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
                           Premium
                         </Badge>
                       )}
+                      {place.has_custom_page && (
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <FileText className="w-3 h-3" />
+                          {t("customPage")}
+                        </Badge>
+                      )}
                     </div>
                     {isPlacePremiumCancelled(place.id) && place.premium_expires_at && (
                       <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
