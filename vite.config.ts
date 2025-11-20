@@ -47,6 +47,11 @@ export default defineConfig(({ mode }) => ({
           },
         ],
       },
+      // Enable PWA + service worker in development so push подписка работает на localhost
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
         runtimeCaching: [
