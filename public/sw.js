@@ -1,4 +1,18 @@
 // Custom service worker for handling push notifications
+// Workbox will inject the precache manifest here
+const precacheManifest = self.__WB_MANIFEST || [];
+
+// Precache static assets
+self.addEventListener('install', function(event) {
+  console.log('📦 Service worker installing, precaching assets...');
+  event.waitUntil(
+    caches.open('v1').then(function(cache) {
+      return cache.addAll(precacheManifest.map(entry => entry.url || entry));
+    })
+  );
+});
+
+// Handle push notifications
 self.addEventListener('push', function(event) {
   console.log('🔔 Push notification received:', event);
   
