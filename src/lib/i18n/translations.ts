@@ -238,6 +238,15 @@ export const translations = {
     subscriptionPlanRequired: "Морате изабрати план претплате",
     subscriptionInfo: "Кредити ће бити аутоматски списани у одабраном периоду",
     noPlansAvailable: "Нема доступних планова",
+    addFirstPlace: "Додај прво место",
+    enablePremium: "Активирај премиум",
+    disablePremium: "Деактивирај премиум",
+    premiumEnabled: "Премиум статус активиран",
+    premiumDisabled: "Премиум статус деактивиран",
+    failedToUpdatePremium: "Грешка при ажурирању премиум статуса",
+    placeDeleted: "Место је обрисано",
+    failedToDeletePlace: "Грешка при брисању места",
+    confirmDeletePlace: "Да ли сте сигурни да желите да обришете место",
   },
   ru: {
     // Auth
@@ -478,6 +487,15 @@ export const translations = {
     subscriptionPlanRequired: "Необходимо выбрать план подписки",
     subscriptionInfo: "Кредиты будут автоматически списываться в выбранном периоде",
     noPlansAvailable: "Нет доступных планов",
+    addFirstPlace: "Добавить первое место",
+    enablePremium: "Активировать премиум",
+    disablePremium: "Деактивировать премиум",
+    premiumEnabled: "Премиум статус активирован",
+    premiumDisabled: "Премиум статус деактивирован",
+    failedToUpdatePremium: "Ошибка при обновлении премиум статуса",
+    placeDeleted: "Место удалено",
+    failedToDeletePlace: "Ошибка при удалении места",
+    confirmDeletePlace: "Вы уверены что хотите удалить место",
   },
   en: {
     // Auth
@@ -718,6 +736,15 @@ export const translations = {
     subscriptionPlanRequired: "You must select a subscription plan",
     subscriptionInfo: "Credits will be automatically charged in the selected period",
     noPlansAvailable: "No plans available",
+    addFirstPlace: "Add first place",
+    enablePremium: "Enable Premium",
+    disablePremium: "Disable Premium",
+    premiumEnabled: "Premium status enabled",
+    premiumDisabled: "Premium status disabled",
+    failedToUpdatePremium: "Failed to update premium status",
+    placeDeleted: "Place deleted",
+    failedToDeletePlace: "Failed to delete place",
+    confirmDeletePlace: "Are you sure you want to delete the place",
   },
 };
 

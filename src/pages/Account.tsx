@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Coins, LogOut, MapPin, Crown, ShoppingCart, History, Check } from "lucide-react";
+import { Coins, LogOut, MapPin, ShoppingCart, History, Check } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { UserPlacesManager } from "@/components/account/UserPlacesManager";
 
 interface Profile {
   id: string;
@@ -66,10 +67,14 @@ const Account = () => {
       return;
     }
 
-    await fetchProfile(session.user.id);
-    await fetchTransactions(session.user.id);
-    await fetchPlaces(session.user.id);
-    await fetchPurchasedTours(session.user.id);
+    await fetchData(session.user.id);
+  };
+
+  const fetchData = async (userId: string) => {
+    await fetchProfile(userId);
+    await fetchTransactions(userId);
+    await fetchPlaces(userId);
+    await fetchPurchasedTours(userId);
   };
 
   const fetchProfile = async (userId: string) => {
@@ -285,43 +290,16 @@ const Account = () => {
 
           {profile.user_type === "business" && (
             <TabsContent value="places">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t("myPlaces")}</CardTitle>
-                  <CardDescription>
-                    {t("managePlaces")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {places.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      {t("noPlacesYet")}
-                    </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {places.map((place) => (
-                        <div key={place.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <MapPin className="w-5 h-5" />
-                            <div>
-                              <div className="font-medium">{place.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {new Date(place.created_at).toLocaleDateString()}
-                              </div>
-                            </div>
-                          </div>
-                          {place.is_premium && (
-                            <Badge variant="secondary" className="flex items-center gap-1">
-                              <Crown className="w-3 h-3" />
-                              Premium
-                            </Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <UserPlacesManager
+                places={places}
+                credits={profile.credits}
+                onRefresh={async () => {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session) {
+                    await fetchData(session.user.id);
+                  }
+                }}
+              />
             </TabsContent>
           )}
         </Tabs>
