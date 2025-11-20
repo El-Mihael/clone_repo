@@ -56,8 +56,8 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
         description: place.description || "",
         description_en: place.description_en || "",
         description_sr: place.description_sr || "",
-        latitude: place.latitude.toString(),
-        longitude: place.longitude.toString(),
+        latitude: place.latitude?.toString() || "",
+        longitude: place.longitude?.toString() || "",
         address: place.address || "",
         google_maps_url: place.google_maps_url || "",
       });
