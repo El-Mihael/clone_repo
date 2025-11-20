@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       throw new Error('No active subscription found for this place');
     }
 
-    // Check if enabling premium
+      // Check if enabling premium
     if (isPremium && !place.is_premium) {
       // Check if premium was cancelled but period hasn't expired yet
       const now = new Date();
@@ -76,6 +76,13 @@ Deno.serve(async (req) => {
             premium_expires_at: place.premium_expires_at // Keep existing expiration
           })
           .eq('id', placeId);
+
+        // Re-enable premium in subscription (remove cancellation)
+        await supabaseClient
+          .from('user_subscriptions')
+          .update({ cancel_at_period_end: false })
+          .eq('place_id', placeId)
+          .eq('is_active', true);
 
         return new Response(
           JSON.stringify({ 
@@ -126,8 +133,16 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else if (!isPremium && place.is_premium) {
-      // Disabling premium - set expiration, don't return credits
+      // Disabling premium - set cancellation flag, don't return credits
       // Premium will stay active until current period ends
+      
+      // Mark subscription for cancellation at period end
+      await supabaseClient
+        .from('user_subscriptions')
+        .update({ cancel_at_period_end: true })
+        .eq('place_id', placeId)
+        .eq('is_active', true);
+      
       const { data: updatedPlace, error: updateError } = await supabaseClient
         .from('places')
         .update({ 

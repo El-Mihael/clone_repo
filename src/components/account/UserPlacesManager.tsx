@@ -28,13 +28,19 @@ interface Place {
   cancel_at_period_end?: boolean;
 }
 
+interface SubscriptionInfo {
+  placeId: string;
+  cancelAtPeriodEnd: boolean;
+}
+
 interface UserPlacesManagerProps {
   places: Place[];
   credits: number;
+  subscriptions: SubscriptionInfo[];
   onRefresh: () => void;
 }
 
-export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesManagerProps) => {
+export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }: UserPlacesManagerProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -44,10 +50,15 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingPlace, setDeletingPlace] = useState<Place | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [premiumCancelledPlace, setPremiumCancelledPlace] = useState<string | null>(null);
 
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [premiumPlace, setPremiumPlace] = useState<Place | null>(null);
+
+  // Check if place premium is cancelled
+  const isPlacePremiumCancelled = (placeId: string) => {
+    const subscription = subscriptions.find(s => s.placeId === placeId);
+    return subscription?.cancelAtPeriodEnd || false;
+  };
 
   const openPremiumDialog = (place: Place) => {
     if (place.is_premium) {
@@ -61,8 +72,10 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
   };
 
   const handleTogglePremium = async (place: Place, skipDialog = false) => {
+    const isCancelled = isPlacePremiumCancelled(place.id);
+    
     // If premium is active and not cancelled, show cancellation dialog
-    if (place.is_premium && !premiumCancelledPlace && !skipDialog) {
+    if (place.is_premium && !isCancelled && !skipDialog) {
       openPremiumDialog(place);
       return;
     }
@@ -76,7 +89,7 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
       const response = await supabase.functions.invoke("toggle-premium", {
         body: {
           placeId: place.id,
-          isPremium: !place.is_premium || premiumCancelledPlace === place.id,
+          isPremium: !place.is_premium || isCancelled,
         },
       });
 
@@ -86,16 +99,10 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
 
       toast({
         title: t("success"),
-        description: place.is_premium && !premiumCancelledPlace
+        description: place.is_premium && !isCancelled
           ? t("premiumCancelledAtPeriodEnd")
           : t("premiumEnabled"),
       });
-
-      if (place.is_premium && !premiumCancelledPlace) {
-        setPremiumCancelledPlace(place.id);
-      } else if (premiumCancelledPlace === place.id) {
-        setPremiumCancelledPlace(null);
-      }
 
       setPremiumDialogOpen(false);
       setPremiumPlace(null);
@@ -203,7 +210,7 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                         </Badge>
                       )}
                     </div>
-                    {premiumCancelledPlace === place.id && place.premium_expires_at && (
+                    {isPlacePremiumCancelled(place.id) && place.premium_expires_at && (
                       <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                         {t("premiumCancelledUntil")} {new Date(place.premium_expires_at).toLocaleDateString()}. {t("noChargeNextPeriod")}
                       </div>
@@ -218,23 +225,23 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                         {t("edit")}
                       </Button>
                       <Button
-                        variant={place.is_premium && !premiumCancelledPlace ? "outline" : "default"}
+                        variant={place.is_premium && !isPlacePremiumCancelled(place.id) ? "outline" : "default"}
                         size="sm"
-                        onClick={() => premiumCancelledPlace === place.id ? handleTogglePremium(place, true) : openPremiumDialog(place)}
-                        disabled={toggleLoading === place.id || (!place.is_premium && !premiumCancelledPlace && credits < 8)}
+                        onClick={() => isPlacePremiumCancelled(place.id) ? handleTogglePremium(place, true) : openPremiumDialog(place)}
+                        disabled={toggleLoading === place.id || (!place.is_premium && !isPlacePremiumCancelled(place.id) && credits < 8)}
                       >
                         {toggleLoading === place.id ? (
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         ) : (
                           <Crown className="w-4 h-4 mr-2" />
                         )}
-                        {premiumCancelledPlace === place.id 
+                        {isPlacePremiumCancelled(place.id) 
                           ? t("activatePremium") 
                           : place.is_premium 
                             ? t("cancelPremium") 
                             : t("enablePremium")
                         }
-                        {!place.is_premium && !premiumCancelledPlace && ` (8 ${t("credits")})`}
+                        {!place.is_premium && !isPlacePremiumCancelled(place.id) && ` (8 ${t("credits")})`}
                       </Button>
                       <Button
                         variant="destructive"

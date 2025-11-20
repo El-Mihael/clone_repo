@@ -119,6 +119,12 @@ Deno.serve(async (req) => {
               placeUpdates.premium_expires_at = null;
               results.premium_removed++;
             }
+          } else if (place?.is_premium && sub.cancel_at_period_end) {
+            // Premium was cancelled - remove it now and reset flag
+            console.log(`Removing cancelled premium for place ${place?.id}`);
+            placeUpdates.is_premium = false;
+            placeUpdates.premium_expires_at = null;
+            results.premium_removed++;
           }
 
           // Update credits
@@ -127,13 +133,13 @@ Deno.serve(async (req) => {
             .update({ credits: newCredits })
             .eq('id', sub.user_id);
 
-          // Update subscription next billing date
+          // Update subscription next billing date and reset cancellation flag
           const nextBilling = calculateNextBillingDate(plan.billing_period);
           await supabaseClient
             .from('user_subscriptions')
             .update({ 
               next_billing_date: nextBilling.toISOString(),
-              ...(sub.cancel_at_period_end ? { is_active: false } : {})
+              cancel_at_period_end: false // Reset cancellation flag
             })
             .eq('id', sub.id);
 
