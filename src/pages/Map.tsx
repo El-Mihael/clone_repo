@@ -47,7 +47,7 @@ const Map = () => {
   const [viewingTourGuide, setViewingTourGuide] = useState<boolean>(false);
   const [wishlistMode, setWishlistMode] = useState<boolean>(false);
   const [userWishlistPlaceIds, setUserWishlistPlaceIds] = useState<string[]>([]);
-  const [shouldFlyToUserLocation, setShouldFlyToUserLocation] = useState<boolean>(false);
+  const [flyToUserLocationTrigger, setFlyToUserLocationTrigger] = useState<number>(0);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -247,9 +247,9 @@ const Map = () => {
       async (position) => {
         const { latitude, longitude } = position.coords;
         
-        // Устанавливаем координаты пользователя и флаг для полета к ним
+        // Устанавливаем координаты пользователя и увеличиваем счетчик для полета к ним
         setUserLocation([latitude, longitude]);
-        setShouldFlyToUserLocation(true);
+        setFlyToUserLocationTrigger(prev => prev + 1);
         toast.success("Геолокация определена");
       },
       async (error) => {
@@ -549,8 +549,7 @@ const Map = () => {
           cityCenter={[selectedCity.latitude, selectedCity.longitude]}
           cityZoom={selectedCity.zoom_level}
           userId={user?.id || null}
-          shouldFlyToUserLocation={shouldFlyToUserLocation}
-          onUserLocationFlyComplete={() => setShouldFlyToUserLocation(false)}
+          flyToUserLocationTrigger={flyToUserLocationTrigger}
         />
       </div>
     </div>
