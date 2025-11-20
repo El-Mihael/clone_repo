@@ -154,65 +154,64 @@ export const Header = ({
   );
 
   return (
-    <header className="h-14 sm:h-16 border-b border-border/50 bg-card/50 backdrop-blur-md shadow-card flex items-center px-2 sm:px-4 md:px-6 sticky top-0 z-50">
+    <header className="h-12 sm:h-14 md:h-16 border-b border-border/50 bg-card/95 backdrop-blur-md shadow-sm flex items-center px-2 sm:px-4 gap-1 sm:gap-2 sticky top-0 z-50">
       {showMenuButton && (
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={onMenuClick}
-          className="mr-1 sm:mr-2 p-1 sm:p-2"
+          className="h-8 w-8 sm:h-9 sm:w-9"
         >
-          <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Menu className="h-4 w-4" />
         </Button>
       )}
       
-      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
-        <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-          <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary" />
+      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-shrink-0">
+        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-md bg-primary/10 flex items-center justify-center">
+          <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
         </div>
-        <div className="min-w-0">
-          <h1 className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate">{t("map")}</h1>
-          {activeTour && (
-            <p className="text-xs text-muted-foreground hidden md:block truncate">{t("tours")}: {activeTour.name}</p>
-          )}
+        <div className="min-w-0 hidden xs:block">
+          <h1 className="text-sm sm:text-base font-bold text-foreground truncate">{t("map")}</h1>
         </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0">
+      <div className="ml-auto flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
         {/* Install PWA Button */}
-        <InstallPWAButton />
+        <div className="hidden sm:block">
+          <InstallPWAButton />
+        </div>
         
         {/* Push Notifications */}
-        <PushNotificationButton />
+        <div className="hidden sm:block">
+          <PushNotificationButton />
+        </div>
         
         {/* My Location Button */}
         <Button 
           variant="ghost" 
-          size="sm" 
+          size="icon"
           onClick={onMyLocation}
-          className="px-2"
+          className="h-8 w-8 sm:h-9 sm:w-9"
           title="Где я"
         >
-          <Navigation className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span className="hidden lg:inline ml-2 text-xs sm:text-sm">Где я</span>
+          <Navigation className="h-4 w-4" />
         </Button>
         
         {/* Language selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="hidden sm:flex px-2">
-              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden lg:inline text-xs sm:text-sm">{language.toUpperCase()}</span>
+            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+              <Globe className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32 sm:w-40 z-[999] bg-popover">
-            <DropdownMenuItem onClick={() => setLanguage("sr")}>
+          <DropdownMenuContent align="end" className="w-36 z-[999] bg-popover border-border">
+            <DropdownMenuItem onClick={() => setLanguage("sr")} className="cursor-pointer">
               Српски
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setLanguage("ru")}>
+            <DropdownMenuItem onClick={() => setLanguage("ru")} className="cursor-pointer">
               Русский
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setLanguage("en")}>
+            <DropdownMenuItem onClick={() => setLanguage("en")} className="cursor-pointer">
               English
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -221,21 +220,16 @@ export const Header = ({
         {/* Country selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="px-2">
-              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden md:inline text-xs sm:text-sm truncate max-w-[80px]">
-                {selectedCountry && countries.find(c => c.id === selectedCountry) 
-                  ? getCountryName(countries.find(c => c.id === selectedCountry)!) 
-                  : t("country")}
-              </span>
+            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+              <Globe className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 sm:w-48 z-[999] bg-popover">
+          <DropdownMenuContent align="end" className="w-44 max-h-[300px] overflow-y-auto z-[999] bg-popover border-border">
             {countries.map((country) => (
-              <DropdownMenuItem
+              <DropdownMenuItem 
                 key={country.id}
                 onClick={() => handleCountryChange(country.id)}
-                className={selectedCountry === country.id ? "bg-accent" : ""}
+                className="cursor-pointer"
               >
                 {getCountryName(country)}
               </DropdownMenuItem>
@@ -244,60 +238,58 @@ export const Header = ({
         </DropdownMenu>
 
         {/* City selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="px-2">
-              <MapPinned className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden md:inline text-xs sm:text-sm truncate max-w-[80px]">{selectedCity ? getCityName(selectedCity) : t("city")}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 sm:w-48 z-[999] bg-popover">
-            {cities.map((city) => (
-              <DropdownMenuItem
-                key={city.id}
-                onClick={() => onCityChange(city.id)}
-                className={selectedCity?.id === city.id ? "bg-accent" : ""}
-              >
-                {getCityName(city)}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Tours selector */}
-        {availableTours.length > 0 && (
+        {cities.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant={activeTour ? "default" : "outline"} size="sm" className="hidden sm:flex px-2">
-                <Route className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden lg:inline text-xs sm:text-sm truncate max-w-[100px]">{activeTour ? activeTour.name : t("tours")}</span>
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+                <MapPinned className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 sm:w-56 z-[999] bg-popover">
-              <DropdownMenuItem 
-                onClick={() => navigate("/tours")}
-                className="bg-primary/10 hover:bg-primary/20 font-medium"
+            <DropdownMenuContent align="end" className="w-44 max-h-[300px] overflow-y-auto z-[999] bg-popover border-border">
+              {cities.map((city) => (
+                <DropdownMenuItem 
+                  key={city.id}
+                  onClick={() => onCityChange(city.id)}
+                  className="cursor-pointer"
+                >
+                  {getCityName(city)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {/* Tours dropdown */}
+        {selectedCity && availableTours.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant={activeTour ? "default" : "ghost"} 
+                size="icon"
+                className="h-8 w-8 sm:h-9 sm:w-9"
               >
-                <Route className="w-4 h-4 mr-2" />
-                Купить тур
+                <Route className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 max-h-[300px] overflow-y-auto z-[999] bg-popover border-border">
+              <DropdownMenuItem onClick={() => onTourSelect(null)} className="cursor-pointer">
+                <span className="font-medium">{t("allPlaces")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {activeTour && (
-                <>
-                  <DropdownMenuItem onClick={() => onTourSelect(null)}>
-                    {t("allLocations")}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
               {availableTours.map((tour) => (
                 <DropdownMenuItem
                   key={tour.id}
                   onClick={() => onTourSelect(tour)}
-                  className={activeTour?.id === tour.id ? "bg-accent" : ""}
+                  className="cursor-pointer"
                 >
-                  <Route className="w-4 h-4 mr-2" />
-                  {tour.name}
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="truncate">{tour.name}</span>
+                    {tour.price === 0 && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                        FREE
+                      </span>
+                    )}
+                  </div>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -307,35 +299,29 @@ export const Header = ({
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="px-2">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <span className="text-[10px] sm:text-xs font-medium text-primary">
-                  {user.email?.[0].toUpperCase()}
-                </span>
-              </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+              <UserIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 sm:w-56 z-[999] bg-popover">
-            <div className="px-2 py-1.5">
-              <p className="text-xs sm:text-sm font-medium truncate">{user.email}</p>
-              {isAdmin && (
-                <p className="text-xs text-muted-foreground">{t("adminPanel")}</p>
-              )}
-            </div>
-            <DropdownMenuSeparator />
+          <DropdownMenuContent align="end" className="w-48 z-[999] bg-popover border-border">
+            <DropdownMenuItem onClick={() => navigate("/account")} className="cursor-pointer">
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>{t("personalAccount")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/tours")} className="cursor-pointer">
+              <Route className="mr-2 h-4 w-4" />
+              <span>{t("tours")}</span>
+            </DropdownMenuItem>
             {isAdmin && (
-              <DropdownMenuItem onClick={() => navigate("/admin")}>
-                <Settings className="w-4 h-4 mr-2" />
-                {t("adminPanel")}
+              <DropdownMenuItem onClick={() => navigate("/admin")} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>{t("adminPanel")}</span>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => navigate("/account")}>
-              <UserIcon className="w-4 h-4 mr-2" />
-              {t("personalAccount")}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              {t("signOut")}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onSignOut} className="cursor-pointer text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{t("signOut")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

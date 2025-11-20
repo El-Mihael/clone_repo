@@ -63,14 +63,14 @@ export const Sidebar = ({
   
   const sidebarContent = (
     <>
-      <div className="p-3 sm:p-4 border-b">
-        <h2 className="font-semibold mb-2 sm:mb-3 text-base sm:text-lg text-foreground">{t("categories")}</h2>
-        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+      <div className="p-3 border-b border-border">
+        <h2 className="font-bold mb-2 text-base text-foreground">{t("categories")}</h2>
+        <div className="flex flex-wrap gap-1.5">
           {categories.map((category) => (
             <Badge
               key={category.id}
               variant={selectedCategories.includes(category.id) ? "default" : "outline"}
-              className="cursor-pointer transition-all hover:scale-110 hover:shadow-md text-xs sm:text-sm px-2 py-0.5 sm:px-3 sm:py-1"
+              className="cursor-pointer transition-all hover:scale-105 text-xs px-2.5 py-1"
               style={{
                 backgroundColor: selectedCategories.includes(category.id)
                   ? category.color
@@ -78,7 +78,7 @@ export const Sidebar = ({
                 borderColor: category.color,
                 color: selectedCategories.includes(category.id) ? "white" : category.color,
                 boxShadow: selectedCategories.includes(category.id) 
-                  ? `0 4px 12px ${category.color}33` 
+                  ? `0 2px 8px ${category.color}40` 
                   : "none",
               }}
               onClick={() => onCategoryToggle(category.id)}
@@ -90,8 +90,8 @@ export const Sidebar = ({
       </div>
 
       {userLocation && (
-        <div className="p-3 sm:p-4 border-b">
-          <h3 className="font-semibold mb-2 text-sm sm:text-base text-foreground">
+        <div className="p-3 border-b border-border">
+          <h3 className="font-bold mb-2 text-sm text-foreground">
             {t("distance")}
           </h3>
           <div className="space-y-2">
@@ -102,29 +102,29 @@ export const Sidebar = ({
               step={100}
               className="w-full"
             />
-            <p className="text-xs sm:text-sm text-muted-foreground text-center">
-              {maxDistance >= 10000 ? t("allPlaces") : `${t("distance")} ${(maxDistance / 1000).toFixed(1)} км`}
+            <p className="text-xs text-muted-foreground text-center">
+              {maxDistance >= 10000 ? t("allPlaces") : `${(maxDistance / 1000).toFixed(1)} км`}
             </p>
           </div>
         </div>
       )}
 
       {showTourGuideButton && onTourGuideOpen && (
-        <div className="p-3 sm:p-4 border-b">
+        <div className="p-3 border-b border-border">
           <Button
             onClick={onTourGuideOpen}
-            className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
-            size="lg"
+            className="w-full gap-2"
+            size="sm"
           >
-            <FileText className="w-5 h-5" />
+            <FileText className="w-4 h-4" />
             <span className="font-semibold">Путеводитель</span>
           </Button>
         </div>
       )}
 
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-2">
-          <h2 className="font-semibold mb-3 text-lg text-foreground">
+        <div className="p-3 space-y-2">
+          <h2 className="font-bold mb-3 text-base text-foreground">
             {t("placesCount").replace("{count}", places.length.toString())}
           </h2>
           {places.map((place) => {
@@ -135,38 +135,37 @@ export const Sidebar = ({
                 ref={(el) => {
                   placeRefs.current[place.id] = el;
                 }}
-                className={`group p-3 rounded-lg border transition-all cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5 ${
+                className={`group p-3 rounded-md border transition-all cursor-pointer hover:shadow-md hover:-translate-y-0.5 ${
                   selectedPlace === place.id
-                    ? "border-primary bg-primary/10 shadow-card"
+                    ? "border-primary bg-primary/5 shadow-sm"
                     : "border-border bg-card hover:border-primary/50"
-                } ${place.is_premium ? "shadow-premium/20" : ""}`}
+                } ${place.is_premium ? "ring-1 ring-primary/20" : ""}`}
                 onClick={() => {
                   onPlaceSelect(place.id);
-                  // На мобильных закрываем sidebar с небольшой задержкой чтобы увидеть анимацию
                   if (isMobile) {
                     setTimeout(() => onOpenChange(false), 300);
                   }
                 }}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-base text-foreground truncate">
+                      <h3 className="font-semibold text-sm text-foreground truncate">
                         {place.name}
                       </h3>
                       {place.is_premium && (
-                        <Crown className="w-4 h-4 text-premium flex-shrink-0" />
+                        <Crown className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                       )}
                     </div>
                     {place.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2 break-words">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                         {place.description}
                       </p>
                     )}
                     {category && (
                       <Badge
                         variant="outline"
-                        className="text-xs truncate max-w-full"
+                        className="text-xs"
                         style={{
                           borderColor: category.color,
                           color: category.color,
@@ -177,47 +176,47 @@ export const Sidebar = ({
                     )}
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap gap-1.5 mt-2">
                   {place.google_maps_url && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 min-w-[120px] text-xs"
+                      className="flex-1 min-w-[100px] text-xs h-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.google_maps_url!, "_blank");
                       }}
                     >
-                      <MapPinned className="w-3 h-3 mr-1 flex-shrink-0" />
-                      <span className="truncate">Google Maps</span>
+                      <ExternalLink className="w-3 h-3 mr-1" />
+                      Maps
                     </Button>
                   )}
                   {place.has_custom_page && (
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
-                      className="flex-1 min-w-[120px] text-xs"
+                      className="flex-1 min-w-[100px] text-xs h-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         onPlacePageOpen(place);
                       }}
                     >
-                      <FileText className="w-3 h-3 mr-1 flex-shrink-0" />
-                      <span className="truncate">Страница</span>
+                      <FileText className="w-3 h-3 mr-1" />
+                      {t("details")}
                     </Button>
                   )}
                   {place.custom_button_url && place.custom_button_text && (
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
-                      className="flex-1 min-w-[120px] text-xs"
+                      className="flex-1 min-w-[100px] text-xs h-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         window.open(place.custom_button_url!, "_blank");
                       }}
                     >
-                      <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
-                      <span className="truncate">{place.custom_button_text}</span>
+                      <ExternalLink className="w-3 h-3 mr-1" />
+                      {place.custom_button_text}
                     </Button>
                   )}
                 </div>
@@ -232,17 +231,15 @@ export const Sidebar = ({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[85vh]">
-          <div className="flex flex-col h-full">
-            {sidebarContent}
-          </div>
+        <DrawerContent className="h-[85vh] bg-background border-t">
+          {sidebarContent}
         </DrawerContent>
       </Drawer>
     );
   }
 
   return (
-    <aside className="w-80 lg:w-96 border-r border-border/50 bg-card/50 backdrop-blur-md flex flex-col shadow-card">
+    <aside className="w-80 border-r bg-card flex flex-col h-full overflow-hidden">
       {sidebarContent}
     </aside>
   );
