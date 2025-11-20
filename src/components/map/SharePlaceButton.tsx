@@ -42,6 +42,8 @@ export const SharePlaceButton = ({
           text: shareText,
           url: shareUrl,
         });
+        // Track successful native share
+        await trackShare("native");
         toast.success("Место успешно отправлено");
       } catch (error: any) {
         // User cancelled or error occurred
