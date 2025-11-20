@@ -359,11 +359,17 @@ const Map = () => {
   const fetchPlaces = async () => {
     if (!selectedCity) return;
     
-    const { data, error } = await supabase
+    let query = supabase
       .from("places")
       .select("*")
-      .eq("city_id", selectedCity.id)
-      .eq("is_hidden", false); // Only show visible places
+      .eq("city_id", selectedCity.id);
+    
+    // Обычные пользователи не видят скрытые места
+    if (!isAdmin) {
+      query = query.eq("is_hidden", false);
+    }
+    
+    const { data, error } = await query;
 
     if (error) {
       toast.error("Ошибка загрузки мест");
