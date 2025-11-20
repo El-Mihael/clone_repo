@@ -71,7 +71,7 @@ export const StatisticsTab = () => {
   const fetchStatistics = async () => {
     setLoading(true);
     try {
-      // Get all share statistics with place and user details
+      // Получаем все шеринги с данными о местах
       const { data: shareData, error } = await supabase
         .from("share_statistics")
         .select(`
@@ -80,8 +80,7 @@ export const StatisticsTab = () => {
           platform,
           user_id,
           shared_at,
-          places(name, owner_id),
-          profiles:user_id(full_name, email)
+          places(name, owner_id)
         `)
         .order("shared_at", { ascending: false });
 
@@ -92,7 +91,63 @@ export const StatisticsTab = () => {
 
       console.log("Share data received:", shareData);
 
-      // Process data for place statistics
+      // Подготовка карт профилей пользователей и владельцев бизнеса
+      const userIds = Array.from(
+        new Set(
+          (shareData || [])
+            .map((item: any) => item.user_id)
+            .filter((id: string | null) => Boolean(id))
+        )
+      ) as string[];
+
+      const ownerIds = Array.from(
+        new Set(
+          (shareData || [])
+            .map((item: any) => item.places?.owner_id)
+            .filter((id: string | null) => Boolean(id))
+        )
+      ) as string[];
+
+      const userProfilesMap = new Map<string, { full_name: string | null; email: string }>();
+      const ownerProfilesMap = new Map<string, { full_name: string | null; email: string }>();
+
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds);
+
+        if (profilesError) {
+          console.error("Error fetching user profiles for statistics:", profilesError);
+        } else {
+          (profilesData || []).forEach((profile: any) => {
+            userProfilesMap.set(profile.id, {
+              full_name: profile.full_name,
+              email: profile.email,
+            });
+          });
+        }
+      }
+
+      if (ownerIds.length > 0) {
+        const { data: ownersData, error: ownersError } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", ownerIds);
+
+        if (ownersError) {
+          console.error("Error fetching owner profiles for statistics:", ownersError);
+        } else {
+          (ownersData || []).forEach((owner: any) => {
+            ownerProfilesMap.set(owner.id, {
+              full_name: owner.full_name,
+              email: owner.email,
+            });
+          });
+        }
+      }
+
+      // Обработка данных для статистики
       const placeStatsMap = new Map<string, PlaceShareStats>();
       const userStatsMap = new Map<string, UserShareStats>();
       const businessOwnerStatsMap = new Map<string, BusinessOwnerStats>();
@@ -103,20 +158,18 @@ export const StatisticsTab = () => {
         const placeId = item.place_id;
         const placeName = item.places?.name || "Unknown";
         const platform = item.platform;
-        const userId = item.user_id;
-        
-        // Get owner details if place has owner
+        const userId = item.user_id as string | null;
+
+        // Владелец места
         let ownerName: string | null = null;
+        let ownerEmail: string | null = null;
         if (item.places?.owner_id) {
-          const { data: ownerData } = await supabase
-            .from("profiles")
-            .select("full_name, email")
-            .eq("id", item.places.owner_id)
-            .maybeSingle();
-          ownerName = ownerData?.full_name || ownerData?.email || null;
+          const ownerProfile = ownerProfilesMap.get(item.places.owner_id);
+          ownerName = ownerProfile?.full_name || ownerProfile?.email || null;
+          ownerEmail = ownerProfile?.email || null;
         }
 
-        // Place statistics
+        // Статистика по местам
         if (!placeStatsMap.has(placeId)) {
           placeStatsMap.set(placeId, {
             place_id: placeId,
@@ -132,6 +185,7 @@ export const StatisticsTab = () => {
         }
 
         const placeStatsItem = placeStatsMap.get(placeId)!;
+        placeStatsItem.place_owner_name = ownerName;
         placeStatsItem.total_shares++;
         total++;
 
@@ -141,10 +195,10 @@ export const StatisticsTab = () => {
         else if (platform === "link") placeStatsItem.link++;
         else if (platform === "native") placeStatsItem.native++;
 
-        // User statistics
+        // Статистика по пользователям
         if (userId) {
           if (!userStatsMap.has(userId)) {
-            const profile = item.profiles as any;
+            const profile = userProfilesMap.get(userId);
             userStatsMap.set(userId, {
               user_id: userId,
               user_name: profile?.full_name || profile?.email || "Unknown",
@@ -155,29 +209,24 @@ export const StatisticsTab = () => {
           userStatsMap.get(userId)!.total_shares++;
         }
 
-        // Business owner statistics
+        // Статистика по владельцам бизнеса
         if (item.places?.owner_id) {
-          const ownerId = item.places.owner_id;
+          const ownerId = item.places.owner_id as string;
           if (!businessOwnerStatsMap.has(ownerId)) {
-            const { data: ownerData } = await supabase
-              .from("profiles")
-              .select("full_name, email")
-              .eq("id", ownerId)
-              .maybeSingle();
-            
+            const ownerProfile = ownerProfilesMap.get(ownerId);
             businessOwnerStatsMap.set(ownerId, {
               owner_id: ownerId,
-              owner_name: ownerData?.full_name || ownerData?.email || "Unknown",
-              owner_email: ownerData?.email || "",
+              owner_name: ownerProfile?.full_name || ownerProfile?.email || "Unknown",
+              owner_email: ownerProfile?.email || ownerEmail || "",
               total_shares: 0,
               places: [],
             });
           }
-          
+
           const ownerStats = businessOwnerStatsMap.get(ownerId)!;
           ownerStats.total_shares++;
-          
-          const existingPlace = ownerStats.places.find(p => p.place_id === placeId);
+
+          const existingPlace = ownerStats.places.find((p) => p.place_id === placeId);
           if (existingPlace) {
             existingPlace.shares++;
           } else {
@@ -189,8 +238,8 @@ export const StatisticsTab = () => {
           }
         }
 
-        // Share details
-        const profile = item.profiles as any;
+        // Детальная история шерингов
+        const profile = userId ? userProfilesMap.get(userId) : undefined;
         details.push({
           id: item.id,
           place_name: placeName,
@@ -210,9 +259,9 @@ export const StatisticsTab = () => {
       setBusinessOwnerStats(
         Array.from(businessOwnerStatsMap.values())
           .sort((a, b) => b.total_shares - a.total_shares)
-          .map(owner => ({
+          .map((owner) => ({
             ...owner,
-            places: owner.places.sort((a, b) => b.shares - a.shares)
+            places: owner.places.sort((a, b) => b.shares - a.shares),
           }))
       );
       setShareDetails(details);
