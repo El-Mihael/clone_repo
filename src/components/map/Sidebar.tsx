@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
+import { SharePlaceButton } from "./SharePlaceButton";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
@@ -177,6 +178,12 @@ export const Sidebar = ({
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
+                  <SharePlaceButton 
+                    place={place}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 min-w-[100px] text-xs h-8"
+                  />
                   {place.google_maps_url && (
                     <Button
                       variant="outline"

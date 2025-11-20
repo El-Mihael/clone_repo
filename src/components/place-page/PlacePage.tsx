@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Crown } from "lucide-react";
+import { SharePlaceButton } from "@/components/map/SharePlaceButton";
 import type { Database } from "@/integrations/supabase/types";
 import DOMPurify from "dompurify";
 
@@ -56,7 +57,7 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
     >
       {/* Back Button */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -66,6 +67,7 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
             <ArrowLeft className="w-4 h-4" />
             Назад к карте
           </Button>
+          <SharePlaceButton place={place} variant="ghost" size="sm" />
         </div>
       </div>
 
