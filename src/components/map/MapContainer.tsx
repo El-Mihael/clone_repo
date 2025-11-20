@@ -21,8 +21,7 @@ interface MapContainerProps {
   cityCenter: [number, number];
   cityZoom: number;
   userId: string | null;
-  shouldFlyToUserLocation?: boolean;
-  onUserLocationFlyComplete?: () => void;
+  flyToUserLocationTrigger?: number;
 }
 
 const MapUpdater = ({ 
@@ -31,16 +30,14 @@ const MapUpdater = ({
   cityCenter,
   cityZoom,
   userLocation,
-  shouldFlyToUserLocation,
-  onUserLocationFlyComplete
+  flyToUserLocationTrigger
 }: { 
   selectedPlace: string | null; 
   places: Place[]; 
   cityCenter: [number, number];
   cityZoom: number;
   userLocation: [number, number] | null;
-  shouldFlyToUserLocation?: boolean;
-  onUserLocationFlyComplete?: () => void;
+  flyToUserLocationTrigger?: number;
 }) => {
   const map = useMap();
 
@@ -57,27 +54,23 @@ const MapUpdater = ({
   }, [selectedPlace, places, map]);
 
   useEffect(() => {
-    // Летим к местоположению пользователя если shouldFlyToUserLocation = true
-    if (shouldFlyToUserLocation && userLocation) {
-      map.flyTo(userLocation, 16, {
+    // Летим к местоположению пользователя при изменении trigger
+    if (flyToUserLocationTrigger && flyToUserLocationTrigger > 0 && userLocation) {
+      map.flyTo(userLocation, 17, {
         duration: 1.5,
         easeLinearity: 0.25,
       });
-      // Сбрасываем флаг после полета
-      if (onUserLocationFlyComplete) {
-        onUserLocationFlyComplete();
-      }
     }
-  }, [shouldFlyToUserLocation, userLocation, map, onUserLocationFlyComplete]);
+  }, [flyToUserLocationTrigger, userLocation, map]);
 
   useEffect(() => {
-    // Летим к центру города только если не выбрано конкретное место и не летим к userLocation
-    if (!selectedPlace && !shouldFlyToUserLocation) {
+    // Летим к центру города только если не выбрано конкретное место
+    if (!selectedPlace) {
       map.flyTo(cityCenter, cityZoom, {
         duration: 1.5,
       });
     }
-  }, [cityCenter, cityZoom, map, selectedPlace, shouldFlyToUserLocation]);
+  }, [cityCenter, cityZoom, map, selectedPlace]);
 
   return null;
 };
@@ -135,8 +128,7 @@ export const MapView = ({
   cityCenter,
   cityZoom,
   userId,
-  shouldFlyToUserLocation,
-  onUserLocationFlyComplete
+  flyToUserLocationTrigger
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
 
@@ -266,8 +258,7 @@ export const MapView = ({
           cityCenter={cityCenter} 
           cityZoom={cityZoom}
           userLocation={userLocation}
-          shouldFlyToUserLocation={shouldFlyToUserLocation}
-          onUserLocationFlyComplete={onUserLocationFlyComplete}
+          flyToUserLocationTrigger={flyToUserLocationTrigger}
         />
       </LeafletMap>
     </div>
