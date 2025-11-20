@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,6 +49,17 @@ export const Sidebar = ({
   showTourGuideButton = false,
 }: SidebarProps) => {
   const { t, language } = useLanguage();
+  const placeRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Автоматический скролл к выбранному месту
+  useEffect(() => {
+    if (selectedPlace && placeRefs.current[selectedPlace]) {
+      placeRefs.current[selectedPlace]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [selectedPlace]);
   
   const sidebarContent = (
     <>
@@ -120,6 +132,9 @@ export const Sidebar = ({
             return (
               <div
                 key={place.id}
+                ref={(el) => {
+                  placeRefs.current[place.id] = el;
+                }}
                 className={`group p-3 rounded-lg border transition-all cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5 ${
                   selectedPlace === place.id
                     ? "border-primary bg-primary/10 shadow-card"
