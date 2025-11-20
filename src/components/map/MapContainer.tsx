@@ -37,18 +37,22 @@ const MapUpdater = ({
     if (selectedPlace) {
       const place = places.find(p => p.id === selectedPlace);
       if (place) {
-        map.flyTo([place.latitude, place.longitude], 16, {
-          duration: 1,
+        map.flyTo([place.latitude, place.longitude], 18, {
+          duration: 1.5,
+          easeLinearity: 0.25,
         });
       }
     }
   }, [selectedPlace, places, map]);
 
   useEffect(() => {
-    map.flyTo(cityCenter, cityZoom, {
-      duration: 1.5,
-    });
-  }, [cityCenter, cityZoom, map]);
+    // Летим к центру города только если не выбрано конкретное место
+    if (!selectedPlace) {
+      map.flyTo(cityCenter, cityZoom, {
+        duration: 1.5,
+      });
+    }
+  }, [cityCenter, cityZoom, map, selectedPlace]);
 
   return null;
 };
