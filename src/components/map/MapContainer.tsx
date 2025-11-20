@@ -143,7 +143,7 @@ export const MapView = ({
     if (selectedPlace && markerRefs.current[selectedPlace]) {
       markerRefs.current[selectedPlace].openPopup();
     }
-  }, [selectedPlace]);
+  }, [selectedPlace, places]);
 
   return (
     <div className="flex-1 relative">
