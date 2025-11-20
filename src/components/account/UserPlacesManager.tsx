@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Crown, Plus, Loader2, Trash2 } from "lucide-react";
+import { MapPin, Crown, Plus, Loader2, Trash2, Pencil } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { AddPlaceDialog } from "./AddPlaceDialog";
+import { EditPlaceDialog } from "./EditPlaceDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,7 @@ interface Place {
   id: string;
   name: string;
   is_premium: boolean;
+  premium_expires_at: string | null;
   created_at: string;
 }
 
@@ -35,10 +37,13 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
   const { toast } = useToast();
   const { t } = useLanguage();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingPlace, setEditingPlace] = useState<any>(null);
   const [toggleLoading, setToggleLoading] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingPlace, setDeletingPlace] = useState<Place | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [premiumCancelledPlace, setPremiumCancelledPlace] = useState<string | null>(null);
 
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [premiumPlace, setPremiumPlace] = useState<Place | null>(null);
@@ -83,6 +88,10 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
           ? t("premiumCancelledAtPeriodEnd")
           : t("premiumEnabled"),
       });
+
+      if (place.is_premium) {
+        setPremiumCancelledPlace(place.id);
+      }
 
       setPremiumDialogOpen(false);
       setPremiumPlace(null);
@@ -134,6 +143,11 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
     setDeleteDialogOpen(true);
   };
 
+  const openEditDialog = (place: Place) => {
+    setEditingPlace(place);
+    setEditDialogOpen(true);
+  };
+
   return (
     <>
       <Card>
@@ -176,34 +190,51 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {place.is_premium && (
-                      <Badge variant="secondary" className="flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        Premium
-                      </Badge>
-                    )}
-                    <Button
-                      variant={place.is_premium ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => openPremiumDialog(place)}
-                      disabled={toggleLoading === place.id || (!place.is_premium && credits < 8)}
-                    >
-                      {toggleLoading === place.id ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Crown className="w-4 h-4 mr-2" />
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      {place.is_premium && (
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          Premium
+                        </Badge>
                       )}
-                      {place.is_premium ? t("cancelPremium") : t("enablePremium")}
-                      {!place.is_premium && ` (8 ${t("credits")})`}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => openDeleteDialog(place)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                      {premiumCancelledPlace === place.id && place.premium_expires_at && (
+                        <span className="text-xs text-muted-foreground">
+                          {t("premiumCancelledUntil")} {new Date(place.premium_expires_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(place)}
+                      >
+                        <Pencil className="w-4 h-4 mr-2" />
+                        {t("edit")}
+                      </Button>
+                      <Button
+                        variant={place.is_premium ? "outline" : "default"}
+                        size="sm"
+                        onClick={() => openPremiumDialog(place)}
+                        disabled={toggleLoading === place.id || (!place.is_premium && credits < 8)}
+                      >
+                        {toggleLoading === place.id ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Crown className="w-4 h-4 mr-2" />
+                        )}
+                        {place.is_premium ? t("cancelPremium") : t("enablePremium")}
+                        {!place.is_premium && ` (8 ${t("credits")})`}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openDeleteDialog(place)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -216,6 +247,13 @@ export const UserPlacesManager = ({ places, credits, onRefresh }: UserPlacesMana
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onSuccess={onRefresh}
+      />
+
+      <EditPlaceDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={onRefresh}
+        place={editingPlace}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

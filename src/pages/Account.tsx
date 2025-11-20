@@ -31,6 +31,7 @@ interface Place {
   id: string;
   name: string;
   is_premium: boolean;
+  premium_expires_at: string | null;
   created_at: string;
 }
 
@@ -54,6 +55,9 @@ const Account = () => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [purchasedTours, setPurchasedTours] = useState<PurchasedTour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nextBillingTotal, setNextBillingTotal] = useState<number>(0);
+  const [nextBillingDate, setNextBillingDate] = useState<string | null>(null);
+  const [billingBreakdown, setBillingBreakdown] = useState<{ place: number; premium: number }>({ place: 0, premium: 0 });
 
   useEffect(() => {
     checkAuth();
@@ -111,11 +115,54 @@ const Account = () => {
   const fetchPlaces = async (userId: string) => {
     const { data } = await supabase
       .from("places")
-      .select("id, name, is_premium, created_at")
+      .select("id, name, is_premium, premium_expires_at, created_at")
       .eq("owner_id", userId)
       .order("created_at", { ascending: false });
 
-    if (data) setPlaces(data);
+    if (data) {
+      setPlaces(data);
+      
+      // Calculate next billing
+      const { data: subscriptions } = await supabase
+        .from("user_subscriptions")
+        .select(`
+          *,
+          subscription_plans (
+            price,
+            billing_period
+          ),
+          places!inner (
+            is_premium
+          )
+        `)
+        .eq("user_id", userId)
+        .eq("is_active", true);
+
+      if (subscriptions && subscriptions.length > 0) {
+        let totalPlace = 0;
+        let totalPremium = 0;
+        let earliestDate: Date | null = null;
+
+        subscriptions.forEach((sub: any) => {
+          const plan = sub.subscription_plans;
+          const place = sub.places;
+          
+          totalPlace += plan.price;
+          if (place?.is_premium) {
+            totalPremium += 8;
+          }
+
+          const subDate = new Date(sub.next_billing_date);
+          if (!earliestDate || subDate < earliestDate) {
+            earliestDate = subDate;
+          }
+        });
+
+        setNextBillingTotal(totalPlace + totalPremium);
+        setBillingBreakdown({ place: totalPlace, premium: totalPremium });
+        setNextBillingDate(earliestDate ? earliestDate.toISOString() : null);
+      }
+    }
   };
 
   const fetchPurchasedTours = async (userId: string) => {
