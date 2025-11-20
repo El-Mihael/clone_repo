@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -55,13 +56,28 @@ export const SharePlaceButton = ({
     }
   };
 
+  const trackShare = async (platform: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await supabase.from("share_statistics").insert({
+        place_id: place.id,
+        platform,
+        user_id: session?.user?.id || null,
+      });
+    } catch (error) {
+      console.error("Error tracking share:", error);
+    }
+  };
+
   const shareToWhatsApp = () => {
+    trackShare("whatsapp");
     const text = encodeURIComponent(`${shareTitle}\n${shareText}\n${shareUrl}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
     setShowShareDialog(false);
   };
 
   const shareToTelegram = () => {
+    trackShare("telegram");
     const text = encodeURIComponent(shareText);
     const url = encodeURIComponent(shareUrl);
     window.open(`https://t.me/share/url?url=${url}&text=${text}`, "_blank");
@@ -69,12 +85,14 @@ export const SharePlaceButton = ({
   };
 
   const shareToFacebook = () => {
+    trackShare("facebook");
     const url = encodeURIComponent(shareUrl);
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank");
     setShowShareDialog(false);
   };
 
   const copyToClipboard = () => {
+    trackShare("link");
     navigator.clipboard.writeText(shareUrl);
     toast.success("Ссылка скопирована в буфер обмена");
     setShowShareDialog(false);

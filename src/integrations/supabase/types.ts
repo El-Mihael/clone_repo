@@ -360,6 +360,38 @@ export type Database = {
         }
         Relationships: []
       }
+      share_statistics: {
+        Row: {
+          id: string
+          place_id: string
+          platform: string
+          shared_at: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          place_id: string
+          platform: string
+          shared_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          place_id?: string
+          platform?: string
+          shared_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_statistics_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_plans: {
         Row: {
           billing_period: Database["public"]["Enums"]["billing_period"]
