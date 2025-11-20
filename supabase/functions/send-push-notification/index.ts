@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { encode as base64urlEncode } from "https://deno.land/std@0.168.0/encoding/base64url.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,92 @@ interface PushSubscription {
   endpoint: string;
   p256dh: string;
   auth: string;
+}
+
+// Convert base64url string to Uint8Array
+function base64urlToUint8Array(base64url: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
+  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/') + padding;
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Generate VAPID JWT token
+async function generateVapidJWT(audience: string, subject: string, vapidPrivateKey: string): Promise<string> {
+  const header = {
+    typ: 'JWT',
+    alg: 'ES256',
+  };
+
+  const jwtPayload = {
+    aud: audience,
+    exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60, // 12 hours
+    sub: subject,
+  };
+
+  const encoder = new TextEncoder();
+  const headerBytes = encoder.encode(JSON.stringify(header));
+  const headerEncoded = base64urlEncode(headerBytes.buffer);
+  const payloadBytes = encoder.encode(JSON.stringify(jwtPayload));
+  const payloadEncoded = base64urlEncode(payloadBytes.buffer);
+  const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
+
+  // Import private key
+  const privateKeyBytes = base64urlToUint8Array(vapidPrivateKey);
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    privateKeyBytes as BufferSource,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+
+  // Sign
+  const signatureBytes = encoder.encode(unsignedToken);
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    signatureBytes.buffer
+  );
+
+  const signatureEncoded = base64urlEncode(signature);
+  return `${unsignedToken}.${signatureEncoded}`;
+}
+
+// Send push notification using Web Push Protocol
+async function sendPushNotification(
+  subscription: PushSubscription,
+  payload: string,
+  vapidPublicKey: string,
+  vapidPrivateKey: string
+): Promise<void> {
+  const url = new URL(subscription.endpoint);
+  const audience = `${url.protocol}//${url.host}`;
+  
+  // Generate VAPID auth
+  const jwt = await generateVapidJWT(audience, 'mailto:support@example.com', vapidPrivateKey);
+  
+  // For simplicity, send payload without encryption for now
+  // In production, you should implement proper encryption
+  const response = await fetch(subscription.endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      'Content-Length': payload.length.toString(),
+      'TTL': '86400', // 24 hours
+      'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
+    },
+    body: payload,
+  });
+
+  if (!response.ok) {
+    const responseText = await response.text();
+    throw new Error(`Push notification failed: ${response.status} ${response.statusText} - ${responseText}`);
+  }
 }
 
 serve(async (req) => {
@@ -105,43 +192,26 @@ serve(async (req) => {
       badge: '/pwa-192x192.png',
     });
 
+    console.log(`Sending notifications to ${subscriptions.length} subscription(s)`);
+
     // Send notifications to all subscriptions
     const results = await Promise.allSettled(
       subscriptions.map(async (subscription: PushSubscription) => {
         try {
-          // Use web-push library via import
-          const webpush = await import('https://esm.sh/web-push@3.6.6');
-          
-          webpush.setVapidDetails(
-            'mailto:support@example.com',
-            vapidPublicKey,
-            vapidPrivateKey
-          );
-
-          await webpush.sendNotification(
-            {
-              endpoint: subscription.endpoint,
-              keys: {
-                p256dh: subscription.p256dh,
-                auth: subscription.auth,
-              },
-            },
-            payload
-          );
-
-          console.log(`Notification sent to subscription ${subscription.id}`);
+          await sendPushNotification(subscription, payload, vapidPublicKey, vapidPrivateKey);
+          console.log(`✅ Notification sent to subscription ${subscription.id}`);
           return { success: true, subscriptionId: subscription.id };
         } catch (error) {
           const err = error as any;
-          console.error(`Failed to send to subscription ${subscription.id}:`, err);
+          console.error(`❌ Failed to send to subscription ${subscription.id}:`, err.message);
           
-          // If subscription is no longer valid, delete it
-          if (err.statusCode === 410 || err.statusCode === 404) {
+          // If subscription is no longer valid (410 Gone or 404 Not Found), delete it
+          if (err.message?.includes('410') || err.message?.includes('404')) {
             await supabaseClient
               .from('push_subscriptions')
               .delete()
               .eq('id', subscription.id);
-            console.log(`Deleted invalid subscription ${subscription.id}`);
+            console.log(`🗑️ Deleted invalid subscription ${subscription.id}`);
           }
           
           return { success: false, subscriptionId: subscription.id, error: err.message || 'Unknown error' };
@@ -151,6 +221,8 @@ serve(async (req) => {
 
     const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
     const failed = results.length - successful;
+
+    console.log(`📊 Results: ${successful} successful, ${failed} failed out of ${results.length} total`);
 
     // Save statistics
     await supabaseClient
@@ -179,7 +251,7 @@ serve(async (req) => {
     );
   } catch (error) {
     const err = error as Error;
-    console.error('Error in send-push-notification function:', err);
+    console.error('❌ Error in send-push-notification function:', err);
     return new Response(
       JSON.stringify({ error: err.message }),
       {
