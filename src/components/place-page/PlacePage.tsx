@@ -1,14 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Crown } from "lucide-react";
+import { ArrowLeft, Crown, Lock } from "lucide-react";
 import { SharePlaceButton } from "@/components/map/SharePlaceButton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Database } from "@/integrations/supabase/types";
 import DOMPurify from "dompurify";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
 
 interface PlacePageProps {
   place: Place;
   onBack: () => void;
+  isAdmin?: boolean;
 }
 
 interface PageContent {
@@ -34,7 +37,12 @@ interface PageContent {
   };
 }
 
-export const PlacePage = ({ place, onBack }: PlacePageProps) => {
+export const PlacePage = ({ place, onBack, isAdmin = false }: PlacePageProps) => {
+  const { t } = useLanguage();
+  
+  // Проверка доступа: кастомная страница доступна только для премиум-мест (или админам)
+  const hasAccess = isAdmin || (place.is_premium && place.has_custom_page);
+  
   const content = (place.custom_page_content as PageContent) || {};
   const { header, blocks = [], pageStyle = {} } = content;
 
@@ -46,6 +54,45 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     });
   };
+
+  // Если нет доступа, показываем сообщение
+  if (!hasAccess) {
+    return (
+      <div 
+        className="h-full overflow-y-auto"
+        style={{
+          backgroundColor: pageStyle.backgroundColor || "hsl(var(--background))",
+        }}
+      >
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {t("backToMap")}
+            </Button>
+            <SharePlaceButton place={place} variant="ghost" size="sm" />
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[60vh]">
+          <Alert className="max-w-md">
+            <Lock className="h-6 w-6" />
+            <AlertDescription className="mt-2">
+              <h3 className="font-semibold text-lg mb-2">{t("customPageAccessRestricted")}</h3>
+              <p className="text-muted-foreground">
+                {t("customPageAccessDenied")}
+              </p>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -65,7 +112,7 @@ export const PlacePage = ({ place, onBack }: PlacePageProps) => {
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Назад к карте
+            {t("backToMap")}
           </Button>
           <SharePlaceButton place={place} variant="ghost" size="sm" />
         </div>

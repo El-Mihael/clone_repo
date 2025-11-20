@@ -144,6 +144,10 @@ export const translations = {
     editCustomPage: "Редактор странице",
     customPage: "Прилагођена страница",
     customPagePremiumInfo: "Кастомне странице доступне су само за премиум места. Активирајте премиум да бисте креирали јединствену страницу за ваше место.",
+    customPageAccessRestricted: "Приступ ограничен",
+    customPageAccessDenied: "Кастомна страница за ово место није доступна. Премиум статус места је истекао или је отказан.",
+    backToMap: "Назад на мапу",
+    moreAboutPlace: "Више о месту",
     upcomingBillings: "Предстојећа наплата",
     subscriptionDetails: "Детаљи о подписци и износима који ће бити наплаћени",
     billingPeriod: "Период наплате",
@@ -176,7 +180,6 @@ export const translations = {
     errorPurchasingTour: "Грешка при куповини тура",
     
     // Admin
-    backToMap: "Вратите се на мапу",
     noAdminRights: "Немате администраторска права",
     countries: "Државе",
     cities: "Градови",
@@ -440,6 +443,10 @@ export const translations = {
     editCustomPage: "Редактор страницы",
     customPage: "Своя страница",
     customPagePremiumInfo: "Кастомные страницы доступны только для премиум-мест. Активируйте премиум, чтобы создать уникальную страницу для вашего места.",
+    customPageAccessRestricted: "Доступ ограничен",
+    customPageAccessDenied: "Кастомная страница для этого места недоступна. Премиум-статус места истек или был отменен.",
+    backToMap: "Назад к карте",
+    moreAboutPlace: "Подробнее о месте",
     upcomingBillings: "Предстоящие списания",
     subscriptionDetails: "Детали о подписке и суммах которые будут списаны",
     billingPeriod: "Период оплаты",
@@ -472,7 +479,6 @@ export const translations = {
     errorPurchasingTour: "Ошибка при покупке тура",
     
     // Admin
-    backToMap: "Вернуться к карте",
     noAdminRights: "У вас нет прав администратора",
     countries: "Страны",
     cities: "Города",
@@ -736,6 +742,10 @@ export const translations = {
     editCustomPage: "Page Editor",
     customPage: "Custom Page",
     customPagePremiumInfo: "Custom pages are only available for premium places. Activate premium to create a unique page for your place.",
+    customPageAccessRestricted: "Access Restricted",
+    customPageAccessDenied: "The custom page for this place is not available. The place's premium status has expired or been cancelled.",
+    backToMap: "Back to Map",
+    moreAboutPlace: "More About Place",
     upcomingBillings: "Upcoming Billings",
     subscriptionDetails: "Subscription details and amounts that will be charged",
     billingPeriod: "Billing period",
@@ -768,7 +778,6 @@ export const translations = {
     errorPurchasingTour: "Error purchasing tour",
     
     // Admin
-    backToMap: "Back to map",
     noAdminRights: "You don't have admin rights",
     countries: "Countries",
     cities: "Cities",
