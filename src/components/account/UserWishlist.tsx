@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Trash2, ExternalLink } from "lucide-react";
+import { Heart, MapPin, Trash2, ExternalLink, Map } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import type { Database } from "@/integrations/supabase/types";
@@ -17,6 +18,7 @@ type UserPlace = {
 };
 
 export const UserWishlist = () => {
+  const navigate = useNavigate();
   const [userPlaces, setUserPlaces] = useState<UserPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const { language } = useLanguage();
@@ -112,11 +114,23 @@ export const UserWishlist = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-pink-500" />
-          Хочу посетить
-          <Badge variant="secondary">{userPlaces.length}</Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="w-5 h-5 text-pink-500" />
+            Хочу посетить
+            <Badge variant="secondary">{userPlaces.length}</Badge>
+          </CardTitle>
+          {userPlaces.length > 0 && (
+            <Button
+              onClick={() => navigate("/?wishlistMode=true")}
+              variant="default"
+              size="sm"
+            >
+              <Map className="w-4 h-4 mr-2" />
+              Посмотреть все на карте
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {userPlaces.length === 0 ? (
@@ -127,7 +141,11 @@ export const UserWishlist = () => {
         ) : (
           <div className="grid gap-4">
             {userPlaces.map((userPlace) => (
-              <Card key={userPlace.id} className="overflow-hidden">
+              <Card 
+                key={userPlace.id} 
+                className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/?placeId=${userPlace.place.id}`)}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -151,7 +169,10 @@ export const UserWishlist = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(userPlace.place.google_maps_url!, "_blank")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(userPlace.place.google_maps_url!, "_blank");
+                          }}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </Button>
@@ -159,7 +180,10 @@ export const UserWishlist = () => {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => removeFromWishlist(userPlace.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFromWishlist(userPlace.id);
+                        }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

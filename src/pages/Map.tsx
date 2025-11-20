@@ -20,8 +20,10 @@ type City = Database["public"]["Tables"]["cities"]["Row"];
 
 const Map = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const tourId = searchParams.get("tour");
+  const placeIdParam = searchParams.get("placeId");
+  const wishlistModeParam = searchParams.get("wishlistMode");
   const isMobile = useIsMobile();
   const { t } = useLanguage();
   
@@ -43,6 +45,8 @@ const Map = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [viewingPlacePage, setViewingPlacePage] = useState<Place | null>(null);
   const [viewingTourGuide, setViewingTourGuide] = useState<boolean>(false);
+  const [wishlistMode, setWishlistMode] = useState<boolean>(false);
+  const [userWishlistPlaceIds, setUserWishlistPlaceIds] = useState<string[]>([]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -99,6 +103,22 @@ const Map = () => {
       loadTour(tourId);
     }
   }, [tourId]);
+
+  useEffect(() => {
+    if (wishlistModeParam === "true") {
+      setWishlistMode(true);
+      fetchUserWishlist();
+    } else {
+      setWishlistMode(false);
+    }
+  }, [wishlistModeParam]);
+
+  useEffect(() => {
+    if (placeIdParam) {
+      setSelectedPlace(placeIdParam);
+      setSidebarOpen(true);
+    }
+  }, [placeIdParam]);
 
   const checkInitialSetup = async () => {
     // Try to get city from user profile first
@@ -397,6 +417,26 @@ const Map = () => {
     setTours(data || []);
   };
 
+  const fetchUserWishlist = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("user_places")
+      .select("place_id")
+      .eq("user_id", user.id);
+
+    if (data) {
+      setUserWishlistPlaceIds(data.map(up => up.place_id));
+    }
+  };
+
+  const handleExitWishlistMode = () => {
+    setWishlistMode(false);
+    setUserWishlistPlaceIds([]);
+    navigate("/");
+  };
+
   const loadTour = async (id: string) => {
     const { data: tour } = await supabase
       .from("tours")
@@ -447,6 +487,13 @@ const Map = () => {
   };
 
   const filteredPlaces = places.filter(place => {
+    // If in wishlist mode, only show wishlist places
+    if (wishlistMode && userWishlistPlaceIds.length > 0) {
+      if (!userWishlistPlaceIds.includes(place.id)) {
+        return false;
+      }
+    }
+
     if (!place.category_id || !selectedCategories.includes(place.category_id)) {
       return false;
     }
@@ -532,6 +579,8 @@ const Map = () => {
         onMenuClick={() => setSidebarOpen(true)}
         showMenuButton={isMobile}
         onMyLocation={handleMyLocation}
+        wishlistMode={wishlistMode}
+        onExitWishlistMode={handleExitWishlistMode}
       />
       
       <div className="flex-1 flex overflow-hidden">
