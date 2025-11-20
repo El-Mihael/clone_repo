@@ -47,6 +47,7 @@ const Map = () => {
   const [viewingTourGuide, setViewingTourGuide] = useState<boolean>(false);
   const [wishlistMode, setWishlistMode] = useState<boolean>(false);
   const [userWishlistPlaceIds, setUserWishlistPlaceIds] = useState<string[]>([]);
+  const [shouldFlyToUserLocation, setShouldFlyToUserLocation] = useState<boolean>(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -246,96 +247,12 @@ const Map = () => {
       async (position) => {
         const { latitude, longitude } = position.coords;
         
-        // Сначала устанавливаем координаты пользователя чтобы карта проскроллилась
+        // Устанавливаем координаты пользователя и флаг для полета к ним
         setUserLocation([latitude, longitude]);
-
-        // Получаем все города и страны из базы
-        const { data: allCities, error: citiesError } = await supabase
-          .from("cities")
-          .select("*, countries!inner(*)");
-
-        const { data: allCountries, error: countriesError } = await supabase
-          .from("countries")
-          .select("*");
-
-        if (citiesError || countriesError) {
-          console.error("Error loading data:", citiesError, countriesError);
-          return;
-        }
-
-        // Функция расчёта расстояния
-        const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-          const R = 6371; // Радиус Земли в км
-          const dLat = (lat2 - lat1) * Math.PI / 180;
-          const dLon = (lon2 - lon1) * Math.PI / 180;
-          const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          return R * c;
-        };
-
-        // Если в базе нет городов вообще
-        if (!allCities || allCities.length === 0) {
-          toast.error(t("countryNotInList"));
-          return;
-        }
-
-        // Находим ближайший город
-        let nearestCity = allCities[0];
-        let minDistance = calculateDistance(
-          latitude,
-          longitude,
-          nearestCity.latitude,
-          nearestCity.longitude
-        );
-
-        for (const city of allCities) {
-          const distance = calculateDistance(
-            latitude,
-            longitude,
-            city.latitude,
-            city.longitude
-          );
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestCity = city;
-          }
-        }
-
-        // Проверяем, находится ли пользователь достаточно близко к городу (например, в радиусе 100 км)
-        const maxDistanceKm = 100;
-        
-        if (minDistance > maxDistanceKm) {
-          // Город далеко - проверяем страну через примерную геолокацию
-          // Это упрощённая логика, в реальности нужен reverse geocoding API
-          toast.error(t("countryNotInList"));
-          return;
-        }
-
-        // Город найден и близко - обновляем
-        await loadCity(nearestCity.id);
-        localStorage.setItem("selectedCity", nearestCity.id);
-        localStorage.setItem("selectedCountry", nearestCity.country_id);
-
-        // Сохраняем в профиль пользователя
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from("profiles")
-            .update({
-              city_id: nearestCity.id,
-              country_id: nearestCity.country_id,
-            })
-            .eq("id", user.id);
-        }
-
-        // Формируем сообщение с названием города на текущем языке
-        const cityName = nearestCity.name_sr; // или используйте текущий язык из useLanguage
-        toast.success(t("yourLocationInCity").replace("{city}", cityName));
+        setShouldFlyToUserLocation(true);
+        toast.success("Геолокация определена");
       },
-      (error) => {
+      async (error) => {
         console.error("Error getting location:", error);
         let errorMessage = "Не удалось получить доступ к вашему местоположению";
         
@@ -352,6 +269,20 @@ const Map = () => {
         }
         
         toast.error(errorMessage);
+        
+        // Если GPS не работает, пытаемся определить город
+        // Получаем все города и страны из базы
+        const { data: allCities, error: citiesError } = await supabase
+          .from("cities")
+          .select("*, countries!inner(*)");
+
+        if (citiesError || !allCities || allCities.length === 0) {
+          toast.error(t("countryNotInList"));
+          return;
+        }
+
+        // Показываем пользователю выбор города вместо автоопределения
+        toast.info("Пожалуйста, выберите город вручную");
       },
       {
         enableHighAccuracy: true,
@@ -618,6 +549,8 @@ const Map = () => {
           cityCenter={[selectedCity.latitude, selectedCity.longitude]}
           cityZoom={selectedCity.zoom_level}
           userId={user?.id || null}
+          shouldFlyToUserLocation={shouldFlyToUserLocation}
+          onUserLocationFlyComplete={() => setShouldFlyToUserLocation(false)}
         />
       </div>
     </div>
