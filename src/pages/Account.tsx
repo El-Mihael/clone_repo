@@ -42,6 +42,7 @@ interface SubscriptionDetail {
   placeListingCost: number;
   premiumCost: number;
   billingPeriod: string;
+  cancelAtPeriodEnd: boolean;
 }
 
 interface PurchasedTour {
@@ -152,13 +153,17 @@ const Account = () => {
           const plan = sub.subscription_plans;
           const place = sub.places;
           
+          // Don't show premium cost if it's cancelled
+          const premiumCost = (place?.is_premium && !sub.cancel_at_period_end) ? 8 : 0;
+          
           return {
             placeId: place.id,
             placeName: place.name,
             nextBillingDate: sub.next_billing_date,
             placeListingCost: plan.price,
-            premiumCost: place?.is_premium ? 8 : 0,
+            premiumCost: premiumCost,
             billingPeriod: plan.billing_period,
+            cancelAtPeriodEnd: sub.cancel_at_period_end || false,
           };
         });
 
@@ -385,6 +390,10 @@ const Account = () => {
               <UserPlacesManager
                 places={places}
                 credits={profile.credits}
+                subscriptions={subscriptionDetails.map(d => ({
+                  placeId: d.placeId,
+                  cancelAtPeriodEnd: d.cancelAtPeriodEnd
+                }))}
                 onRefresh={async () => {
                   const { data: { session } } = await supabase.auth.getSession();
                   if (session) {
