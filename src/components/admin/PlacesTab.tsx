@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard, Eye, EyeOff, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
+import { WishlistViewerDialog } from "./WishlistViewerDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
@@ -22,6 +23,7 @@ type PlaceWithCity = Place & {
   cities?: { name_sr: string; name_en: string; name_ru: string } | null;
   owner_profile?: { email: string; full_name: string | null } | null;
   active_subscriptions?: number;
+  wishlist_count?: number;
 };
 
 export const PlacesTab = () => {
@@ -30,6 +32,7 @@ export const PlacesTab = () => {
   const [places, setPlaces] = useState<PlaceWithCity[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingPagePlace, setEditingPagePlace] = useState<Place | null>(null);
+  const [viewingWishlistPlace, setViewingWishlistPlace] = useState<{ id: string; name: string } | null>(null);
   const [translating, setTranslating] = useState(false);
   const [formData, setFormData] = useState({
     category_id: "",
@@ -102,15 +105,23 @@ export const PlacesTab = () => {
       .in("place_id", placeIds)
       .eq("is_active", true);
 
+    // Get wishlist count for places
+    const { data: wishlists } = await supabase
+      .from("user_places")
+      .select("place_id")
+      .in("place_id", placeIds);
+
     // Combine data
     const enrichedPlaces: PlaceWithCity[] = placesData.map(place => {
       const owner = profiles?.find(p => p.id === place.owner_id);
       const activeSubsCount = subscriptions?.filter(s => s.place_id === place.id).length || 0;
+      const wishlistCount = wishlists?.filter(w => w.place_id === place.id).length || 0;
       
       return {
         ...place,
         owner_profile: owner ? { email: owner.email, full_name: owner.full_name } : null,
         active_subscriptions: activeSubsCount,
+        wishlist_count: wishlistCount,
       };
     });
 
@@ -574,8 +585,26 @@ export const PlacesTab = () => {
                         )}
                       </div>
                     )}
+                    {(place.wishlist_count || 0) > 0 && (
+                      <div className="mt-2">
+                        <Badge variant="secondary" className="gap-1 bg-pink-500/10 text-pink-700 dark:text-pink-400 border-pink-500/20">
+                          <Heart className="w-3 h-3" />
+                          Хотят посетить: {place.wishlist_count}
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
+                    {(place.wishlist_count || 0) > 0 && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setViewingWishlistPlace({ id: place.id, name: place.name })}
+                        title="Посмотреть кто хочет посетить"
+                      >
+                        <Heart className="w-4 h-4 text-pink-500" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -624,6 +653,13 @@ export const PlacesTab = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Wishlist Viewer Dialog */}
+      <WishlistViewerDialog
+        placeId={viewingWishlistPlace?.id || null}
+        placeName={viewingWishlistPlace?.name || ""}
+        onClose={() => setViewingWishlistPlace(null)}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Crown, ExternalLink, MapPinned, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WishlistButton } from "./WishlistButton";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Database } from "@/integrations/supabase/types";
@@ -18,6 +19,7 @@ interface MapContainerProps {
   onPlacePageOpen: (place: Place) => void;
   cityCenter: [number, number];
   cityZoom: number;
+  userId: string | null;
 }
 
 const MapUpdater = ({ 
@@ -109,6 +111,7 @@ export const MapView = ({
   onPlacePageOpen,
   cityCenter,
   cityZoom,
+  userId,
 }: MapContainerProps) => {
   const markerRefs = useRef<{ [key: string]: L.Marker }>({});
 
@@ -185,6 +188,7 @@ export const MapView = ({
                   )}
 
                   <div className="flex flex-col gap-2">
+                    <WishlistButton placeId={place.id} userId={userId} />
                     {place.has_custom_page && (
                       <Button
                         size="sm"
