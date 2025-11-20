@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Send, Bell } from "lucide-react";
+import { Send, Bell, TestTube } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NotificationStatistics } from "./NotificationStatistics";
+import { ScheduledNotifications } from "./ScheduledNotifications";
 
 export const NotificationsTab = () => {
   const { t } = useLanguage();
@@ -44,7 +47,7 @@ export const NotificationsTab = () => {
     }
   };
 
-  const handleSendNotification = async () => {
+  const handleSendNotification = async (isTest = false) => {
     if (!title.trim() || !body.trim()) {
       toast({
         title: t("error"),
@@ -57,10 +60,14 @@ export const NotificationsTab = () => {
     setIsSending(true);
 
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase.functions.invoke("send-push-notification", {
         body: {
           title: title.trim(),
           body: body.trim(),
+          isTest,
+          testUserId: isTest ? userData.user?.id : null,
           data: {
             timestamp: new Date().toISOString(),
           },
@@ -73,7 +80,9 @@ export const NotificationsTab = () => {
 
       toast({
         title: t("success"),
-        description: `${t("notificationSent")} ${data.successful || 0} ${t("users")} (${data.failed || 0} ${t("failed")})`,
+        description: isTest 
+          ? `Тестовое уведомление отправлено`
+          : `${t("notificationSent")} ${data.successful || 0} ${t("users")} (${data.failed || 0} ${t("failed")})`,
       });
 
       setTitle("");
@@ -91,93 +100,121 @@ export const NotificationsTab = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5" />
-            Подписчики на уведомления
-          </CardTitle>
-          <CardDescription>
-            Всего подписчиков: {subscriptions.length}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-4">Загрузка...</div>
-          ) : subscriptions.length === 0 ? (
-            <div className="text-center py-4 text-muted-foreground">
-              Нет подписчиков на уведомления
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID Пользователя</TableHead>
-                  <TableHead>Дата подписки</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {subscriptions.map((sub) => (
-                  <TableRow key={sub.id}>
-                    <TableCell className="font-mono text-xs">
-                      {sub.user_id || "Анонимный"}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(sub.created_at).toLocaleString("ru-RU")}
-                    </TableCell>
+    <Tabs defaultValue="send" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="send">Отправка</TabsTrigger>
+        <TabsTrigger value="scheduled">Запланированные</TabsTrigger>
+        <TabsTrigger value="statistics">Статистика</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="send" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Подписчики на уведомления
+            </CardTitle>
+            <CardDescription>
+              Всего подписчиков: {subscriptions.length}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-4">Загрузка...</div>
+            ) : subscriptions.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                Нет подписчиков на уведомления
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID Пользователя</TableHead>
+                    <TableHead>Дата подписки</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {subscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell className="font-mono text-xs">
+                        {sub.user_id || "Анонимный"}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(sub.created_at).toLocaleString("ru-RU")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Send className="w-5 h-5" />
-            {t("pushNotifications")}
-          </CardTitle>
-          <CardDescription>
-            {t("sendNotification")} {t("sendToAllUsers").toLowerCase()}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="notification-title">{t("notificationTitle")}</Label>
-            <Input
-              id="notification-title"
-              placeholder={t("notificationTitle")}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={100}
-            />
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Send className="w-5 h-5" />
+              {t("pushNotifications")}
+            </CardTitle>
+            <CardDescription>
+              {t("sendNotification")} {t("sendToAllUsers").toLowerCase()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="notification-title">{t("notificationTitle")}</Label>
+              <Input
+                id="notification-title"
+                placeholder={t("notificationTitle")}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notification-body">{t("notificationBody")}</Label>
-            <Textarea
-              id="notification-body"
-              placeholder={t("notificationBody")}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              maxLength={500}
-              rows={4}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="notification-body">{t("notificationBody")}</Label>
+              <Textarea
+                id="notification-body"
+                placeholder={t("notificationBody")}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                maxLength={500}
+                rows={4}
+              />
+            </div>
 
-          <Button
-            onClick={handleSendNotification}
-            disabled={isSending || !title.trim() || !body.trim()}
-            className="w-full"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {isSending ? t("loading") : t("sendToAllUsers")}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => handleSendNotification(true)}
+                disabled={isSending || !title.trim() || !body.trim()}
+                variant="outline"
+                className="flex-1"
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                {isSending ? t("loading") : "Тест (себе)"}
+              </Button>
+              
+              <Button
+                onClick={() => handleSendNotification(false)}
+                disabled={isSending || !title.trim() || !body.trim()}
+                className="flex-1"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {isSending ? t("loading") : t("sendToAllUsers")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="scheduled">
+        <ScheduledNotifications />
+      </TabsContent>
+
+      <TabsContent value="statistics">
+        <NotificationStatistics />
+      </TabsContent>
+    </Tabs>
   );
 };

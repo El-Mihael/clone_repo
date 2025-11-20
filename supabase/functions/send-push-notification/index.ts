@@ -60,7 +60,7 @@ serve(async (req) => {
       );
     }
 
-    const { title, body, data } = await req.json();
+    const { title, body, data, isTest = false, testUserId = null } = await req.json();
 
     if (!title || !body) {
       return new Response(
@@ -69,10 +69,14 @@ serve(async (req) => {
       );
     }
 
-    // Get all push subscriptions
-    const { data: subscriptions, error: fetchError } = await supabaseClient
-      .from('push_subscriptions')
-      .select('*');
+    // Get push subscriptions - either all or just test user's
+    let query = supabaseClient.from('push_subscriptions').select('*');
+    
+    if (isTest && testUserId) {
+      query = query.eq('user_id', testUserId);
+    }
+    
+    const { data: subscriptions, error: fetchError } = await query;
 
     if (fetchError) {
       console.error('Error fetching subscriptions:', fetchError);
@@ -147,6 +151,19 @@ serve(async (req) => {
 
     const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
     const failed = results.length - successful;
+
+    // Save statistics
+    await supabaseClient
+      .from('notification_statistics')
+      .insert({
+        title,
+        body,
+        successful_count: successful,
+        failed_count: failed,
+        total_recipients: results.length,
+        sent_by: user.id,
+        is_test: isTest,
+      });
 
     return new Response(
       JSON.stringify({
