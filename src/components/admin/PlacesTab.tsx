@@ -9,13 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard, Eye, EyeOff, Heart } from "lucide-react";
+import { Plus, Pencil, Trash2, Crown, FileText, UserCircle, CreditCard, Eye, EyeOff, Heart, MapPin, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
 import { WishlistViewerDialog } from "./WishlistViewerDialog";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getLocalizedName, getLocalizedDescription } from "@/lib/i18n/languageUtils";
+import { geocodeAddress } from "@/lib/geocoding";
+import { MapPlacePicker } from "@/components/map/MapPlacePicker";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type Place = Database["public"]["Tables"]["places"]["Row"];
@@ -37,6 +39,8 @@ export const PlacesTab = () => {
   const [editingPagePlace, setEditingPagePlace] = useState<Place | null>(null);
   const [viewingWishlistPlace, setViewingWishlistPlace] = useState<{ id: string; name: string } | null>(null);
   const [translating, setTranslating] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [visibilityFilter, setVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
   const [formData, setFormData] = useState({
     category_id: "",
@@ -234,6 +238,42 @@ export const PlacesTab = () => {
       }
     }
     setTranslating(false);
+  };
+
+  const handleAddressBlur = async () => {
+    if (!formData.address.trim() || formData.latitude || formData.longitude || geocoding) return;
+    
+    setGeocoding(true);
+    const result = await geocodeAddress(formData.address);
+    setGeocoding(false);
+    
+    if (result) {
+      setFormData({
+        ...formData,
+        latitude: result.latitude.toString(),
+        longitude: result.longitude.toString(),
+        address: result.address,
+      });
+      toast.success(t("coordinatesAutoFilled"));
+    }
+  };
+
+  const handleMapSelect = (data: { latitude: number; longitude: number; address: string }) => {
+    setFormData({
+      ...formData,
+      latitude: data.latitude.toString(),
+      longitude: data.longitude.toString(),
+      address: data.address,
+    });
+    toast.success(t("locationSelectedFromMap"));
+  };
+
+  const getCityCenter = (): [number, number] | undefined => {
+    const selectedCity = cities.find(c => c.id === formData.city_id);
+    if (selectedCity) {
+      return [selectedCity.latitude, selectedCity.longitude];
+    }
+    return undefined;
   };
 
   const resetForm = () => {
@@ -453,9 +493,27 @@ export const PlacesTab = () => {
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  onBlur={handleAddressBlur}
+                  placeholder={t("enterAddressForAutoCoordinates")}
                 />
+                {geocoding && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    {t("searchingCoordinates")}
+                  </p>
+                )}
               </div>
             </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setMapPickerOpen(true)}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              {t("selectOnMap")}
+            </Button>
 
             <div className="space-y-2">
               <Label htmlFor="google_maps_url">Ссылка на Google Maps</Label>
@@ -711,6 +769,19 @@ export const PlacesTab = () => {
         placeId={viewingWishlistPlace?.id || null}
         placeName={viewingWishlistPlace?.name || ""}
         onClose={() => setViewingWishlistPlace(null)}
+      />
+
+      {/* Map Place Picker */}
+      <MapPlacePicker
+        open={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        onSelect={handleMapSelect}
+        initialPosition={
+          formData.latitude && formData.longitude
+            ? [parseFloat(formData.latitude), parseFloat(formData.longitude)]
+            : undefined
+        }
+        cityCenter={getCityCenter()}
       />
     </div>
   );

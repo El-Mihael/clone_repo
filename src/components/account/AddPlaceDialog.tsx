@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { getLocalizedName } from "@/lib/i18n/languageUtils";
+import { geocodeAddress } from "@/lib/geocoding";
+import { MapPlacePicker } from "@/components/map/MapPlacePicker";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
@@ -26,6 +28,8 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
@@ -138,6 +142,48 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
     }
   };
 
+  const handleAddressBlur = async () => {
+    if (!formData.address.trim() || formData.latitude || formData.longitude || geocoding) return;
+    
+    setGeocoding(true);
+    const result = await geocodeAddress(formData.address);
+    setGeocoding(false);
+    
+    if (result) {
+      setFormData({
+        ...formData,
+        latitude: result.latitude.toString(),
+        longitude: result.longitude.toString(),
+        address: result.address,
+      });
+      toast({
+        title: t("success"),
+        description: t("coordinatesAutoFilled"),
+      });
+    }
+  };
+
+  const handleMapSelect = (data: { latitude: number; longitude: number; address: string }) => {
+    setFormData({
+      ...formData,
+      latitude: data.latitude.toString(),
+      longitude: data.longitude.toString(),
+      address: data.address,
+    });
+    toast({
+      title: t("success"),
+      description: t("locationSelectedFromMap"),
+    });
+  };
+
+  const getCityCenter = (): [number, number] | undefined => {
+    const selectedCity = cities.find(c => c.id === formData.city_id);
+    if (selectedCity) {
+      return [selectedCity.latitude, selectedCity.longitude];
+    }
+    return undefined;
+  };
+
   const resetForm = () => {
     setFormData({
       category_id: "",
@@ -245,7 +291,15 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
               id="address"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onBlur={handleAddressBlur}
+              placeholder={t("enterAddressForAutoCoordinates")}
             />
+            {geocoding && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                {t("searchingCoordinates")}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -272,6 +326,16 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
               />
             </div>
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => setMapPickerOpen(true)}
+          >
+            <MapPin className="w-4 h-4 mr-2" />
+            {t("selectOnMap")}
+          </Button>
 
           <div className="space-y-2 pt-4 border-t">
             <Label htmlFor="subscription_plan" className="text-base font-semibold">
@@ -311,6 +375,18 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <MapPlacePicker
+        open={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        onSelect={handleMapSelect}
+        initialPosition={
+          formData.latitude && formData.longitude
+            ? [parseFloat(formData.latitude), parseFloat(formData.longitude)]
+            : undefined
+        }
+        cityCenter={getCityCenter()}
+      />
     </Dialog>
   );
 };
