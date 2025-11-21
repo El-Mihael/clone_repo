@@ -122,7 +122,12 @@ export const MapPlacePicker = ({ open, onOpenChange, onSelect, initialPosition, 
                   {address && (
                     <>
                       <div className="text-sm font-medium mt-2">{t("address")}:</div>
-                      <div className="text-sm text-muted-foreground">{address}</div>
+                      <input
+                        type="text"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full text-sm bg-background border border-border rounded px-2 py-1 mt-1"
+                      />
                     </>
                   )}
                 </div>

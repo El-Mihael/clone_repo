@@ -252,7 +252,6 @@ export const PlacesTab = () => {
         ...formData,
         latitude: result.latitude.toString(),
         longitude: result.longitude.toString(),
-        address: result.address,
       });
       toast.success(t("coordinatesAutoFilled"));
     }
