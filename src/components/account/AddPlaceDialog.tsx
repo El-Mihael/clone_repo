@@ -154,7 +154,6 @@ export const AddPlaceDialog = ({ open, onOpenChange, onSuccess }: AddPlaceDialog
         ...formData,
         latitude: result.latitude.toString(),
         longitude: result.longitude.toString(),
-        address: result.address,
       });
       toast({
         title: t("success"),
