@@ -159,8 +159,24 @@ export const UserPlacesManager = ({ places, credits, subscriptions, onRefresh }:
     setDeleteDialogOpen(true);
   };
 
-  const openEditDialog = (place: Place) => {
-    setEditingPlace(place);
+  const openEditDialog = async (place: Place) => {
+    // Fetch full place data
+    const { data, error } = await supabase
+      .from("places")
+      .select("*")
+      .eq("id", place.id)
+      .single();
+    
+    if (error || !data) {
+      toast({
+        title: t("error"),
+        description: t("failedToLoadPlace"),
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setEditingPlace(data);
     setEditDialogOpen(true);
   };
 
