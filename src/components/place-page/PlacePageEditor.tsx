@@ -28,7 +28,7 @@ interface Block {
 }
 
 export const PlacePageEditor = ({ place, onSave }: PlacePageEditorProps) => {
-  const [content, setContent] = useState<any>(place.custom_page_content || {
+  const [content, setContent] = useState<any>({
     header: {},
     blocks: [],
     pageStyle: {},
@@ -39,6 +39,19 @@ export const PlacePageEditor = ({ place, onSave }: PlacePageEditorProps) => {
   useEffect(() => {
     checkAdminStatus();
   }, []);
+
+  useEffect(() => {
+    // Load existing content when place changes
+    if (place.custom_page_content) {
+      setContent(place.custom_page_content);
+    } else {
+      setContent({
+        header: {},
+        blocks: [],
+        pageStyle: {},
+      });
+    }
+  }, [place.id, place.custom_page_content]);
 
   const checkAdminStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
