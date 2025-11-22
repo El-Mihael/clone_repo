@@ -9,10 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, FileText, Crown, AlertCircle } from "lucide-react";
+import { Loader2, FileText, Crown, AlertCircle, MapPin } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PlacePageEditor } from "@/components/place-page/PlacePageEditor";
+import { geocodeAddress } from "@/lib/geocoding";
+import { MapPlacePicker } from "@/components/map/MapPlacePicker";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 type City = Database["public"]["Tables"]["cities"]["Row"];
@@ -29,6 +31,8 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
   const { toast } = useToast();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [editingCustomPage, setEditingCustomPage] = useState(false);
@@ -81,6 +85,45 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
       .from("cities")
       .select("*");
     setCities(data || []);
+  };
+
+  const handleAddressBlur = async () => {
+    if (!formData.address.trim()) return;
+
+    setGeocoding(true);
+    const result = await geocodeAddress(formData.address);
+    setGeocoding(false);
+
+    if (result) {
+      setFormData({
+        ...formData,
+        latitude: result.latitude.toString(),
+        longitude: result.longitude.toString(),
+      });
+      toast({
+        title: t("success"),
+        description: t("coordinatesAutoFilled"),
+      });
+    }
+  };
+
+  const handleMapSelect = (data: { latitude: number; longitude: number; address: string }) => {
+    setFormData({
+      ...formData,
+      latitude: data.latitude.toString(),
+      longitude: data.longitude.toString(),
+      address: data.address,
+    });
+    toast({
+      title: t("success"),
+      description: t("locationSelectedFromMap"),
+    });
+  };
+
+  const getCityCenter = (): [number, number] | undefined => {
+    if (!formData.city_id) return undefined;
+    const city = cities.find(c => c.id === formData.city_id);
+    return city ? [city.latitude, city.longitude] : undefined;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -311,6 +354,21 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
             </TabsContent>
 
             <TabsContent value="location" className="space-y-4 mt-4">
+              <div>
+                <Label htmlFor="address">{t("address")}</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  onBlur={handleAddressBlur}
+                  placeholder={t("enterAddress")}
+                  disabled={geocoding}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {geocoding ? t("searchingCoordinates") : t("enterAddressForAutoCoordinates")}
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="latitude">{t("latitude")} *</Label>
@@ -345,15 +403,15 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="address">{t("address")}</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder={t("enterAddress")}
-                />
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMapPickerOpen(true)}
+                className="w-full"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                {t("selectOnMap")}
+              </Button>
 
               <div>
                 <Label htmlFor="google_maps_url">{t("googleMapsUrl")}</Label>
@@ -386,6 +444,18 @@ export const EditPlaceDialog = ({ open, onOpenChange, onSuccess, place }: EditPl
             </Button>
           </DialogFooter>
         </form>
+
+        <MapPlacePicker
+          open={mapPickerOpen}
+          onOpenChange={setMapPickerOpen}
+          onSelect={handleMapSelect}
+          initialPosition={
+            formData.latitude && formData.longitude
+              ? [parseFloat(formData.latitude), parseFloat(formData.longitude)]
+              : undefined
+          }
+          cityCenter={getCityCenter()}
+        />
       </DialogContent>
     </Dialog>
   );
