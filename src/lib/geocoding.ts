@@ -41,6 +41,7 @@ export async function geocodeAddress(address: string): Promise<GeocodingResult |
 
 /**
  * Reverse geocode - convert coordinates to address
+ * Returns a short, readable address format (e.g., "Street Name 123")
  */
 export async function reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
   try {
@@ -56,6 +57,28 @@ export async function reverseGeocode(latitude: number, longitude: number): Promi
     if (!response.ok) return null;
 
     const data = await response.json();
+    
+    // Build a short address from available components
+    const address = data.address;
+    if (!address) return data.display_name || null;
+    
+    // Try to construct a simple "Street Number" format
+    const parts = [];
+    
+    if (address.road) {
+      parts.push(address.road);
+    }
+    
+    if (address.house_number) {
+      parts.push(address.house_number);
+    }
+    
+    // If we have a good short address, return it
+    if (parts.length > 0) {
+      return parts.join(' ');
+    }
+    
+    // Fallback to display_name
     return data.display_name || null;
   } catch (error) {
     console.error('Reverse geocoding error:', error);
